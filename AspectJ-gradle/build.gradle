@@ -1,0 +1,38 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+
+targetCompatibility = JavaVersion.VERSION_1_6
+sourceCompatibility = JavaVersion.VERSION_1_6
+
+project.ext {
+    aspectjVersion = '1.8.5'
+}
+
+dependencies {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    compile gradleApi()
+    compile localGroovy()
+    compile 'com.android.tools.build:gradle:1.1.2'
+    compile "org.aspectj:aspectjtools:${aspectjVersion}"
+    compile "org.aspectj:aspectjrt:${aspectjVersion}"
+
+    testCompile 'junit:junit:4.10'
+    testCompile 'org.easytesting:fest-assert-core:2.0M10'
+}
+
+def gitUrl = "https://github.com/Archinamon/GradleAspectJ-Android.git"
+
+group = 'org.fxclub.aspectj'
+version = '1.0'
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('./repo'))
+        }
+    }
+}

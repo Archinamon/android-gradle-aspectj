@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>org.fxclub.aspectj</groupId>
+  <artifactId>AspectJ-gradle</artifactId>
+  <version>1.0</version>
+  <versioning>
+    <versions>
+      <version>1.0</version>
+    </versions>
+    <lastUpdated>20150611141753</lastUpdated>
+  </versioning>
+</metadata>

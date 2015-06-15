@@ -32,6 +32,30 @@ Apply the `aspectj` plugin:
 apply plugin: 'org.fxclub.aspectj'
 ```
 
+Now you can write aspects using annotation style or native (even without IntelliJ IDEA Ultimate edition).
+Let's write simple Application advice:
+```java
+import android.app.Application;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.support.v4.app.NotificationCompat;
+
+privileged aspect AppAdvice {
+
+    pointcut preInit(): within(Application) && execution(public * Application.onCreate());
+
+    before(): preInit() {
+        Application app = (Application) thisJoinPoint.getTarget();
+        NotificationManager nmng = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
+        nmng.notify(9999, new NotificationCompat.Builder(app).setTicker("Hello AspectJ")
+                                                             .setContentTitle("Notification from aspectJ")
+                                                             .setContentText("privileged aspect AppAdvice")
+                                                             .setSmallIcon(R.drawable.ic_launcher)
+                                                             .build());
+    }
+}
+```
+
 License
 -------
 

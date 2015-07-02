@@ -5,7 +5,6 @@ import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.JavaVersion
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.TaskAction
 
@@ -48,7 +47,7 @@ class AspectjCompileTask extends DefaultTask {
 
         def String[] args = [
                 "-showWeaveInfo",
-                //"-incremental",
+                "-incremental",
                 "-encoding", "UTF-8",
                 "-" + project.android.compileOptions.sourceCompatibility.toString(),
                 "-inpath", destinationDir.absolutePath,
@@ -64,6 +63,7 @@ class AspectjCompileTask extends DefaultTask {
         MessageHandler handler = new MessageHandler(true);
         new Main().run(args, handler);
         for (IMessage message : handler.getMessages(null, true)) {
+            log.warn "AjC outputs: " + message.getKind() + " : " + message.message;
             switch (message.getKind()) {
                 case IMessage.ABORT:
                 case IMessage.ERROR:

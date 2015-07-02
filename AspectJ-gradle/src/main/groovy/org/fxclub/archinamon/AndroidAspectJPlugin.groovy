@@ -101,7 +101,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             aptPathShift = "/generated/source/apt/$variantName";
         }
 
-        project.logger.info(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }
 }

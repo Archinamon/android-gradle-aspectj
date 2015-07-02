@@ -47,7 +47,7 @@ class AspectjCompileTask extends DefaultTask {
 
         def String[] args = [
                 "-showWeaveInfo",
-                "-incremental",
+                //"-incremental",
                 "-encoding", "UTF-8",
                 "-" + project.android.compileOptions.sourceCompatibility.toString(),
                 "-inpath", destinationDir.absolutePath,
@@ -63,7 +63,6 @@ class AspectjCompileTask extends DefaultTask {
         MessageHandler handler = new MessageHandler(true);
         new Main().run(args, handler);
         for (IMessage message : handler.getMessages(null, true)) {
-            log.warn "AjC outputs: " + message.getKind() + " : " + message.message;
             switch (message.getKind()) {
                 case IMessage.ABORT:
                 case IMessage.ERROR:

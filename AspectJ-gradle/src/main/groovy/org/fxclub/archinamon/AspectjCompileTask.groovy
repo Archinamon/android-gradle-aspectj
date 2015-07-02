@@ -48,7 +48,7 @@ class AspectjCompileTask extends DefaultTask {
 
         def String[] args = [
                 "-showWeaveInfo",
-                "-incremental true",
+                "-incremental", "true",
                 "-encoding", "UTF-8",
                 "-" + project.android.compileOptions.sourceCompatibility.toString(),
                 "-inpath", destinationDir.absolutePath,

@@ -48,6 +48,7 @@ class AspectjCompileTask extends DefaultTask {
 
         def String[] args = [
                 "-showWeaveInfo",
+                "-incremental true",
                 "-encoding", "UTF-8",
                 "-" + project.android.compileOptions.sourceCompatibility.toString(),
                 "-inpath", destinationDir.absolutePath,
@@ -55,8 +56,7 @@ class AspectjCompileTask extends DefaultTask {
                 "-d", destinationDir.absolutePath,
                 "-classpath", classpath.asPath,
                 "-bootclasspath", bootclasspath,
-                "-sourceroots", sourceRoots.join(File.pathSeparator),
-                "-incremental"
+                "-sourceroots", sourceRoots.join(File.pathSeparator)
         ]
 
         log.debug "ajc args: " + Arrays.toString(args)

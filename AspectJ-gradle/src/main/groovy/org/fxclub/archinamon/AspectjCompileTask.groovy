@@ -56,7 +56,7 @@ class AspectjCompileTask extends DefaultTask {
                 "-classpath", classpath.asPath,
                 "-bootclasspath", bootclasspath,
                 "-sourceroots", sourceRoots.join(File.pathSeparator),
-                "-incremental", true
+                "-incremental"
         ]
 
         log.debug "ajc args: " + Arrays.toString(args)

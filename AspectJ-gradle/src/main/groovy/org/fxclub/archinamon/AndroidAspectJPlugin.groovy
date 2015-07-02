@@ -90,7 +90,17 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
     // fix to support Android Pre-processing Tools plugin
     private static def FileCollection getAptBuildFilesRoot(Project project, variant) {
-        def final aptPathShift = "/generated/source/apt/${variant.mergedFlavor.name + "/" + variant.buildType.name}" as String;
+        def final aptPathShift;
+        def final variantName = variant.name as String;
+        def String[] types = variantName.split("(?=\\p{Upper})");
+        if (types.length > 0) {
+            def additionalPathShift = "";
+            types.each { String type -> additionalPathShift += type + "/" };
+            aptPathShift = "/generated/source/apt/$additionalPathShift";
+        } else {
+            aptPathShift = "/generated/source/apt/$variantName";
+        }
+
         project.logger.info(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }

@@ -95,7 +95,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         def String[] types = variantName.split("(?=\\p{Upper})");
         if (types.length > 0) {
             def additionalPathShift = "";
-            types.each { String type -> additionalPathShift += type + "/" };
+            types.each { String type -> additionalPathShift += type.toLowerCase() + "/" };
             aptPathShift = "/generated/source/apt/$additionalPathShift";
         } else {
             aptPathShift = "/generated/source/apt/$variantName";

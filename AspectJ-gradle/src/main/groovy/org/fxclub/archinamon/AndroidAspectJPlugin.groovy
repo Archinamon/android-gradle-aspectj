@@ -56,16 +56,16 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 def newTaskName = "compile${variantName}Aspectj"
 
                 def AspectjCompileTask aspectjCompile = project.task(newTaskName,
-                                                                     overwrite: true,
-                                                                     description: 'Compiles AspectJ ' + 'Source',
-                                                                     type: AspectjCompileTask) {} as AspectjCompileTask;
+                        overwrite: true,
+                        description: 'Compiles AspectJ ' + 'Source',
+                        type: AspectjCompileTask) {} as AspectjCompileTask;
 
                 aspectjCompile.doFirst {
                     aspectpath = javaCompile.classpath
                     destinationDir = javaCompile.destinationDir
                     classpath = javaCompile.classpath
                     bootclasspath = bootClasspath.join(File.pathSeparator)
-                    sourceroots = javaCompile.source + getAptBuildFilesRoot(project, variant as Variant).getAsFileTree();
+                    sourceroots = javaCompile.source + getAptBuildFilesRoot(project, variant).getAsFileTree();
 
                     if (javaCompile.destinationDir.exists()) {
 
@@ -89,8 +89,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     }
 
     // fix to support Android Pre-processing Tools plugin
-    private static def FileCollection getAptBuildFilesRoot(Project project, Variant variant) {
-        def final aptPathShift = "/generated/source/apt/${variant.mergedFlavor.name + "/" + variant.buildType}" as String;
+    private static def FileCollection getAptBuildFilesRoot(Project project, variant) {
+        def final aptPathShift = "/generated/source/apt/${variant.mergedFlavor.name + "/" + variant.buildType.name}" as String;
         project.logger.info(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }

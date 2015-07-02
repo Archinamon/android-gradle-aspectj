@@ -65,7 +65,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     destinationDir = javaCompile.destinationDir
                     classpath = javaCompile.classpath
                     bootclasspath = bootClasspath.join(File.pathSeparator)
-                    sourceroots = javaCompile.source + getAptBuildFilesRoot(project, variant).getAsFileTree();
+                    sourceroots = javaCompile.source + getAptBuildFilesRoot(project, variant as Variant).getAsFileTree();
 
                     if (javaCompile.destinationDir.exists()) {
 

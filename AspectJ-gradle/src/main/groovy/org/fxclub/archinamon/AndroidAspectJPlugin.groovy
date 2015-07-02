@@ -1,7 +1,9 @@
 // This plugin is based on https://github.com/JakeWharton/hugo
 package org.fxclub.archinamon
+
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
+import com.android.builder.model.Variant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -40,7 +42,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
 
-            variants.all { variant ->
+            variants.each { Variant variant ->
                 JavaCompile javaCompile = variant.javaCompile
                 def bootClasspath
                 if (plugin.properties['runtimeJarList']) {
@@ -62,7 +64,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     destinationDir = javaCompile.destinationDir
                     classpath = javaCompile.classpath
                     bootclasspath = bootClasspath.join(File.pathSeparator)
-                    sourceroots = javaCompile.source + getAptBuildFilesRoot(project, variant.name as String).getAsFileTree();
+                    sourceroots = javaCompile.source + getAptBuildFilesRoot(project, variant).getAsFileTree();
 
                     if (javaCompile.destinationDir.exists()) {
 
@@ -86,8 +88,9 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     }
 
     // fix to support Android Pre-processing Tools plugin
-    private static def FileCollection getAptBuildFilesRoot(Project project, String variantName) {
-        def final aptPathShift = "/generated/source/apt/${variantName}" as String;
+    private static def FileCollection getAptBuildFilesRoot(Project project, Variant variant) {
+        def final aptPathShift = "/generated/source/apt/${variant.mergedFlavor.name + "/" + variant.buildType}" as String;
+        println aptPathShift;
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }
 }

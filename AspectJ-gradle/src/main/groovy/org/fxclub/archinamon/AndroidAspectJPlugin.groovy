@@ -3,6 +3,8 @@ package org.fxclub.archinamon
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
+import com.android.build.gradle.internal.api.ApplicationVariantImpl
+import com.android.build.gradle.internal.api.LibraryVariantImpl
 import com.android.builder.model.Variant
 import com.android.ddmlib.Log
 import org.gradle.api.GradleException
@@ -43,7 +45,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
 
-            variants.each { Variant variant ->
+            variants.all { Variant variant ->
                 JavaCompile javaCompile = variant.javaCompile
                 def bootClasspath
                 if (plugin.properties['runtimeJarList']) {

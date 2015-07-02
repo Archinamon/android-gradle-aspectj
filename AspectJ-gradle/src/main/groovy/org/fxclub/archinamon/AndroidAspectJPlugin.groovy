@@ -4,6 +4,7 @@ package org.fxclub.archinamon
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
 import com.android.builder.model.Variant
+import com.android.ddmlib.Log
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -90,7 +91,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     // fix to support Android Pre-processing Tools plugin
     private static def FileCollection getAptBuildFilesRoot(Project project, Variant variant) {
         def final aptPathShift = "/generated/source/apt/${variant.mergedFlavor.name + "/" + variant.buildType}" as String;
-        println aptPathShift;
+        project.logger.info(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }
 }

@@ -14,6 +14,22 @@ This workaround is friendly with <a href="https://bitbucket.org/hvisser/android-
 
 This plugin based on <a href="https://github.com/uPhyca/gradle-android-aspectj-plugin/" target="_blank">uPhyca's plugin</a>.
 
+Changelog
+-------
+
+#### 1.0.15 -- Full flavor support
+* added full support of buld variants within flavors and dimensions;
+* added custom source root folder -- e.g. 'src/main/aspectj/path.to.package.Aspect.aj';
+
+#### 1.0.9 -- Basic flavors support
+* added basic support of additional build varians and flavors;
+* trying to add incremental build //was removed due to current implementation of ajc-task;
+
+#### 1.0 -- Initial release
+* configured properly compile-order for gradle-Retrolambda plugin;
+* added roots for preprocessing generated files (needed to support Dagger, etc.);
+* added MultiDex support;
+
 Usage
 -----
 
@@ -24,7 +40,7 @@ maven { url 'https://github.com/Archinamon/GradleAspectJ-Android/raw/master' }
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'org.fxclub.aspectj:AspectJ-gradle:1.0'
+classpath 'org.fxclub.aspectj:AspectJ-gradle:1.0.15'
 ```
 
 Apply the `aspectj` plugin:
@@ -42,9 +58,9 @@ import android.support.v4.app.NotificationCompat;
 
 privileged aspect AppAdvice {
 
-    pointcut preInit(): within(Application) && execution(public * Application.onCreate());
+    pointcut preInit(): within(Application) && execution(* Application.onCreate());
 
-    before(): preInit() {
+    after() returning: preInit() {
         Application app = (Application) thisJoinPoint.getTarget();
         NotificationManager nmng = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
         nmng.notify(9999, new NotificationCompat.Builder(app).setTicker("Hello AspectJ")

@@ -27,7 +27,7 @@ dependencies {
 def gitUrl = "https://github.com/Archinamon/GradleAspectJ-Android.git"
 
 group = 'org.fxclub.aspectj'
-version = '1.0.9'
+version = '1.0.15'
 
 uploadArchives {
     repositories {

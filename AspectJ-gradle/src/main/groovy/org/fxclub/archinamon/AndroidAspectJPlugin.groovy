@@ -10,6 +10,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 
 class AndroidAspectJPlugin implements Plugin<Project> {
@@ -52,20 +53,28 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     bootClasspath = project.android.bootClasspath
                 }
 
+                def flavors = variant.productFlavors*.name
+                def types = variant.buildType*.name
+
                 def variantName = variant.name.capitalize()
                 def newTaskName = "compile${variantName}Aspectj"
 
                 def AspectjCompileTask aspectjCompile = project.task(newTaskName,
                         overwrite: true,
-                        description: 'Compiles AspectJ ' + 'Source',
+                        description: 'Compiles AspectJ Source',
                         type: AspectjCompileTask) {} as AspectjCompileTask;
 
+                def final String srcDirs = ['androidTest', *flavors, *types].collect {"src/$it/aspectj"};
                 aspectjCompile.doFirst {
                     aspectpath = javaCompile.classpath
                     destinationDir = javaCompile.destinationDir
                     classpath = javaCompile.classpath
                     bootclasspath = bootClasspath.join(File.pathSeparator)
-                    sourceroots = javaCompile.source + getAptBuildFilesRoot(project, variant).getAsFileTree();
+                    sourceroots = javaCompile.source +
+                            new SimpleFileCollection(srcDirs.collect {project.file(it)}) +
+                            getAptBuildFilesRoot(project, variant).getAsFileTree();
+
+                    project.logger.warn sourceroots.collect {it.absolutePath}.join("; ");
 
                     if (javaCompile.destinationDir.exists()) {
 
@@ -86,6 +95,13 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 }
             }
         }
+
+        // Forces Android Studio to recognize AspectJ folder as code
+        project.android.sourceSets {
+            main.java.srcDir('src/main/aspectj')
+            androidTest.java.srcDir('src/androidTest/aspectj')
+            test.java.srcDir('src/test/aspectj')
+        }
     }
 
     // fix to support Android Pre-processing Tools plugin
@@ -93,14 +109,20 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         def final aptPathShift;
         def final variantName = variant.name as String;
         def String[] types = variantName.split("(?=\\p{Upper})");
-        if (types.length > 0) {
+        if (types.length > 0 && types.length < 3) {
             def additionalPathShift = "";
             types.each { String type -> additionalPathShift += type.toLowerCase() + "/" };
             aptPathShift = "/generated/source/apt/$additionalPathShift";
+        } else if (types.length > 2) {
+            def buildType = types.last().toLowerCase();
+            def String flavor = "";
+            types.eachWithIndex { elem, idx -> if (idx != types.length - 1) flavor += elem.toLowerCase(); };
+            aptPathShift = "/generated/source/apt/$flavor/$buildType";
         } else {
             aptPathShift = "/generated/source/apt/$variantName";
         }
 
+        project.logger.warn(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }
 }

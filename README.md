@@ -19,7 +19,7 @@ Changelog
 
 #### 1.0.15 -- Full flavor support
 * added full support of buld variants within flavors and dimensions;
-* added custom source root folder -- e.g. 'src/main/aspectj/path.to.package.Aspect.aj';
+* added custom source root folder -- e.g. `src/main/aspectj/path.to.package.Aspect.aj`;
 
 #### 1.0.9 -- Basic flavors support
 * added basic support of additional build varians and flavors;

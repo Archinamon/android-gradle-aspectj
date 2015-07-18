@@ -14,22 +14,6 @@ This workaround is friendly with <a href="https://bitbucket.org/hvisser/android-
 
 This plugin based on <a href="https://github.com/uPhyca/gradle-android-aspectj-plugin/" target="_blank">uPhyca's plugin</a>.
 
-Changelog
--------
-
-#### 1.0.15 -- Full flavor support
-* added full support of buld variants within flavors and dimensions;
-* added custom source root folder -- e.g. `src/main/aspectj/path.to.package.Aspect.aj`;
-
-#### 1.0.9 -- Basic flavors support
-* added basic support of additional build varians and flavors;
-* trying to add incremental build //was removed due to current implementation of ajc-task;
-
-#### 1.0 -- Initial release
-* configured properly compile-order for gradle-Retrolambda plugin;
-* added roots for preprocessing generated files (needed to support Dagger, etc.);
-* added MultiDex support;
-
 Usage
 -----
 
@@ -72,10 +56,26 @@ privileged aspect AppAdvice {
 }
 ```
 
+Changelog
+-------
+
+#### 1.0.15 -- Full flavor support
+* added full support of buld variants within flavors and dimensions;
+* added custom source root folder -- e.g. `src/main/aspectj/path.to.package.Aspect.aj`;
+
+#### 1.0.9 -- Basic flavors support
+* added basic support of additional build varians and flavors;
+* trying to add incremental build //was removed due to current implementation of ajc-task;
+
+#### 1.0 -- Initial release
+* configured properly compile-order for gradle-Retrolambda plugin;
+* added roots for preprocessing generated files (needed to support Dagger, etc.);
+* added MultiDex support;
+
 License
 -------
 
-    Copyright 2015 Archinamon, Forex Club.
+    Copyright 2015 Eduard "Archinamon" Matsukov.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

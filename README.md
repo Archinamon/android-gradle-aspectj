@@ -24,12 +24,12 @@ maven { url 'https://github.com/Archinamon/GradleAspectJ-Android/raw/master' }
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'org.fxclub.aspectj:AspectJ-gradle:1.0.15'
+classpath 'com.archinamon:AspectJ-gradle:1.0.15'
 ```
 
 Apply the `aspectj` plugin:
 ```groovy
-apply plugin: 'org.fxclub.aspectj'
+apply plugin: 'com.archinamon.aspectj'
 ```
 
 Now you can write aspects using annotation style or native (even without IntelliJ IDEA Ultimate edition).
@@ -58,6 +58,9 @@ privileged aspect AppAdvice {
 
 Changelog
 -------
+
+#### 1.0.16 -- New plugin routes
+* migrating from corp to personal routes within plugin name, classpath;
 
 #### 1.0.15 -- Full flavor support
 * added full support of buld variants within flavors and dimensions;

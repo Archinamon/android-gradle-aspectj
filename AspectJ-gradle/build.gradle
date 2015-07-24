@@ -24,10 +24,8 @@ dependencies {
     testCompile 'org.easytesting:fest-assert-core:2.0M10'
 }
 
-def gitUrl = "https://github.com/Archinamon/GradleAspectJ-Android.git"
-
-group = 'org.fxclub.aspectj'
-version = '1.0.15'
+group = 'com.archinamon'
+version = '1.0.16'
 
 uploadArchives {
     repositories {

@@ -24,7 +24,7 @@ maven { url 'https://github.com/Archinamon/GradleAspectJ-Android/raw/master' }
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:AspectJ-gradle:1.0.15'
+classpath 'com.archinamon:AspectJ-gradle:1.0.16'
 ```
 
 Apply the `aspectj` plugin:

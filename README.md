@@ -9,7 +9,7 @@ Compilation order:
   else
     javaComplieTask.finalizedBy(aspectCompileTask)
 ```
-This workaround is friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Pre-Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project.
+This workaround is friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project.
 <a href="https://github.com/excilys/androidannotations" target="_blank">AndroidAnnotations</a>, <a href="https://github.com/square/dagger" target="_blank">Dagger</a>, <a href="https://github.com/JakeWharton/butterknife" target="_blank">Butterknife</a> are also supported and works fine.
 
 This plugin based on <a href="https://github.com/uPhyca/gradle-android-aspectj-plugin/" target="_blank">uPhyca's plugin</a>.

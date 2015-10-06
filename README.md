@@ -19,8 +19,10 @@ Usage
 
 First add a maven repo link into your `repositories` block of module build file:
 ```groovy
+mavenCentral()
 maven { url 'https://github.com/Archinamon/GradleAspectJ-Android/raw/master' }
 ```
+Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gradle module.
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy

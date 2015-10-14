@@ -42,11 +42,11 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
 
-privileged aspect AppAdvice {
+aspect AppStartNotifier {
 
-    pointcut preInit(): within(Application) && execution(* Application.onCreate());
+    pointcut postInit(): within(Application) && execution(* Application.onCreate());
 
-    after() returning: preInit() {
+    after() returning: postInit() {
         Application app = (Application) thisJoinPoint.getTarget();
         NotificationManager nmng = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
         nmng.notify(9999, new NotificationCompat.Builder(app).setTicker("Hello AspectJ")

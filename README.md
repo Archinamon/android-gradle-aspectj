@@ -26,7 +26,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:AspectJ-gradle:1.0.16'
+classpath 'com.archinamon:AspectJ-gradle:1.0.17'
 ```
 
 Apply the `aspectj` plugin:
@@ -60,6 +60,9 @@ aspect AppStartNotifier {
 
 Changelog
 -------
+#### 1.0.17 -- Cleanup
+* removed unnecessary logging calls;
+* optimized ajc logging to provide more info about ongoing compilation;
 
 #### 1.0.16 -- New plugin routes
 * migrating from corp to personal routes within plugin name, classpath;

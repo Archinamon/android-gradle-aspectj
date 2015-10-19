@@ -69,14 +69,10 @@ class AspectjCompileTask extends DefaultTask {
                 case IMessage.FAIL:
                     log.error message.message, message.thrown
                     throw new GradleException(message.message, message.thrown)
+                case IMessage.INFO:
+                case IMessage.DEBUG:
                 case IMessage.WARNING:
                     log.warn message.message, message.thrown
-                    break;
-                case IMessage.INFO:
-                    log.info message.message, message.thrown
-                    break;
-                case IMessage.DEBUG:
-                    log.debug message.message, message.thrown
                     break;
             }
         }

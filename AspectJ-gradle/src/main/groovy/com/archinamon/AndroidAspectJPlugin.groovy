@@ -72,10 +72,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                             new SimpleFileCollection(srcDirs.collect {project.file(it)}) +
                             getAptBuildFilesRoot(project, variant).getAsFileTree();
 
-                    project.logger.warn sourceroots.collect {it.absolutePath}.join("; ");
-
                     if (javaCompile.destinationDir.exists()) {
-
                         javaCompile.destinationDir.deleteDir()
                     }
 
@@ -120,7 +117,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             aptPathShift = "/generated/source/apt/$variantName";
         }
 
-        project.logger.warn(aptPathShift);
+        // project.logger.warn(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }
 }

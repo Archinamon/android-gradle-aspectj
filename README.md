@@ -79,6 +79,11 @@ Changelog
 * configured properly compile-order for gradle-Retrolambda plugin;
 * added roots for preprocessing generated files (needed to support Dagger, etc.);
 * added MultiDex support;
+ 
+#### Known limitations
+* Plugin doesn't support direct speach into AspectJ code if project uses preprocessor (e.g. calling aspect class from java);
+* Incremental aj-compilation;
+All these limits are fighting on and I'll be glad to introduce new build as soon as I solve these problems.
 
 License
 -------

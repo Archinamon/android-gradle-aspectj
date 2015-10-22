@@ -91,11 +91,17 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             }
         }
 
-        // Forces Android Studio to recognize AspectJ folder as code
-        project.android.sourceSets {
-            main.java.srcDir('src/main/aspectj')
-            androidTest.java.srcDir('src/androidTest/aspectj')
-            test.java.srcDir('src/test/aspectj')
+        // Forces Android Studio to recognize AspectJ folder within flavors as code
+        def main = "main";
+        project.android.sourceSets.findByName(main).java.srcDir("src/$main/aspectj");
+        variants.all {
+            variant ->
+                def flavors = variant.productFlavors*.name;
+                def types = variant.buildType*.name;
+
+                [*flavors, *types].forEach {
+                    project.android.sourceSets.findByName("$it").java.srcDir("src/$it/aspectj");
+                };
         }
     }
 

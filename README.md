@@ -19,12 +19,14 @@ Usage
 
 First add a maven repo link into your `repositories` block of module build file:
 ```groovy
+mavenCentral()
 maven { url 'https://github.com/Archinamon/GradleAspectJ-Android/raw/master' }
 ```
+Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gradle module.
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:AspectJ-gradle:1.0.16'
+classpath 'com.archinamon:AspectJ-gradle:1.0.17'
 ```
 
 Apply the `aspectj` plugin:
@@ -40,11 +42,11 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
 
-privileged aspect AppAdvice {
+aspect AppStartNotifier {
 
-    pointcut preInit(): within(Application) && execution(* Application.onCreate());
+    pointcut postInit(): within(Application) && execution(* Application.onCreate());
 
-    after() returning: preInit() {
+    after() returning: postInit() {
         Application app = (Application) thisJoinPoint.getTarget();
         NotificationManager nmng = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
         nmng.notify(9999, new NotificationCompat.Builder(app).setTicker("Hello AspectJ")
@@ -58,6 +60,9 @@ privileged aspect AppAdvice {
 
 Changelog
 -------
+#### 1.0.17 -- Cleanup
+* removed unnecessary logging calls;
+* optimized ajc logging to provide more info about ongoing compilation;
 
 #### 1.0.16 -- New plugin routes
 * migrating from corp to personal routes within plugin name, classpath;
@@ -74,6 +79,12 @@ Changelog
 * configured properly compile-order for gradle-Retrolambda plugin;
 * added roots for preprocessing generated files (needed to support Dagger, etc.);
 * added MultiDex support;
+ 
+#### Known limitations
+* Plugin doesn't support direct speach into AspectJ code if project uses preprocessor (e.g. calling aspect class from java);
+* Incremental aj-compilation;
+
+All these limits are fighting on and I'll be glad to introduce new build as soon as I solve these problems.
 
 License
 -------

@@ -3,11 +3,13 @@ package com.archinamon
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
+import com.android.build.gradle.api.BaseVariant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 
@@ -15,30 +17,31 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        final def variants
-        final def plugin
+        final def plugin = project.plugins.findPlugin('android') as AppPlugin ?:
+                project.plugins.findPlugin('android-library') as LibraryPlugin;
+        def isLibraryPlugin = plugin.class.name.endsWith('.LibraryPlugin');
+        if (!plugin) {
+            throw new GradleException('You must apply the Android plugin or the Android library plugin')
+        }
 
-        try {
-            if (project.plugins.hasPlugin(AppPlugin)) {
-                variants = project.android.applicationVariants
-                plugin = project.plugins.getPlugin(AppPlugin)
-            } else if (project.plugins.hasPlugin(LibraryPlugin)) {
-                variants = project.android.libraryVariants
-                plugin = project.plugins.getPlugin(LibraryPlugin)
-            } else {
-                throw new GradleException("The 'com.android.application' or 'com.android.library' plugin is required.")
+        // Forces Android Studio to recognize AspectJ folder within flavors as code
+        def variants = isLibraryPlugin ? project.android.libraryVariants : project.android.applicationVariants as
+                DefaultDomainObjectSet<? extends BaseVariant>
+
+        project.android {
+            variants.all {
+                final def sets = project.android.sourceSets;
+                it.productFlavors*.name.each { sets.getByName(it).java.srcDir("src/$it/aspectj"); }
             }
-        } catch (Exception e) {
-            throw new GradleException(e.getMessage(), e.getCause());
-        }
 
-        project.repositories {
-            mavenCentral()
+            sourceSets {
+                main.java.srcDir('src/main/aspectj');
+                androidTest.java.srcDir('src/androidTest/aspectj');
+                test.java.srcDir('src/test/aspectj');
+            }
         }
-        project.dependencies {
-            compile 'org.aspectj:aspectjrt:1.8.+'
-        }
-
+        project.repositories { mavenCentral() }
+        project.dependencies { compile 'org.aspectj:aspectjrt:1.8.+' }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
 
@@ -62,20 +65,18 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                         description: 'Compiles AspectJ Source',
                         type: AspectjCompileTask) {} as AspectjCompileTask;
 
-                def final String srcDirs = ['androidTest', *flavors, *types].collect {"src/$it/aspectj"};
+                def final String[] srcDirs = ['androidTest', *flavors, *types].collect {"src/$it/aspectj"};
+                def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
+                def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
+
                 aspectjCompile.doFirst {
                     aspectpath = javaCompile.classpath
                     destinationDir = javaCompile.destinationDir
                     classpath = javaCompile.classpath
                     bootclasspath = bootClasspath.join(File.pathSeparator)
-                    sourceroots = javaCompile.source +
-                            new SimpleFileCollection(srcDirs.collect {project.file(it)}) +
-                            getAptBuildFilesRoot(project, variant).getAsFileTree();
-
-                    project.logger.warn sourceroots.collect {it.absolutePath}.join("; ");
+                    sourceroots = javaCompile.source + aspects + aptBuildFiles.getAsFileTree();
 
                     if (javaCompile.destinationDir.exists()) {
-
                         javaCompile.destinationDir.deleteDir()
                     }
 
@@ -92,13 +93,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     variant.javaCompile.finalizedBy(compileAspect);
                 }
             }
-        }
-
-        // Forces Android Studio to recognize AspectJ folder as code
-        project.android.sourceSets {
-            main.java.srcDir('src/main/aspectj')
-            androidTest.java.srcDir('src/androidTest/aspectj')
-            test.java.srcDir('src/test/aspectj')
         }
     }
 
@@ -120,7 +114,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             aptPathShift = "/generated/source/apt/$variantName";
         }
 
-        project.logger.warn(aptPathShift);
+        // project.logger.warn(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }
 }

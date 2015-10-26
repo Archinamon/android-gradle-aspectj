@@ -61,6 +61,8 @@ aspect AppStartNotifier {
 Changelog
 -------
 #### 1.0.17 -- Cleanup
+* !!IMPORTANT!! now corectly supports automatically indexing and attaching aspectj sources within any buildTypes and flavors;
+* workspace code refactored;
 * removed unnecessary logging calls;
 * optimized ajc logging to provide more info about ongoing compilation;
 

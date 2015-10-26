@@ -32,6 +32,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             variants.all {
                 final def sets = project.android.sourceSets;
                 it.productFlavors*.name.each { sets.getByName(it).java.srcDir("src/$it/aspectj"); }
+                it.buildType*.name.each { sets.getByName(it).java.srcDir("src/$it/aspectj"); }
             }
 
             sourceSets {

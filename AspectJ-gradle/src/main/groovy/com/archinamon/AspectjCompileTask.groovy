@@ -8,6 +8,9 @@ import org.gradle.api.GradleException
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.TaskAction
 
+import static com.archinamon.AndroidAspectJPlugin.getAjPath
+import static com.archinamon.AndroidAspectJPlugin.getVariants
+
 class AspectjCompileTask extends DefaultTask {
 
     FileCollection aspectpath
@@ -43,6 +46,16 @@ class AspectjCompileTask extends DefaultTask {
             it.asFileTrees.each {
                 sourceRoots << it.dir
             }
+        }
+
+        // preserve all buildTypes and flavors
+        getVariants(project).all {
+            final def Closure applier = {
+                File dir = new File(project.projectDir.absolutePath + File.separator + getAjPath(it));
+                if (dir.exists() && !sourceRoots.contains(dir)) sourceRoots << dir;
+            }
+            it.productFlavors*.name.each(applier);
+            it.buildType*.name.each(applier);
         }
 
         def String[] args = [

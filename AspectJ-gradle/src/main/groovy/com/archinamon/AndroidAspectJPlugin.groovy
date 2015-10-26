@@ -1,9 +1,9 @@
 // This plugin is based on https://github.com/JakeWharton/hugo
 package com.archinamon
-
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.api.BaseVariant
+import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -11,43 +11,50 @@ import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.file.collections.SimpleFileCollection
+import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 
 class AndroidAspectJPlugin implements Plugin<Project> {
 
+    private static def isLibraryPlugin = false;
+
     @Override
     void apply(Project project) {
-        final def plugin = project.plugins.findPlugin('android') as AppPlugin ?:
-                project.plugins.findPlugin('android-library') as LibraryPlugin;
-        def isLibraryPlugin = plugin.class.name.endsWith('.LibraryPlugin');
-        if (!plugin) {
+        final def plugin;
+
+        if (project.plugins.hasPlugin(AppPlugin)) {
+            plugin = project.plugins.getPlugin(AppPlugin);
+        } else if (project.plugins.hasPlugin(LibraryPlugin)) {
+            plugin = project.plugins.getPlugin(LibraryPlugin);
+            isLibraryPlugin = true;
+        } else {
             throw new GradleException('You must apply the Android plugin or the Android library plugin')
         }
 
-        // Forces Android Studio to recognize AspectJ folder within flavors as code
-        def variants = isLibraryPlugin ? project.android.libraryVariants : project.android.applicationVariants as
-                DefaultDomainObjectSet<? extends BaseVariant>
+        getVariants(project).all {
+            final def sets = project.android.sourceSets;
+            final def Closure applier = { applyVariantPreserver(sets, it); }
+            it.productFlavors*.name.each(applier);
+            it.buildType*.name.each(applier);
+        }
 
-        project.android {
-            variants.all {
-                final def sets = project.android.sourceSets;
-                it.productFlavors*.name.each { sets.getByName(it).java.srcDir("src/$it/aspectj"); }
-                it.buildType*.name.each { sets.getByName(it).java.srcDir("src/$it/aspectj"); }
-            }
-
-            sourceSets {
-                main.java.srcDir('src/main/aspectj');
-                androidTest.java.srcDir('src/androidTest/aspectj');
-                test.java.srcDir('src/test/aspectj');
-            }
+        project.android.sourceSets {
+            main.java.srcDir('src/main/aspectj');
+            androidTest.java.srcDir('src/androidTest/aspectj');
+            test.java.srcDir('src/test/aspectj');
         }
         project.repositories { mavenCentral() }
         project.dependencies { compile 'org.aspectj:aspectjrt:1.8.+' }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
 
-            variants.all { variant ->
-                JavaCompile javaCompile = variant.javaCompile
+            getVariants(project).all { variant ->
+                AbstractCompile javaCompiler = variant.javaCompiler
+                if (!javaCompiler instanceof JavaCompile)
+                    throw new CompilerException("AspectJ plugin doesn't support other java-compilers, only javac");
+
+                final def JavaCompile javaCompile = (JavaCompile) javaCompiler;
+
                 def bootClasspath
                 if (plugin.properties['runtimeJarList']) {
                     bootClasspath = plugin.runtimeJarList
@@ -75,7 +82,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     destinationDir = javaCompile.destinationDir
                     classpath = javaCompile.classpath
                     bootclasspath = bootClasspath.join(File.pathSeparator)
-                    sourceroots = javaCompile.source + aspects + aptBuildFiles.getAsFileTree();
+                    sourceroots = javaCompile.source + aspects + aptBuildFiles;
 
                     if (javaCompile.destinationDir.exists()) {
                         javaCompile.destinationDir.deleteDir()
@@ -117,5 +124,20 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         // project.logger.warn(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
+    }
+
+    private static def String applyVariantPreserver(sets, String dir) {
+        String path = getAjPath(dir);
+        sets.getByName(dir).java.srcDir(path);
+        return path;
+
+    }
+
+    static def DefaultDomainObjectSet<? extends BaseVariant> getVariants(Project project) {
+        isLibraryPlugin ? project.android.libraryVariants : project.android.applicationVariants;
+    }
+
+    static def String getAjPath(String dir) {
+        return "src/$dir/aspectj";
     }
 }

@@ -2,6 +2,8 @@
 
 A Gradle plugin which enables AspectJ for Android builds.
 Supports writing code with AspectJ-lang in `.aj` files which then builds into annotated java class.
+Full support of Android product flavors and build types.
+
 Compilation order:
 ```groovy
   if (hasRetrolambda)
@@ -84,7 +86,8 @@ Changelog
  
 #### Known limitations
 * Plugin doesn't support direct speach into AspectJ code if project uses preprocessor (e.g. calling aspect class from java);
-* Incremental aj-compilation;
+* No incremental aj-compilation;
+* Doesn't support gradle-experimental plugin;
 
 All these limits are fighting on and I'll be glad to introduce new build as soon as I solve these problems.
 

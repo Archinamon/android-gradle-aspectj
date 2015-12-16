@@ -17,6 +17,7 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
     compile 'com.android.tools.build:gradle:1.3.1'
+    compile "org.aspectj:aspectjrt:${aspectjVersion}"
     compile "org.aspectj:aspectjtools:${aspectjVersion}"
 
     testCompile 'junit:junit:4.10'

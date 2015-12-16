@@ -77,12 +77,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
                 def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
 
-                def File file = new File(project.buildDir, "ajc_dirs.log");
-                variant.variantData.extraGeneratedSourceFolders.each {
-                    file << it as String;
-                    file << "\n";
-                }
-
                 def AspectjCompileTask aspectjCompile = project.task(newTaskName,
                         overwrite: true,
                         group: 'build',

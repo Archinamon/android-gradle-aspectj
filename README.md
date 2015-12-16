@@ -28,12 +28,22 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:AspectJ-gradle:1.0.17'
+classpath 'com.archinamon:AspectJ-gradle:1.1.0'
 ```
 
 Apply the `aspectj` plugin:
 ```groovy
 apply plugin: 'com.archinamon.aspectj'
+```
+
+To tune logging and error processing just add an extension:
+```groovy
+aspectj {
+  weaveInfo true //turns on debug weaving information
+  ignoreErrors false //explicitly ignores all aspectJ errors, could break a build
+  addSerialVersionUID false //adds serialUID for Serializable interface inter-type injections
+  logFileName "ajc_details.log" //custom name of default weaveInfo file
+}
 ```
 
 Now you can write aspects using annotation style or native (even without IntelliJ IDEA Ultimate edition).
@@ -62,6 +72,14 @@ aspect AppStartNotifier {
 
 Changelog
 -------
+#### 1.1.0 -- Refactoring
+* includes all previous progress;
+* updated aspectjtools and aspectjrt to 1.8.7 version;
+* now has extension configuration;
+* all logging moved to the separate file in `app/build/ajc_details.log`;
+* logging, log file name, error ignoring now could be tuned within the extension;
+* more complex and correct way to detect and inject source sets for flavors, buildTypes, etc;
+
 #### 1.0.17 -- Cleanup
 * !!IMPORTANT!! now corectly supports automatically indexing and attaching aspectj sources within any buildTypes and flavors;
 * workspace code refactored;

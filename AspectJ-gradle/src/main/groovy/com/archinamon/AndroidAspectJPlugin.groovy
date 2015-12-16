@@ -1,5 +1,6 @@
 // This plugin is based on https://github.com/JakeWharton/hugo
-package com.archinamon
+package com.archinamon;
+
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.api.BaseVariant
@@ -21,6 +22,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         final def plugin;
+        final AndroidAspectJExtension params;
 
         if (project.plugins.hasPlugin(AppPlugin)) {
             plugin = project.plugins.getPlugin(AppPlugin);
@@ -30,6 +32,9 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         } else {
             throw new GradleException('You must apply the Android plugin or the Android library plugin')
         }
+
+        params = project.extensions.findByType(AndroidAspectJExtension) ?:
+                project.extensions.create('aspectj', AndroidAspectJExtension);
 
         getVariants(project).all {
             final def sets = project.android.sourceSets;
@@ -44,11 +49,12 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             test.java.srcDir('src/test/aspectj');
         }
         project.repositories { mavenCentral() }
-        project.dependencies { compile 'org.aspectj:aspectjrt:1.8.+' }
+        project.logger.info "ajc version: $params.ajcVersion";
+        project.dependencies { compile "org.aspectj:aspectjrt:$params.ajcVersion" }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
 
-            getVariants(project).all { variant ->
+            getVariants(project).all { BaseVariant variant ->
                 AbstractCompile javaCompiler = variant.javaCompiler
                 if (!javaCompiler instanceof JavaCompile)
                     throw new CompilerException("AspectJ plugin doesn't support other java-compilers, only javac");
@@ -68,27 +74,54 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 def variantName = variant.name.capitalize()
                 def newTaskName = "compile${variantName}Aspectj"
 
-                def AspectjCompileTask aspectjCompile = project.task(newTaskName,
-                        overwrite: true,
-                        description: 'Compiles AspectJ Source',
-                        type: AspectjCompileTask) {} as AspectjCompileTask;
-
                 def final String[] srcDirs = ['androidTest', *flavors, *types].collect {"src/$it/aspectj"};
                 def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
                 def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
 
-                aspectjCompile.doFirst {
-                    aspectpath = javaCompile.classpath
-                    destinationDir = javaCompile.destinationDir
-                    classpath = javaCompile.classpath
-                    bootclasspath = bootClasspath.join(File.pathSeparator)
-                    sourceroots = javaCompile.source + aspects + aptBuildFiles;
+                def File file = new File(project.buildDir, "ajc_dirs.log");
+                variant.variantData.extraGeneratedSourceFolders.each {
+                    file << it as String;
+                    file << "\n";
+                }
 
+                def AspectjCompileTask aspectjCompile = project.task(newTaskName,
+                        overwrite: true,
+                        group: 'build',
+                        description: 'Compiles AspectJ Source',
+                        type: AspectjCompileTask) as AspectjCompileTask;
+
+                aspectjCompile.configure {
+                    def self = aspectjCompile;
+
+                    self.sourceCompatibility = javaCompile.sourceCompatibility
+                    self.targetCompatibility = javaCompile.targetCompatibility
+                    self.encoding = javaCompile.options.encoding
+
+                    self.aspectPath = javaCompile.classpath
+                    self.destinationDir = javaCompile.destinationDir
+                    self.classpath = javaCompile.classpath
+                    self.bootClasspath = bootClasspath.join(File.pathSeparator)
+                    self.source = javaCompile.source + aspects + aptBuildFiles;
+
+                    //extension params
+                    self.logFile = params.logFileName;
+                    self.weaveInfo = params.weaveInfo;
+                    self.ignoreErrors = params.ignoreErrors;
+                    self.addSerialVUID = params.addSerialVersionUID;
+                }
+
+                aspectjCompile.doFirst {
                     if (javaCompile.destinationDir.exists()) {
                         javaCompile.destinationDir.deleteDir()
                     }
 
                     javaCompile.destinationDir.mkdirs()
+                }
+
+                // uPhyca's fix
+                // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run
+                javaCompile.doLast {
+                    aspectjCompile.classpath = javaCompile.classpath
                 }
 
                 def compileAspect = project.tasks.getByName(newTaskName) as Task;
@@ -98,7 +131,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     def Task retrolambdaTask = project.tasks["compileRetrolambda$variantName"];
                     retrolambdaTask.dependsOn(compileAspect);
                 } else {
-                    variant.javaCompile.finalizedBy(compileAspect);
+                    variant.javaCompiler.finalizedBy(compileAspect);
                 }
             }
         }

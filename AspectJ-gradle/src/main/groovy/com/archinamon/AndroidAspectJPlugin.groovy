@@ -33,8 +33,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             throw new GradleException('You must apply the Android plugin or the Android library plugin')
         }
 
-        params = project.extensions.findByType(AndroidAspectJExtension) ?:
-                project.extensions.create('aspectj', AndroidAspectJExtension);
+        params = project.extensions.create('aspectj', AndroidAspectJExtension);
 
         getVariants(project).all {
             final def sets = project.android.sourceSets;
@@ -48,9 +47,9 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             androidTest.java.srcDir('src/androidTest/aspectj');
             test.java.srcDir('src/test/aspectj');
         }
+
         project.repositories { mavenCentral() }
-        project.logger.info "ajc version: $params.ajcVersion";
-        project.dependencies { compile "org.aspectj:aspectjrt:$params.ajcVersion" }
+        project.dependencies { compile "org.aspectj:aspectjrt:1.8.7" }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
 

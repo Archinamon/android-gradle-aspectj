@@ -73,6 +73,10 @@ aspect AppStartNotifier {
 
 Changelog
 -------
+#### 1.1.1 -- Updating kernel
+* AspectJ-runtime module has been updated to the newest 1.8.8 version;
+* fixed plugin test;
+
 #### 1.1.0 -- Refactoring
 * includes all previous progress;
 * updated aspectjtools and aspectjrt to 1.8.7 version;

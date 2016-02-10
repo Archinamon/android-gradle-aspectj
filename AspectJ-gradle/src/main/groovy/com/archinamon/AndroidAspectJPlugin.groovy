@@ -49,7 +49,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
 
         project.repositories { mavenCentral() }
-        project.dependencies { compile "org.aspectj:aspectjrt:1.8.7" }
+        project.dependencies { compile "org.aspectj:aspectjrt:1.8.8" }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
 
@@ -117,14 +117,14 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     aspectjCompile.classpath = javaCompile.classpath
                 }
 
-                def compileAspect = project.tasks.getByName(newTaskName) as Task;
+                def compileAspectTask = project.tasks.getByName(newTaskName) as Task;
 
                 // fix to support Retrolambda plugin
                 if (hasRetrolambda) {
                     def Task retrolambdaTask = project.tasks["compileRetrolambda$variantName"];
-                    retrolambdaTask.dependsOn(compileAspect);
+                    retrolambdaTask.dependsOn(compileAspectTask);
                 } else {
-                    variant.javaCompiler.finalizedBy(compileAspect);
+                    variant.javaCompiler.finalizedBy(compileAspectTask);
                 }
             }
         }

@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.archinamon</groupId>
   <artifactId>AspectJ-gradle</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -15,7 +15,13 @@
     <dependency>
       <groupId>org.aspectj</groupId>
       <artifactId>aspectjrt</artifactId>
-      <version>1.8.7</version>
+      <version>1.8.8</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.aspectj</groupId>
+      <artifactId>aspectjtools</artifactId>
+      <version>1.8.8</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -29,12 +35,6 @@
       <artifactId>fest-assert-core</artifactId>
       <version>2.0M10</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.aspectj</groupId>
-      <artifactId>aspectjtools</artifactId>
-      <version>1.8.7</version>
-      <scope>compile</scope>
     </dependency>
   </dependencies>
 </project>

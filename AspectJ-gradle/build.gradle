@@ -5,7 +5,7 @@ targetCompatibility = JavaVersion.VERSION_1_6
 sourceCompatibility = JavaVersion.VERSION_1_6
 
 project.ext {
-    aspectjVersion = '1.8.7'
+    aspectjVersion = '1.8.8'
 }
 
 dependencies {
@@ -25,7 +25,7 @@ dependencies {
 }
 
 group = 'com.archinamon'
-version = '1.1.0'
+version = '1.1.1'
 
 uploadArchives {
     repositories {

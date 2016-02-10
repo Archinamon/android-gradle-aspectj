@@ -9,19 +9,19 @@ class AndroidAspectJPluginTest {
     public void pluginDetectsAppPlugin() {
         Project project = ProjectBuilder.builder().build();
         project.apply plugin: 'com.android.application'
-        project.apply plugin: 'android-aspectj'
+        project.apply plugin: 'com.archinamon.aspectj'
     }
 
     @Test
     public void pluginDetectsLibraryPlugin() {
         Project project = ProjectBuilder.builder().build();
         project.apply plugin: 'com.android.library'
-        project.apply plugin: 'android-aspectj'
+        project.apply plugin: 'com.archinamon.aspectj'
     }
 
     @Test(expected = GradleException)
     public void pluginFailsWithoutAndroidPlugin() {
         Project project = ProjectBuilder.builder().build();
-        project.apply plugin: 'android-aspectj'
+        project.apply plugin: 'com.archinamon.aspectj'
     }
 }

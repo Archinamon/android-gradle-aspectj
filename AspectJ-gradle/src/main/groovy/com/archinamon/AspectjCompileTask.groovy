@@ -4,6 +4,7 @@ import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
 import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -162,14 +163,14 @@ class AspectjCompileTask extends AbstractCompile {
         def sourceRoots = []
         source.sourceCollections.each {
             it.asFileTrees.each {
-                sourceRoots << it.dir;
+                if ((it.dir as File).exists()) sourceRoots << it.dir
             }
         }
 
         // preserve all buildTypes and flavors
         getVariants(project).all {
             final def Closure applier = {
-                File dir = new File(project.projectDir.absolutePath + File.separator + getAjPath(it));
+                File dir = getFile(project, it as String);
                 if (dir.exists() && !sourceRoots.contains(dir)) sourceRoots << dir;
             }
             it.productFlavors*.name.each(applier);
@@ -177,5 +178,9 @@ class AspectjCompileTask extends AbstractCompile {
         }
 
         return sourceRoots;
+    }
+
+    def static File getFile(Project project, String path) {
+        return new File(project.projectDir.absolutePath + File.separator + getAjPath(path));
     }
 }

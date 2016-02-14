@@ -73,6 +73,10 @@ aspect AppStartNotifier {
 
 Changelog
 -------
+#### 1.1.2 -- Gradle Instant-run
+* now supports gradle-2.0.0-beta plugin and friendly with slicer task;
+* fixed errors within collecting source folders;
+
 #### 1.1.1 -- Updating kernel
 * AspectJ-runtime module has been updated to the newest 1.8.8 version;
 * fixed plugin test;

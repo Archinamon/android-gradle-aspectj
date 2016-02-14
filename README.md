@@ -29,7 +29,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:AspectJ-gradle:1.1.0'
+classpath 'com.archinamon:AspectJ-gradle:1.1.2'
 ```
 
 Apply the `aspectj` plugin:

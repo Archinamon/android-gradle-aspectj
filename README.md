@@ -77,6 +77,9 @@ Correct tuning will depends on your own usage of aspect classes. So if you decla
 
 Basic rules you'll need to declare for your project:
 ```
+-adaptclassstrings
+-keepattributes InnerClasses, EnclosingMethod, Signature, *Annotation*
+
 -keepnames @org.aspectj.lang.annotation.Aspect class * {
     ajc* <methods>;
 }

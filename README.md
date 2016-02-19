@@ -71,6 +71,26 @@ aspect AppStartNotifier {
 }
 ```
 
+ProGuard
+-------
+Correct tuning will depends on your own usage of aspect classes. So if you declares inter-type injections you'll have to predict side-effects and define your annotations/interfaces which you inject into java classes/methods/etc. in proguard config.
+
+Basic rules you'll need to declare for your project:
+```
+-keepnames @org.aspectj.lang.annotation.Aspect class * {
+    ajc* <methods>;
+}
+```
+
+If you will face problems with lambda factories, you may need to explicitely suppress them. That could happen not in aspect classes but in any arbitrary java-class if you're using Retrolambda.
+So concrete rule is:
+```
+-keep class *$Lambda* { <methods>; }
+-keepclassmembernames public class * {
+    *** lambda*(...);
+}
+```
+
 Changelog
 -------
 #### 1.1.2 -- Gradle Instant-run

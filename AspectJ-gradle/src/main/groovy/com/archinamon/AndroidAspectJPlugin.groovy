@@ -1,4 +1,3 @@
-// This plugin is based on https://github.com/JakeWharton/hugo
 package com.archinamon;
 
 import com.android.build.gradle.AppPlugin
@@ -37,7 +36,11 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         getVariants(project).all {
             final def sets = project.android.sourceSets;
-            final def Closure applier = { applyVariantPreserver(sets, it); }
+            final def Closure applier = {
+                //noinspection GroovyAssignabilityCheck
+                applyVariantPreserver(sets, it);
+            }
+
             it.productFlavors*.name.each(applier);
             it.buildType*.name.each(applier);
         }
@@ -95,20 +98,28 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     self.classpath = javaCompile.classpath
                     self.bootClasspath = bootClasspath.join(File.pathSeparator)
                     self.source = javaCompile.source + aspects + aptBuildFiles;
+                    self.binaryWeavePath << javaCompile.destinationDir.path
 
                     //extension params
+                    self.binaryWeave = params.binaryWeave;
                     self.logFile = params.logFileName;
                     self.weaveInfo = params.weaveInfo;
                     self.ignoreErrors = params.ignoreErrors;
                     self.addSerialVUID = params.addSerialVersionUID;
+                    self.interruptOnWarnings = params.interruptOnWarnings;
+                    self.interruptOnErrors = params.interruptOnErrors;
+                    self.interruptOnFails = params.interruptOnFails;
                 }
 
                 aspectjCompile.doFirst {
-                    if (javaCompile.destinationDir.exists()) {
-                        javaCompile.destinationDir.deleteDir()
+                    if (binaryWeave) {
+                        String buildPath = javaCompile.destinationDir.absolutePath;
+                        if (!params.binaryWeaveRoots.empty) binaryWeavePath << packagesToDirs(buildPath, params.binaryWeaveRoots);
+                        if (!params.excludeBuildPath) {
+                            //we implicitly include all built bytecode files to the weaver
+                            aspectjCompile.binaryWeavePath << buildPath;
+                        }
                     }
-
-                    javaCompile.destinationDir.mkdirs()
                 }
 
                 // uPhyca's fix
@@ -118,20 +129,30 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 }
 
                 def compileAspectTask = project.tasks.getByName(newTaskName) as Task;
-
-                // fix to support Retrolambda plugin
+                // we should run after every other previous compilers;
                 if (hasRetrolambda) {
-                    def Task retrolambdaTask = project.tasks["compileRetrolambda$variantName"];
-                    retrolambdaTask.dependsOn(compileAspectTask);
-                } else {
-                    variant.javaCompiler.finalizedBy(compileAspectTask);
+                    def Task retrolambda = project.tasks["compileRetrolambda$variantName"];
+                    retrolambda.dependsOn compileAspectTask;
                 }
+
+                //apply behavior
+                project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
             }
         }
     }
 
+    def private static packagesToDirs(String buildPath, String[] packages) {
+        String[] paths = [];
+        packages.each { _package ->
+            String strPath = _package.replace(".", File.separator);
+            paths << (buildPath + strPath);
+        }
+
+        return paths;
+    }
+
     // fix to support Android Pre-processing Tools plugin
-    private static def FileCollection getAptBuildFilesRoot(Project project, variant) {
+    def private static getAptBuildFilesRoot(Project project, variant) {
         def final aptPathShift;
         def final variantName = variant.name as String;
         def String[] types = variantName.split("(?=\\p{Upper})");
@@ -152,18 +173,18 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }
 
-    private static def String applyVariantPreserver(sets, String dir) {
+    def private static applyVariantPreserver(def sets, String dir) {
         String path = getAjPath(dir);
         sets.getByName(dir).java.srcDir(path);
         return path;
 
     }
 
-    static def DefaultDomainObjectSet<? extends BaseVariant> getVariants(Project project) {
+    def static DefaultDomainObjectSet<? extends BaseVariant> getVariants(Project project) {
         isLibraryPlugin ? project.android.libraryVariants : project.android.applicationVariants;
     }
 
-    static def String getAjPath(String dir) {
+    def static getAjPath(String dir) {
         return "src/$dir/aspectj";
     }
 }

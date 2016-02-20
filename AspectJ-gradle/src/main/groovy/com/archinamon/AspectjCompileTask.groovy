@@ -8,6 +8,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
 
@@ -18,12 +19,19 @@ class AspectjCompileTask extends AbstractCompile {
 
     private String logFile;
     private String encoding;
+
+    private boolean binaryWeave;
     private boolean weaveInfo;
     private boolean addSerialVUID;
     private boolean ignoreErrors;
 
+    private boolean interruptOnWarnings;
+    private boolean interruptOnErrors;
+    private boolean interruptOnFails;
+
     private FileCollection aspectPath;
     private String bootClasspath;
+    def private binaryWeavePath = [];
 
     @Override
     @TaskAction
@@ -53,12 +61,15 @@ class AspectjCompileTask extends AbstractCompile {
                 "-encoding", getEncoding(),
                 "-source", getSourceCompatibility(),
                 "-target", getTargetCompatibility(),
-                "-inpath", destinationDir.absolutePath,
                 "-d", destinationDir.absolutePath,
                 "-classpath", classpath.asPath,
                 "-bootclasspath", bootClasspath,
                 "-sourceroots", sourceRoots.join(File.pathSeparator)
         ];
+
+        if (getBinaryWeave()) {
+            args << "-inpath" << binaryWeavePath.join(File.pathSeparator);
+        }
 
         if (getWeaveInfo()) {
             args << "-showWeaveInfo";
@@ -82,15 +93,19 @@ class AspectjCompileTask extends AbstractCompile {
         new Main().run(args as String[], handler);
         for (IMessage message : handler.getMessages(null, true)) {
             switch (message.getKind()) {
-                case IMessage.ABORT:
                 case IMessage.ERROR:
-                case IMessage.FAIL:
                     log.error message.message, message.thrown
-                    throw new GradleException(message.message, message.thrown)
+                    if (interruptOnErrors) throw new StopExecutionException(message.message);
+                    break;
+                case IMessage.FAIL:
+                case IMessage.ABORT:
+                    log.error message.message, message.thrown
+                    throw new StopExecutionException(message.message);
                 case IMessage.INFO:
                 case IMessage.DEBUG:
                 case IMessage.WARNING:
                     log.warn message.message, message.thrown
+                    if (interruptOnWarnings) throw new StopExecutionException(message.message);
                     break;
             }
         }
@@ -112,6 +127,15 @@ class AspectjCompileTask extends AbstractCompile {
 
     void setEncoding(String encoding) {
         this.encoding = encoding
+    }
+
+    @Input
+    boolean getBinaryWeave() {
+        return binaryWeave;
+    }
+
+    void setBinaryWeave(boolean val) {
+        this.binaryWeave = val;
     }
 
     @Input
@@ -141,6 +165,33 @@ class AspectjCompileTask extends AbstractCompile {
         this.addSerialVUID = val;
     }
 
+    @Input
+    boolean getInterruptOnWarnings() {
+        return interruptOnWarnings;
+    }
+
+    void setInterruptOnWarnings(boolean val) {
+        this.interruptOnWarnings = val;
+    }
+
+    @Input
+    boolean getInterruptOnFails() {
+        return interruptOnFails;
+    }
+
+    void setInterruptOnFails(boolean val) {
+        this.interruptOnFails = val;
+    }
+
+    @Input
+    boolean getInterruptOnErrors() {
+        return interruptOnErrors;
+    }
+
+    void setInterruptOnErrors(boolean val) {
+        this.interruptOnErrors = val;
+    }
+
     @InputFiles
     FileCollection getAspectPath() {
         return aspectPath
@@ -157,6 +208,15 @@ class AspectjCompileTask extends AbstractCompile {
 
     void setBootClasspath(String bootclasspath) {
         this.bootClasspath = bootclasspath
+    }
+
+    @InputFiles
+    def getBinaryWeavePath() {
+        return binaryWeavePath
+    }
+
+    void setBinaryWeavePath(String aspectpath) {
+        this.binaryWeavePath << aspectpath
     }
 
     File[] getSourceRoots() {

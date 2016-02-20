@@ -16,7 +16,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 
 class AndroidAspectJPlugin implements Plugin<Project> {
 
-    private static def isLibraryPlugin = false;
+    def private static isLibraryPlugin = false;
 
     @Override
     void apply(Project project) {
@@ -34,15 +34,15 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         params = project.extensions.create('aspectj', AndroidAspectJExtension);
 
-        getVariants(project).all {
+        getVariants(project).all { BaseVariant variant ->
             final def sets = project.android.sourceSets;
             final def Closure applier = {
                 //noinspection GroovyAssignabilityCheck
                 applyVariantPreserver(sets, it);
             }
 
-            it.productFlavors*.name.each(applier);
-            it.buildType*.name.each(applier);
+            variant.productFlavors*.name.each(applier);
+            variant.buildType*.name.each(applier);
         }
 
         project.android.sourceSets {
@@ -113,7 +113,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
                 aspectjCompile.doFirst {
                     if (binaryWeave) {
-                        String buildPath = javaCompile.destinationDir.absolutePath;
+                        def final buildPath = javaCompile.destinationDir.absolutePath;
                         if (!params.binaryWeaveRoots.empty) packagesToDirs(buildPath, params.binaryWeaveRoots).each {setBinaryWeavePath(it)}
                         if (!params.excludeBuildPath) {
                             //we implicitly include all built bytecode files to the weaver

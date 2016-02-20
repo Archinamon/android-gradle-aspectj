@@ -114,10 +114,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 aspectjCompile.doFirst {
                     if (binaryWeave) {
                         String buildPath = javaCompile.destinationDir.absolutePath;
-                        if (!params.binaryWeaveRoots.empty) binaryWeavePath << packagesToDirs(buildPath, params.binaryWeaveRoots);
+                        if (!params.binaryWeaveRoots.empty) packagesToDirs(buildPath, params.binaryWeaveRoots).each {setBinaryWeavePath(it)}
                         if (!params.excludeBuildPath) {
                             //we implicitly include all built bytecode files to the weaver
-                            aspectjCompile.binaryWeavePath << buildPath;
+                            setBinaryWeavePath(buildPath);
                         }
                     }
                 }

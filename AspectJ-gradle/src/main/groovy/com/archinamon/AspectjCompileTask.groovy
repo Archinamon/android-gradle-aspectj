@@ -3,7 +3,6 @@ package com.archinamon
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
@@ -95,7 +94,7 @@ class AspectjCompileTask extends AbstractCompile {
             switch (message.getKind()) {
                 case IMessage.ERROR:
                     log.error message.message, message.thrown
-                    if (interruptOnErrors) throw new StopExecutionException(message.message);
+                    if (getInterruptOnErrors()) throw new StopExecutionException(message.message);
                     break;
                 case IMessage.FAIL:
                 case IMessage.ABORT:
@@ -105,7 +104,7 @@ class AspectjCompileTask extends AbstractCompile {
                 case IMessage.DEBUG:
                 case IMessage.WARNING:
                     log.warn message.message, message.thrown
-                    if (interruptOnWarnings) throw new StopExecutionException(message.message);
+                    if (getInterruptOnWarnings()) throw new StopExecutionException(message.message);
                     break;
             }
         }
@@ -172,11 +171,6 @@ class AspectjCompileTask extends AbstractCompile {
 
     void setInterruptOnWarnings(boolean val) {
         this.interruptOnWarnings = val;
-    }
-
-    @Input
-    boolean getInterruptOnFails() {
-        return interruptOnFails;
     }
 
     void setInterruptOnFails(boolean val) {

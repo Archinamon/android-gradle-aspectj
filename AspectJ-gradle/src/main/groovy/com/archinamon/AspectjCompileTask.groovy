@@ -1,5 +1,6 @@
 package com.archinamon
 
+import com.android.build.gradle.api.BaseVariant
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
@@ -56,7 +57,6 @@ class AspectjCompileTask extends AbstractCompile {
         //  Preserve all local variables during code generation (to facilitate debugging).
 
         def args = [
-                "-log", getLogFile(),
                 "-encoding", getEncoding(),
                 "-source", getSourceCompatibility(),
                 "-target", getTargetCompatibility(),
@@ -66,8 +66,12 @@ class AspectjCompileTask extends AbstractCompile {
                 "-sourceroots", sourceRoots.join(File.pathSeparator)
         ];
 
+        if (getLogFile() != null) {
+            args << "-log" << getLogFile();
+        }
+
         if (getBinaryWeave()) {
-            args << "-inpath" << binaryWeavePath.join(File.pathSeparator);
+            args << "-inpath" << getBinaryWeavePath().join(File.pathSeparator);
         }
 
         if (getWeaveInfo()) {
@@ -116,7 +120,8 @@ class AspectjCompileTask extends AbstractCompile {
     }
 
     void setLogFile(String name) {
-        this.logFile = project.buildDir.absolutePath + File.separator + name;
+        if (name != null && name.length() > 0)
+            this.logFile = project.buildDir.absolutePath + File.separator + name;
     }
 
     @Input
@@ -209,26 +214,27 @@ class AspectjCompileTask extends AbstractCompile {
         return binaryWeavePath
     }
 
-    void setBinaryWeavePath(String aspectpath) {
-        this.binaryWeavePath << aspectpath
+    void setBinaryWeavePath(String inpath) {
+        if (new File(inpath).exists())
+            this.binaryWeavePath << inpath;
     }
 
     File[] getSourceRoots() {
         def sourceRoots = []
         source.sourceCollections.each {
             it.asFileTrees.each {
-                if ((it.dir as File).exists()) sourceRoots << it.dir
+                if ((it.dir as File).exists()) sourceRoots << it.dir;
             }
         }
 
         // preserve all buildTypes and flavors
-        getVariants(project).all {
-            final def Closure applier = {
-                File dir = getFile(project, it as String);
+        getVariants(project).all { BaseVariant variant ->
+            final def Closure applier = { String name ->
+                File dir = getFile(project, name);
                 if (dir.exists() && !sourceRoots.contains(dir)) sourceRoots << dir;
             }
-            it.productFlavors*.name.each(applier);
-            it.buildType*.name.each(applier);
+            variant.productFlavors*.name.each(applier);
+            variant.buildType*.name.each(applier);
         }
 
         return sourceRoots;

@@ -1,8 +1,12 @@
-package com.archinamon;
+package com.archinamon
 
 import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.internal.VariantManager
+import com.android.build.gradle.internal.variant.BaseVariantData
+import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
@@ -13,6 +17,10 @@ import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
+
+import static com.archinamon.FilesProcessor.collectAj
+import static com.archinamon.FilesProcessor.collectBinary
+import static com.archinamon.FilesProcessor.outterJoin
 
 class AndroidAspectJPlugin implements Plugin<Project> {
 
@@ -36,9 +44,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         getVariants(project).all { BaseVariant variant ->
             final def sets = project.android.sourceSets;
-            final def Closure applier = {
-                //noinspection GroovyAssignabilityCheck
-                applyVariantPreserver(sets, it);
+            final def Closure applier = { String name ->
+                applyVariantPreserver(sets, name);
             }
 
             variant.productFlavors*.name.each(applier);
@@ -55,8 +62,11 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         project.dependencies { compile "org.aspectj:aspectjrt:1.8.8" }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
+            final VariantManager manager = getVariantManager(plugin as BasePlugin);
 
             getVariants(project).all { BaseVariant variant ->
+                BaseVariantData<? extends BaseVariantOutputData> data = manager.variantDataList.find { findVarData(it, variant); }
+
                 AbstractCompile javaCompiler = variant.javaCompiler
                 if (!javaCompiler instanceof JavaCompile)
                     throw new CompilerException("AspectJ plugin doesn't support other java-compilers, only javac");
@@ -98,7 +108,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     self.classpath = javaCompile.classpath
                     self.bootClasspath = bootClasspath.join(File.pathSeparator)
                     self.source = javaCompile.source + aspects + aptBuildFiles;
-                    self.binaryWeavePath << javaCompile.destinationDir.path
 
                     //extension params
                     self.binaryWeave = params.binaryWeave;
@@ -113,11 +122,24 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
                 aspectjCompile.doFirst {
                     if (binaryWeave) {
-                        def final buildPath = javaCompile.destinationDir.absolutePath;
-                        if (!params.binaryWeaveRoots.empty) packagesToDirs(buildPath, params.binaryWeaveRoots).each {setBinaryWeavePath(it)}
+                        def final buildPath = data.scope.javaOutputDir.absolutePath;
+
+                        if (!params.binaryWeaveRoots.empty) {
+                            params.binaryWeaveRoots.each { String pkg ->
+                                setBinaryWeavePath concat(buildPath, pkg)
+                            }
+                        }
+
                         if (!params.excludeBuildPath) {
+                            def Set ajFilesList = [];
+                            collectAjSources(project.projectDir, variant).each {
+                                ajFilesList.addAll(collectAj(it as String));
+                            }
+
                             //we implicitly include all built bytecode files to the weaver
-                            setBinaryWeavePath(buildPath);
+                            outterJoin(collectBinary(buildPath), ajFilesList).each { File f ->
+                                setBinaryWeavePath(f.absolutePath);
+                            }
                         }
                     }
                 }
@@ -141,14 +163,13 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
     }
 
-    def private static packagesToDirs(String buildPath, String[] packages) {
-        String[] paths = [];
-        packages.each { _package ->
-            String strPath = _package.replace(".", File.separator);
-            paths << (buildPath + strPath);
-        }
+    private static VariantManager getVariantManager(BasePlugin plugin) {
+        return plugin.variantManager;
+    }
 
-        return paths;
+    def private static concat(String buildPath, String _package) {
+        String strPath = _package.replace(".", File.separator);
+        return(buildPath + "/$strPath");
     }
 
     // fix to support Android Pre-processing Tools plugin
@@ -186,5 +207,22 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
     def static getAjPath(String dir) {
         return "src/$dir/aspectj";
+    }
+
+    def static collectAjSources(File dir, BaseVariant variant) {
+        def list = [];
+        list << (dir.absolutePath + "/${getAjPath("main")}");
+        list << (dir.absolutePath + "/${getAjPath(variant.dirName)}");
+
+        def result = [];
+        list.each {
+            if (new File(it as String).exists()) result << it;
+        }
+
+        return result;
+    }
+
+    def private static findVarData(def variantData, def variant) {
+        return variantData.name.equals(variant.name);
     }
 }

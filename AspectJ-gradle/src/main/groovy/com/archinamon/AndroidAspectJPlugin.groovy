@@ -121,9 +121,9 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 }
 
                 aspectjCompile.doFirst {
-                    if (binaryWeave) {
-                        def final buildPath = data.scope.javaOutputDir.absolutePath;
+                    def final buildPath = data.scope.javaOutputDir.absolutePath;
 
+                    if (binaryWeave) {
                         if (!params.binaryWeaveRoots.empty) {
                             params.binaryWeaveRoots.each { String pkg ->
                                 setBinaryWeavePath concat(buildPath, pkg)
@@ -131,16 +131,24 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                         }
 
                         if (!params.excludeBuildPath) {
-                            def Set ajFilesList = [];
-                            collectAjSources(project.projectDir, variant).each {
-                                ajFilesList.addAll(collectAj(it as String));
-                            }
-
-                            //we implicitly include all built bytecode files to the weaver
-                            outterJoin(collectBinary(buildPath), ajFilesList).each { File f ->
-                                setBinaryWeavePath(f.absolutePath);
-                            }
+//                            def Set ajFilesList = [];
+//                            collectAjSources(project.projectDir, variant).each {
+//                                ajFilesList.addAll(collectAj(it as String));
+//                            }
+//
+//                            //we implicitly include all built bytecode files to the weaver
+//                            outterJoin(collectBinary(buildPath), ajFilesList).each { File f ->
+//                                setBinaryWeavePath(f.absolutePath);
+//                            }
+                            setBinaryWeavePath(buildPath);
                         }
+                    } else {
+                        def buildDir = new File(buildPath);
+                        if (buildDir.exists()) {
+                            buildDir.delete();
+                        }
+
+                        buildDir.mkdirs();
                     }
                 }
 

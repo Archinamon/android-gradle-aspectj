@@ -86,7 +86,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 def variantName = variant.name.capitalize()
                 def newTaskName = "compile${variantName}Aspectj"
 
-                def final String[] srcDirs = ['androidTest', *flavors, *types].collect {"src/$it/aspectj"};
+                def final String[] srcDirs = ['androidTest', variant.buildType.name, *flavors].collect {"src/$it/aspectj"};
                 def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
                 def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
 
@@ -182,24 +182,27 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
     // fix to support Android Pre-processing Tools plugin
     def private static getAptBuildFilesRoot(Project project, variant) {
-        def final aptPathShift;
         def final variantName = variant.name as String;
+        def final aptPathShift = "/generated/source/apt/${getSourcePath(variantName)}/";
+
+        // project.logger.warn(aptPathShift);
+        return project.files(project.buildDir.path + aptPathShift) as FileCollection;
+    }
+
+    def private static getSourcePath(String variantName) {
         def String[] types = variantName.split("(?=\\p{Upper})");
         if (types.length > 0 && types.length < 3) {
             def additionalPathShift = "";
-            types.each { String type -> additionalPathShift += type.toLowerCase() + "/" };
-            aptPathShift = "/generated/source/apt/$additionalPathShift";
+            types.each { String type -> additionalPathShift += "${type.toLowerCase()}/" }
+            return additionalPathShift;
         } else if (types.length > 2) {
             def buildType = types.last().toLowerCase();
             def String flavor = "";
             types.eachWithIndex { elem, idx -> if (idx != types.length - 1) flavor += elem.toLowerCase(); };
-            aptPathShift = "/generated/source/apt/$flavor/$buildType";
+            return "$flavor/$buildType";
         } else {
-            aptPathShift = "/generated/source/apt/$variantName";
+            return variantName;
         }
-
-        // project.logger.warn(aptPathShift);
-        return project.files(project.buildDir.path + aptPathShift) as FileCollection;
     }
 
     def private static applyVariantPreserver(def sets, String dir) {

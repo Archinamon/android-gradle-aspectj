@@ -227,15 +227,15 @@ class AspectjCompileTask extends AbstractCompile {
             }
         }
 
-        // preserve all buildTypes and flavors
-        getVariants(project).all { BaseVariant variant ->
-            final def Closure applier = { String name ->
-                File dir = getFile(project, name);
-                if (dir.exists() && !sourceRoots.contains(dir)) sourceRoots << dir;
-            }
-            variant.productFlavors*.name.each(applier);
-            variant.buildType*.name.each(applier);
-        }
+        // preserve current buildType and flavors
+//        getVariants(project).all { BaseVariant variant ->
+//            final def Closure applier = { String name ->
+//                File dir = getFile(project, name);
+//                if (dir.exists() && !sourceRoots.contains(dir)) sourceRoots << dir;
+//            }
+//            variant.productFlavors*.name.each(applier);
+//            variant.buildType*.name.each(applier);
+//        }
 
         return sourceRoots;
     }

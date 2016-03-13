@@ -59,7 +59,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
 
         project.repositories { mavenCentral() }
-        project.dependencies { compile "org.aspectj:aspectjrt:1.8.8" }
+        project.repositories { maven { url 'http://repo.spring.io/snapshot/' } }
+        project.dependencies { compile "org.aspectj:aspectjrt:1.8.9.BUILD-SNAPSHOT" }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
             final VariantManager manager = getVariantManager(plugin as BasePlugin);

@@ -125,32 +125,13 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     def final buildPath = data.scope.javaOutputDir.absolutePath;
 
                     if (binaryWeave) {
-                        if (!params.binaryWeaveRoots.empty) {
-                            params.binaryWeaveRoots.each { String pkg ->
-                                setBinaryWeavePath concat(buildPath, pkg)
-                            }
+                        if (hasRetrolambda) {
+                            setBinaryWeavePath("$project.buildDir/retrolambda/$variant.name");
+                            project.logger.warn "set path to inpath weaver for $variant.name"
                         }
-
-                        if (!params.excludeBuildPath) {
-//                            def Set ajFilesList = [];
-//                            collectAjSources(project.projectDir, variant).each {
-//                                ajFilesList.addAll(collectAj(it as String));
-//                            }
-//
-//                            //we implicitly include all built bytecode files to the weaver
-//                            outterJoin(collectBinary(buildPath), ajFilesList).each { File f ->
-//                                setBinaryWeavePath(f.absolutePath);
-//                            }
-                            setBinaryWeavePath(buildPath);
-                        }
-                    } else {
-                        def buildDir = new File(buildPath);
-                        if (buildDir.exists()) {
-                            buildDir.delete();
-                        }
-
-                        buildDir.mkdirs();
                     }
+
+                    cleanBuildDir(buildPath);
                 }
 
                 // uPhyca's fix
@@ -176,9 +157,13 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         return plugin.variantManager;
     }
 
-    def private static concat(String buildPath, String _package) {
-        String strPath = _package.replace(".", File.separator);
-        return(buildPath + "/$strPath");
+    def private static cleanBuildDir(def path) {
+        def buildDir = new File(path as String);
+        if (buildDir.exists()) {
+            buildDir.delete();
+        }
+
+        buildDir.mkdirs();
     }
 
     // fix to support Android Pre-processing Tools plugin
@@ -219,19 +204,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
     def static getAjPath(String dir) {
         return "src/$dir/aspectj";
-    }
-
-    def static collectAjSources(File dir, BaseVariant variant) {
-        def list = [];
-        list << (dir.absolutePath + "/${getAjPath("main")}");
-        list << (dir.absolutePath + "/${getAjPath(variant.dirName)}");
-
-        def result = [];
-        list.each {
-            if (new File(it as String).exists()) result << it;
-        }
-
-        return result;
     }
 
     def private static findVarData(def variantData, def variant) {

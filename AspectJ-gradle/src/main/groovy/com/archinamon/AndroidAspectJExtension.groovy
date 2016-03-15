@@ -3,8 +3,6 @@ package com.archinamon;
 public class AndroidAspectJExtension {
 
     def boolean binaryWeave = false;
-    def boolean excludeBuildPath = false;
-    def binaryWeaveRoots = [];
 
     def boolean weaveInfo = true;
     def boolean ignoreErrors = false;

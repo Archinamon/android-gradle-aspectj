@@ -112,6 +112,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
                     //extension params
                     self.binaryWeave = params.binaryWeave;
+                    self.binaryExclude = params.binaryExclude;
                     self.logFile = params.logFileName;
                     self.weaveInfo = params.weaveInfo;
                     self.ignoreErrors = params.ignoreErrors;
@@ -125,10 +126,18 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     def final buildPath = data.scope.javaOutputDir.absolutePath;
 
                     if (binaryWeave) {
+                        def buildSideDir = "$project.buildDir/retrolambda/$variant.name";
                         if (hasRetrolambda) {
-                            setBinaryWeavePath("$project.buildDir/retrolambda/$variant.name");
+                            setBinaryWeavePath(buildSideDir);
                             project.logger.warn "set path to inpath weaver for $variant.name"
                         }
+
+                        if (!binaryExclude.empty) {
+                            binaryExclude.each {
+                                new File(concat(buildSideDir, it as String)).deleteDir();
+                            }
+                        }
+
                     }
 
                     cleanBuildDir(buildPath);
@@ -155,6 +164,11 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
     private static VariantManager getVariantManager(BasePlugin plugin) {
         return plugin.variantManager;
+    }
+
+    def private static concat(String buildPath, String _package) {
+        String strPath = _package.replace(".", File.separator);
+        return(buildPath + "/$strPath");
     }
 
     def private static cleanBuildDir(def path) {

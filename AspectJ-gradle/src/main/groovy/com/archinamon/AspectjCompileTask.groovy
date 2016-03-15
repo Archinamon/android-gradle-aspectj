@@ -1,6 +1,5 @@
 package com.archinamon
 
-import com.android.build.gradle.api.BaseVariant
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
@@ -13,7 +12,6 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
 
 import static com.archinamon.AndroidAspectJPlugin.getAjPath
-import static com.archinamon.AndroidAspectJPlugin.getVariants
 
 class AspectjCompileTask extends AbstractCompile {
 
@@ -21,6 +19,8 @@ class AspectjCompileTask extends AbstractCompile {
     private String encoding;
 
     private boolean binaryWeave;
+    private def binaryExclude = [];
+
     private boolean weaveInfo;
     private boolean addSerialVUID;
     private boolean ignoreErrors;
@@ -140,6 +140,15 @@ class AspectjCompileTask extends AbstractCompile {
 
     void setBinaryWeave(boolean val) {
         this.binaryWeave = val;
+    }
+
+    @Input
+    def getBinaryExclude() {
+        return binaryExclude;
+    }
+
+    void setBinaryExclude(def val) {
+        this.binaryExclude << val;
     }
 
     @Input

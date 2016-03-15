@@ -3,6 +3,7 @@ package com.archinamon;
 public class AndroidAspectJExtension {
 
     def boolean binaryWeave = false;
+    def binaryExclude = [];
 
     def boolean weaveInfo = true;
     def boolean ignoreErrors = false;

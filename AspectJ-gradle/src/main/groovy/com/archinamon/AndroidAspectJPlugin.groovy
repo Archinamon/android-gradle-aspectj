@@ -15,6 +15,7 @@ import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.file.collections.SimpleFileCollection
+import org.gradle.api.tasks.TaskState
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 
@@ -126,10 +127,23 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     def final buildPath = data.scope.javaOutputDir.absolutePath;
 
                     if (binaryWeave) {
-                        def buildSideDir = "$project.buildDir/retrolambda/$variant.name";
+                        def oldDir = javaCompiler.destinationDir;
+                        def newDirInfix = hasRetrolambda ? "retrolambda" : "aspectj";
+                        def buildSideDir = "$project.buildDir/$newDirInfix/$variant.name";
+
                         if (hasRetrolambda) {
                             setBinaryWeavePath(buildSideDir);
-                            project.logger.warn "set path to inpath weaver for $variant.name"
+                            project.logger.warn "set path to inpath weaver for $variant.name with $buildSideDir";
+                        } else {
+                            javaCompiler.destinationDir = project.file(buildSideDir);
+
+                            setBinaryWeavePath(buildSideDir);
+                            project.gradle.taskGraph.afterTask { Task task, TaskState state ->
+                                if (task == aspectjCompile) {
+                                    // We need to set this back to subsequent android tasks work correctly.
+                                    javaCompiler.destinationDir = oldDir;
+                                }
+                            }
                         }
 
                         if (!binaryExclude.empty) {

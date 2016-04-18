@@ -1,5 +1,9 @@
 apply plugin: 'groovy'
-apply plugin: 'maven'
+apply from: 'https://github.yandex-team.ru/raw/vertical-mobile/android-gradle-maven-deployer/v1.0/yaMavenDeployer.gradle'
+
+yaMavenDeployer {
+    artifactId = 'android-gradle-aspectj'
+}
 
 targetCompatibility = JavaVersion.VERSION_1_6
 sourceCompatibility = JavaVersion.VERSION_1_6

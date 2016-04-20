@@ -147,15 +147,15 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                         }
 
                         if (!binaryExclude.empty) {
-                            binaryExclude.each {
+                            binaryExclude.split(",").each {
                                 new File(concat(buildSideDir, it as String)).deleteDir();
                             }
                         }
 
                         // we should parse string name of modules and find them in /exploded-aars
                         if (!binaryInclude.empty) {
-                            project.logger.warn binaryInclude.toListString();
-                            binaryInclude.each {
+                            project.logger.warn binaryInclude;
+                            binaryInclude.split(",").each {
                                 String[] module = (it as String).split(":");
                                 project.logger.warn module.toArrayString()
                                 if (module.length > 0) {

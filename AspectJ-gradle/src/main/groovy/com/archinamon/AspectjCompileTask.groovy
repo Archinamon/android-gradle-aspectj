@@ -21,8 +21,8 @@ class AspectjCompileTask extends AbstractCompile {
     private String encoding;
 
     private boolean binaryWeave;
-    private def binaryExclude = [];
-    private def binaryInclude = [];
+    private String binaryExclude;
+    private String binaryInclude;
 
     private boolean weaveInfo;
     private boolean addSerialVUID;

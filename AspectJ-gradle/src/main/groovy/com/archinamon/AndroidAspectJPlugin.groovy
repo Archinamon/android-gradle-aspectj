@@ -157,6 +157,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                         if (!binaryInclude.empty) {
                             binaryInclude.each {
                                 String[] module = (it as String).split(':');
+                                project.logger.warn it as String;
                                 if (module.length < 2) throw new StopExecutionException(BIN_INCLUDE_EXC);
 
                                 def moduleGroup = module[0];

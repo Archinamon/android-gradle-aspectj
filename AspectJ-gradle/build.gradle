@@ -30,7 +30,7 @@ dependencies {
 }
 
 group = 'com.archinamon'
-version = '1.1.61-SNAPSHOT'
+version = '1.1.62-SNAPSHOT'
 
 project.afterEvaluate {
     project.artifacts {

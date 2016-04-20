@@ -163,8 +163,22 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                                     def moduleVersion = module.length == 3 ? "/${module[2]}" : "";
 
                                     def moduleFile = "$project.buildDir/intermediates/exploded-aar/$moduleGroup/$moduleName$moduleVersion/jars/classes.jar";
-                                    addBinaryWeavePath(moduleFile);
-                                    project.logger.warn "Add module to inpath: $moduleFile exists: ${new File(moduleFile).exists()}";
+                                    def fileExists = new File(moduleFile).exists();
+
+                                    if (fileExists) {
+                                        addBinaryWeavePath(moduleFile)
+                                    } else {
+                                        classpath.each { File file ->
+                                            if (!file.absolutePath.contains("exploded-aar")) {
+                                                def filePath = file.absolutePath;
+                                                if (filePath.contains(moduleGroup) && filePath.contains(moduleName) && filePath.contains(moduleVersion)) {
+                                                    addBinaryWeavePath(file.absolutePath);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    project.logger.warn "Add module to inpath: $moduleFile exists: $fileExists";
                                 }
                             }
                         }

@@ -157,7 +157,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                             project.logger.warn binaryInclude;
                             binaryInclude.split(",").each {
                                 String[] module = (it as String).split(":");
-                                project.logger.warn module.toArrayString()
                                 if (module.length > 0) {
                                     def moduleGroup = module[0];
                                     def moduleName = module[1];
@@ -165,6 +164,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
                                     def moduleFile = "$project.buildDir/intermediates/exploded-aar/$moduleGroup$moduleName/$moduleVersion/jars/classes.jar";
                                     addBinaryWeavePath(moduleFile);
+                                    project.logger.warn "Add module to inpath: $moduleFile exists: ${new File(moduleFile).exists()}";
                                 }
                             }
                         }

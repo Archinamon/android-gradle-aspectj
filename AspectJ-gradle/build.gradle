@@ -1,6 +1,6 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply from: 'https://github.yandex-team.ru/raw/android-gradle-maven-deployer/v1.0/yaMavenDeployer.gradle'
+apply from: 'https://github.yandex-team.ru/raw/vertical-mobile/android-gradle-maven-deployer/v1.0/yaMavenDeployer.gradle'
 
 yaMavenDeployer {
     artifactId = 'android-gradle-aspectj'

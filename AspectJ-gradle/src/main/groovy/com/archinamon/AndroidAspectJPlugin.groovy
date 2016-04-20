@@ -157,15 +157,16 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                         if (!binaryInclude.empty) {
                             binaryInclude.each {
                                 String[] module = (it as String).split(':');
-                                project.logger.warn it as String;
-                                if (module.length < 2) throw new StopExecutionException(BIN_INCLUDE_EXC);
+                                if (module.length > 0) {
+                                    if (module.length < 2) throw new StopExecutionException(BIN_INCLUDE_EXC);
 
-                                def moduleGroup = module[0];
-                                def moduleName = module[1];
-                                def moduleVersion = module.length == 3 ? "/${module[2]}" : "";
+                                    def moduleGroup = module[0];
+                                    def moduleName = module[1];
+                                    def moduleVersion = module.length == 3 ? "/${module[2]}" : "";
 
-                                def moduleFile = "$project.buildDir/intermediates/exploded-aar/$moduleGroup$moduleName/$moduleVersion/jars/classes.jar";
-                                addBinaryWeavePath(moduleFile);
+                                    def moduleFile = "$project.buildDir/intermediates/exploded-aar/$moduleGroup$moduleName/$moduleVersion/jars/classes.jar";
+                                    addBinaryWeavePath(moduleFile);
+                                }
                             }
                         }
 

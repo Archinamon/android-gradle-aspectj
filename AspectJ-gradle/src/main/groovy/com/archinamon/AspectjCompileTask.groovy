@@ -22,6 +22,7 @@ class AspectjCompileTask extends AbstractCompile {
 
     private boolean binaryWeave;
     private def binaryExclude = [];
+    private def binaryInclude = [];
 
     private boolean weaveInfo;
     private boolean addSerialVUID;
@@ -157,6 +158,15 @@ class AspectjCompileTask extends AbstractCompile {
     }
 
     @Input
+    def getBinaryInclude() {
+        return binaryInclude;
+    }
+
+    void setBinaryInclude(def val) {
+        this.binaryInclude << val;
+    }
+
+    @Input
     boolean getWeaveInfo() {
         return weaveInfo;
     }
@@ -228,7 +238,7 @@ class AspectjCompileTask extends AbstractCompile {
         return binaryWeavePath
     }
 
-    void setBinaryWeavePath(String inpath) {
+    void addBinaryWeavePath(String inpath) {
         if (new File(inpath).exists())
             this.binaryWeavePath << inpath;
     }

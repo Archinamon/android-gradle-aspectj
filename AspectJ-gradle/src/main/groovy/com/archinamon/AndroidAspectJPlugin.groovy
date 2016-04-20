@@ -15,15 +15,15 @@ import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.file.collections.SimpleFileCollection
+import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskState
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 
-import static com.archinamon.FilesProcessor.collectAj
-import static com.archinamon.FilesProcessor.collectBinary
-import static com.archinamon.FilesProcessor.outterJoin
-
 class AndroidAspectJPlugin implements Plugin<Project> {
+
+    def private static final BIN_INCLUDE_EXC = "You should correctly specify module name for :aspectj:binaryInclude parameter, " +
+            "i.e. com.android.support:multidex:1.0.1, where 'com.android.support' is a module group and 'multidex' is a module name.";
 
     def private static isLibraryPlugin = false;
 
@@ -114,6 +114,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     //extension params
                     self.binaryWeave = params.binaryWeave;
                     self.binaryExclude = params.binaryExclude;
+                    self.binaryInclude = params.binaryInclude;
                     self.logFile = params.logFileName;
                     self.weaveInfo = params.weaveInfo;
                     self.ignoreErrors = params.ignoreErrors;
@@ -132,12 +133,12 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                         def buildSideDir = "$project.buildDir/$newDirInfix/$variant.name";
 
                         if (hasRetrolambda) {
-                            setBinaryWeavePath(buildSideDir);
+                            addBinaryWeavePath(buildSideDir);
                             project.logger.warn "set path to inpath weaver for $variant.name with $buildSideDir";
                         } else {
                             javaCompiler.destinationDir = project.file(buildSideDir);
 
-                            setBinaryWeavePath(buildSideDir);
+                            addBinaryWeavePath(buildSideDir);
                             project.gradle.taskGraph.afterTask { Task task, TaskState state ->
                                 if (task == aspectjCompile) {
                                     // We need to set this back to subsequent android tasks work correctly.
@@ -149,6 +150,21 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                         if (!binaryExclude.empty) {
                             binaryExclude.each {
                                 new File(concat(buildSideDir, it as String)).deleteDir();
+                            }
+                        }
+
+                        // we should parse string name of modules and find them in /exploded-aars
+                        if (!binaryInclude.empty) {
+                            binaryInclude.each {
+                                String[] module = (it as String).split(':');
+                                if (module.length != 2) throw new StopExecutionException(BIN_INCLUDE_EXC);
+
+                                def moduleGroup = module[0];
+                                def moduleName = module[1];
+                                def moduleVersion = module.length == 3 ? "/${module[2]}" : "";
+
+                                def moduleFile = "$project.buildDir/intermediates/exploded-aar/$moduleGroup$moduleName/$moduleVersion/jars/classes.jar";
+                                addBinaryWeavePath(moduleFile);
                             }
                         }
 

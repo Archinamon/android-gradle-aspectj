@@ -60,8 +60,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
 
         project.repositories { mavenCentral() }
-        project.repositories { maven { url 'http://repo.spring.io/snapshot/' } }
-        project.dependencies { compile "org.aspectj:aspectjrt:1.8.9.BUILD-SNAPSHOT" }
+        project.dependencies { compile "org.aspectj:aspectjrt:1.8.9" }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
             final VariantManager manager = getVariantManager(plugin as BasePlugin);
@@ -155,8 +154,9 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
                         // we should parse string name of modules and find them in /exploded-aars
                         if (!binaryInclude.empty) {
+                            project.logger.warn binaryInclude.toListString();
                             binaryInclude.each {
-                                String[] module = (it as String).split(':');
+                                String[] module = (it as String).split("\\:");
                                 if (module.length > 0) {
                                     def moduleGroup = module[0];
                                     def moduleName = module[1];

@@ -10,14 +10,13 @@ targetCompatibility = JavaVersion.VERSION_1_6
 sourceCompatibility = JavaVersion.VERSION_1_6
 
 project.ext {
-    aspectjVersion = '1.8.9.BUILD-SNAPSHOT'
+    aspectjVersion = '1.8.9'
 }
 
 dependencies {
     repositories {
         jcenter()
         mavenCentral()
-        maven { url 'http://repo.spring.io/snapshot/' }
     }
 
     compile gradleApi()

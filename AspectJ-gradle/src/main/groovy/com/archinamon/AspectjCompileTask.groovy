@@ -154,7 +154,7 @@ class AspectjCompileTask extends AbstractCompile {
     }
 
     void setBinaryExclude(def val) {
-        this.binaryExclude << val;
+        this.binaryExclude = val;
     }
 
     @Input
@@ -163,7 +163,7 @@ class AspectjCompileTask extends AbstractCompile {
     }
 
     void setBinaryInclude(def val) {
-        this.binaryInclude << val;
+        this.binaryInclude = val;
     }
 
     @Input

@@ -158,6 +158,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                             binaryInclude.each {
                                 String[] module = (it as String).split(':');
                                 if (module.length > 0) {
+                                    project.logger.warn "Processing inpath include data: ${module.toArrayString()}"
                                     if (module.length < 2) throw new StopExecutionException(BIN_INCLUDE_EXC);
 
                                     def moduleGroup = module[0];

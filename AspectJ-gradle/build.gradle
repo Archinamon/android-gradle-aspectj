@@ -32,3 +32,14 @@ dependencies {
 
 group = 'com.archinamon'
 version = '1.1.4'
+
+project.afterEvaluate {
+    project.artifacts {
+        configurations.getByName "default", { Configuration config ->
+            FileCollection outputs = config.allArtifacts.getFiles();
+            archives outputs.last();
+
+            project.logger.warn "Taking artifact: ${outputs.last()}";
+        };
+    }
+}

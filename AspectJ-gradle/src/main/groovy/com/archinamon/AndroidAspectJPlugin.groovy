@@ -110,7 +110,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     //extension params
                     self.binaryWeave = params.binaryWeave;
                     self.binaryExclude = params.binaryExclude;
-                    self.binaryInclude = params.binaryInclude;
                     self.logFile = params.logFileName;
                     self.weaveInfo = params.weaveInfo;
                     self.ignoreErrors = params.ignoreErrors;

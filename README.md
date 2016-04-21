@@ -99,6 +99,7 @@ Changelog
 #### 1.1.2 -- Gradle Instant-run
 * now supports gradle-2.0.0-beta plugin and friendly with slicer task;
 * fixed errors within collecting source folders;
+* fixed mixing buildTypes source sets;
 
 #### 1.1.1 -- Updating kernel
 * AspectJ-runtime module has been updated to the newest 1.8.8 version;
@@ -135,8 +136,7 @@ Changelog
 * added MultiDex support;
  
 #### Known limitations
-* Plugin doesn't support direct speach into AspectJ code if project uses preprocessor (e.g. calling aspect class from java);
-* No incremental aj-compilation;
+* You can't speak with native aspects from java — this case won't be fixed due to compile sequence rules;
 * Doesn't support gradle-experimental plugin;
 
 All these limits are fighting on and I'll be glad to introduce new build as soon as I solve these problems.

@@ -29,7 +29,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:AspectJ-gradle:1.1.2'
+classpath 'com.archinamon:AspectJ-gradle:1.2.0'
 ```
 
 Apply the `aspectj` plugin:
@@ -96,6 +96,15 @@ So concrete rule is:
 
 Changelog
 -------
+#### 1.2.0 -- Binary weaving
+* plugin now supports processing .class files;
+* supporting jvm languages — Kotlin, Groovy, Scala;
+* updated internal aj-tools and aj runtime to the newest 1.8.9;
+
+#### 1.1.4 -- Experimenting with binary weaving
+* implementing processing aars/jars;
+* added excluding of aj-source folders to avoid aspects re-compiling;
+
 #### 1.1.2 -- Gradle Instant-run
 * now supports gradle-2.0.0-beta plugin and friendly with slicer task;
 * fixed errors within collecting source folders;

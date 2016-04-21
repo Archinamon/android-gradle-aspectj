@@ -22,7 +22,6 @@ class AspectjCompileTask extends AbstractCompile {
 
     private boolean binaryWeave;
     private String binaryExclude;
-    private String binaryInclude;
 
     private boolean weaveInfo;
     private boolean addSerialVUID;
@@ -155,15 +154,6 @@ class AspectjCompileTask extends AbstractCompile {
 
     void setBinaryExclude(def val) {
         this.binaryExclude = val;
-    }
-
-    @Input
-    def getBinaryInclude() {
-        return binaryInclude;
-    }
-
-    void setBinaryInclude(def val) {
-        this.binaryInclude = val;
     }
 
     @Input

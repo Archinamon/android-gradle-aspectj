@@ -22,9 +22,6 @@ import org.gradle.api.tasks.compile.JavaCompile
 
 class AndroidAspectJPlugin implements Plugin<Project> {
 
-    def private static final BIN_INCLUDE_EXC = "You should correctly specify module name for :aspectj:binaryInclude parameter, " +
-            "i.e. com.android.support:multidex:1.0.1, where 'com.android.support' is a module group and 'multidex' is a module name.";
-
     def private static isLibraryPlugin = false;
 
     @Override
@@ -131,9 +128,9 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                         def newDirInfix = hasRetrolambda ? "retrolambda" : "aspectj";
                         def buildSideDir = "$project.buildDir/$newDirInfix/$variant.name";
 
+                        project.logger.warn "set path to inpath weaver for $variant.name with $buildSideDir";
                         if (hasRetrolambda) {
                             addBinaryWeavePath(buildSideDir);
-                            project.logger.warn "set path to inpath weaver for $variant.name with $buildSideDir";
                         } else {
                             javaCompiler.destinationDir = project.file(buildSideDir);
 
@@ -151,49 +148,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                                 new File(concat(buildSideDir, it as String)).deleteDir();
                             }
                         }
-
-                        // we should parse string name of modules and find them in /exploded-aars
-                        if (!binaryInclude.empty) {
-                            project.logger.warn binaryInclude;
-                            binaryInclude.split(",").each {
-                                String[] module = (it as String).split(":");
-                                if (module.length > 0) {
-                                    def moduleGroup = module[0];
-                                    def moduleName = module[1];
-                                    def moduleVersion = module.length == 3 ? "/${module[2]}" : "";
-
-                                    def moduleFile = "$project.buildDir/intermediates/exploded-aar/$moduleGroup/$moduleName$moduleVersion/jars/classes.jar";
-                                    def fileExists = new File(moduleFile).exists();
-
-                                    def jarAdded = false;
-                                    def addedPaths = [];
-
-                                    if (fileExists) {
-                                        addBinaryWeavePath(moduleFile);
-                                        jarAdded = true;
-                                        addedPaths << moduleFile;
-                                    } else {
-                                        classpath.each { File file ->
-                                            if (!file.absolutePath.contains("exploded-aar")) {
-                                                def filePath = file.absolutePath;
-                                                if (filePath.contains(moduleGroup) && filePath.contains(moduleName) && filePath.contains(moduleVersion)) {
-                                                    addBinaryWeavePath(file.absolutePath);
-                                                    jarAdded = true;
-                                                    addedPaths << file.absolutePath;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    if (jarAdded) {
-                                        classpath.findAll { !addedPaths.contains(it.absolutePath); }
-                                    }
-
-                                    project.logger.warn "Add module to inpath: $moduleFile exists: $fileExists";
-                                }
-                            }
-                        }
-
                     }
 
                     cleanBuildDir(buildPath);

@@ -1,10 +1,5 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
-apply from: 'https://github.yandex-team.ru/raw/archinamon/android-gradle-maven-deployer/patch-1/yaMavenDeployer.gradle'
-
-yaMavenDeployer {
-    artifactId = 'android-gradle-aspectj'
-}
 
 targetCompatibility = JavaVersion.VERSION_1_6
 sourceCompatibility = JavaVersion.VERSION_1_6
@@ -32,13 +27,10 @@ dependencies {
 group = 'com.archinamon'
 version = '1.2.0'
 
-project.afterEvaluate {
-    project.artifacts {
-        configurations.getByName "default", { Configuration config ->
-            FileCollection outputs = config.allArtifacts.getFiles();
-            archives outputs.last();
-
-            project.logger.warn "Taking artifact: ${outputs.last()}";
-        };
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('../'))
+        }
     }
 }

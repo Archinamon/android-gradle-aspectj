@@ -44,6 +44,9 @@ aspectj {
   ignoreErrors false //explicitly ignores all aspectJ errors, could break a build
   addSerialVersionUID false //adds serialUID for Serializable interface inter-type injections
   logFileName "ajc_details.log" //custom name of default weaveInfo file
+  
+  binaryWeaving true //turns on processing compiled .class files to inject aspects into jvm-based languages
+  binaryExclude "com.example.xpoint" //specify here an aspect's source package
 }
 ```
 

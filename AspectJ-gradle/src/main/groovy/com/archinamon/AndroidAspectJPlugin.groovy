@@ -233,7 +233,12 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     }
 
     def static DefaultDomainObjectSet<? extends BaseVariant> getTestVariants(Project project) {
-        project.logger.warn project.android.testVariants.toListString();
+        project.logger.warn "AJC, Test variants: "
+         project.android.testVariants.all {
+             project.logger.warn it.name;
+         }
+
+
         project.android.testVariants;
     }
 

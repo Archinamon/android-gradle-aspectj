@@ -168,6 +168,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 //apply behavior
                 project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
 
+                //trying to apply aj-task after ${variant}UnitTestJava task
                 JavaCompile compileUnitTest = (JavaCompile) project.tasks.findByName("compile${variantName}UnitTestJavaWithJavac")
                 if (compileUnitTest) {
                     compileUnitTest.mustRunAfter(aspectjCompile.name);
@@ -232,6 +233,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     }
 
     def static DefaultDomainObjectSet<? extends BaseVariant> getTestVariants(Project project) {
+        project.logger.warn project.android.testVariants.toListString();
         project.android.testVariants;
     }
 

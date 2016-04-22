@@ -167,6 +167,11 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
                 //apply behavior
                 project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
+
+                JavaCompile compileUnitTest = (JavaCompile) project.tasks.findByName("compile${variantName}UnitTestJava")
+                if (compileUnitTest) {
+                    compileUnitTest.mustRunAfter(aspectjCompile.name);
+                }
             }
         }
     }

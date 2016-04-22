@@ -15,7 +15,6 @@ import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.file.collections.SimpleFileCollection
-import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskState
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
@@ -38,9 +37,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             throw new GradleException('You must apply the Android plugin or the Android library plugin')
         }
 
+        DefaultDomainObjectSet<? extends BaseVariant> variants = getVariants(project);
         params = project.extensions.create('aspectj', AndroidAspectJExtension);
 
-        getVariants(project).all { BaseVariant variant ->
+        variants.all { BaseVariant variant ->
             final def sets = project.android.sourceSets;
             final def Closure applier = { String name ->
                 applyVariantPreserver(sets, name);
@@ -62,7 +62,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
             final VariantManager manager = getVariantManager(plugin as BasePlugin);
 
-            getVariants(project).all { BaseVariant variant ->
+            variants.all { BaseVariant variant ->
                 BaseVariantData<? extends BaseVariantOutputData> data = manager.variantDataList.find { findVarData(it, variant); }
 
                 AbstractCompile javaCompiler = variant.javaCompiler
@@ -218,11 +218,16 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         String path = getAjPath(dir);
         sets.getByName(dir).java.srcDir(path);
         return path;
-
     }
 
     def static DefaultDomainObjectSet<? extends BaseVariant> getVariants(Project project) {
-        isLibraryPlugin ? project.android.libraryVariants : project.android.applicationVariants;
+        DefaultDomainObjectSet<? extends BaseVariant> variants = isLibraryPlugin ? project.android.libraryVariants : project.android.applicationVariants;
+        variants.addAll(getTestVariants(project));
+        return variants;
+    }
+
+    def static DefaultDomainObjectSet<? extends BaseVariant> getTestVariants(Project project) {
+        project.android.testVariants;
     }
 
     def static getAjPath(String dir) {

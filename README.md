@@ -108,6 +108,10 @@ So concrete rule is:
 
 Changelog
 -------
+#### 1.2.1 -- Hot-fix of Gradle DSL
+* removed unnecessary parameters from aspectj-extension class;
+* fixed gradle dsl-model;
+
 #### 1.2.0 -- Binary weaving
 * plugin now supports processing .class files;
 * supporting jvm languages — Kotlin, Groovy, Scala;

@@ -172,7 +172,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 JavaCompile compileUnitTest = (JavaCompile) project.tasks.findByName("compile${variantName}UnitTestJavaWithJavac")
                 if (compileUnitTest) {
                     project.logger.warn "Configuring AspectJ compile task for UnitTest task";
-                    compileUnitTest.mustRunAfter(aspectjCompile);
+                    compileUnitTest.mustRunAfter(compileAspectTask);
                 }
             }
         }

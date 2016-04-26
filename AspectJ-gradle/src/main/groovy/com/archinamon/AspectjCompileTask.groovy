@@ -4,6 +4,7 @@ import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.StopExecutionException
@@ -28,7 +29,7 @@ class AspectjCompileTask extends AbstractCompile {
     private boolean interruptOnErrors;
     private boolean interruptOnFails;
 
-    private FileCollection aspectPath = [];
+    private FileCollection aspectPath = new SimpleFileCollection();
     private String bootClasspath;
     def private binaryWeavePath = [];
 
@@ -61,7 +62,7 @@ class AspectjCompileTask extends AbstractCompile {
                 "-target", getTargetCompatibility(),
                 "-d", destinationDir.absolutePath,
                 "-classpath", classpath.asPath,
-                "-bootclasspath", bootClasspath,
+                "-bootclasspath", getBootClasspath(),
                 "-sourceroots", sourceRoots.join(File.pathSeparator)
         ];
 

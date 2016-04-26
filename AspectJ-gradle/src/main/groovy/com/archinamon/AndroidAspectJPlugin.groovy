@@ -51,6 +51,14 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             setupVariant(android, it);
         }
 
+        testVariants(android).all {
+            setupVariant(android, it);
+        }
+
+        unitTestVariants(android).all {
+            setupVariant(android, it);
+        }
+
         android.sourceSets {
             main.java.srcDir('src/main/aspectj');
             androidTest.java.srcDir('src/androidTest/aspectj');
@@ -61,7 +69,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         project.dependencies { compile "org.aspectj:aspectjrt:1.8.9" }
         project.afterEvaluate {
             androidVariants(isLibraryPlugin, android).all {
-                project.logger.warn "Configuring $it.name";
                 configureAspectJTask(project, plugin, android, it);
             }
 
@@ -86,6 +93,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     }
 
     def private static <E extends TestedExtension> void configureAspectJTask(Project project, def plugin, E android, BaseVariant variant) {
+        project.logger.warn "Configuring $variant.name";
+
         final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
         final VariantManager manager = getVariantManager(plugin as BasePlugin);
         final AspectJExtension ajParams = project.extensions.findByType(AspectJExtension);

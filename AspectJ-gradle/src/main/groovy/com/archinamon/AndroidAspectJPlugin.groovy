@@ -1,7 +1,9 @@
 package com.archinamon
 
+import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.BasePlugin
+import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.internal.VariantManager
@@ -18,6 +20,9 @@ import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.TaskState
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
+
+import static com.archinamon.FilesUtils.*
+import static com.archinamon.VariantUtils.*
 
 class AndroidAspectJPlugin implements Plugin<Project> {
 
@@ -37,11 +42,12 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             throw new GradleException('You must apply the Android plugin or the Android library plugin')
         }
 
-        DefaultDomainObjectSet<? extends BaseVariant> variants = getVariants(project);
+        def android = isLibraryPlugin ? (LibraryExtension) project.android : (AppExtension) project.android;
+        DefaultDomainObjectSet<? extends BaseVariant> variants = getVariants(isLibraryPlugin, android);
         params = project.extensions.create('aspectj', AndroidAspectJExtension);
 
         variants.all { BaseVariant variant ->
-            final def sets = project.android.sourceSets;
+            final def sets = android.sourceSets;
             final def Closure applier = { String name ->
                 applyVariantPreserver(sets, name);
             }
@@ -50,7 +56,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             variant.buildType*.name.each(applier);
         }
 
-        project.android.sourceSets {
+        android.sourceSets {
             main.java.srcDir('src/main/aspectj');
             androidTest.java.srcDir('src/androidTest/aspectj');
             test.java.srcDir('src/test/aspectj');
@@ -75,16 +81,16 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 if (plugin.properties['runtimeJarList']) {
                     bootClasspath = plugin.runtimeJarList
                 } else {
-                    bootClasspath = project.android.bootClasspath
+                    bootClasspath = android.bootClasspath
                 }
 
                 def flavors = variant.productFlavors*.name
-                def types = variant.buildType*.name
+//                def types = variant.buildType*.name
 
                 def variantName = variant.name.capitalize()
                 def newTaskName = "compile${variantName}Aspectj"
 
-                def final String[] srcDirs = ['androidTest', variant.buildType.name, *flavors].collect {"src/$it/aspectj"};
+                def final String[] srcDirs = ['androidTest', 'test', variant.buildType.name, *flavors].collect {"src/$it/aspectj"};
                 def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
                 def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
 
@@ -165,26 +171,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     retrolambda.dependsOn compileAspectTask;
                 }
 
-                //trying to apply aj-task after ${variant}UnitTestJava task
-                JavaCompile compileUnitTest = (JavaCompile) project.tasks.findByName("compile${variantName}UnitTestJavaWithJavac")
-                if (compileUnitTest) {
-                    project.logger.warn "Configuring AspectJ compile task for UnitTest task";
-                    compileUnitTest.mustRunAfter(compileAspectTask);
-                } else {
-                    //apply behavior
-                    project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
-                }
+                //apply behavior
+                project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
             }
         }
-    }
-
-    private static VariantManager getVariantManager(BasePlugin plugin) {
-        return plugin.variantManager;
-    }
-
-    def private static concat(String buildPath, String _package) {
-        String strPath = _package.replace(".", File.separator);
-        return(buildPath + "/$strPath");
     }
 
     def private static cleanBuildDir(def path) {
@@ -203,45 +193,5 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         // project.logger.warn(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
-    }
-
-    def private static getSourcePath(String variantName) {
-        def String[] types = variantName.split("(?=\\p{Upper})");
-        if (types.length > 0 && types.length < 3) {
-            def additionalPathShift = "";
-            types.each { String type -> additionalPathShift += "${type.toLowerCase()}/" }
-            return additionalPathShift;
-        } else if (types.length > 2) {
-            def buildType = types.last().toLowerCase();
-            def String flavor = "";
-            types.eachWithIndex { elem, idx -> if (idx != types.length - 1) flavor += elem.toLowerCase(); };
-            return "$flavor/$buildType";
-        } else {
-            return variantName;
-        }
-    }
-
-    def private static applyVariantPreserver(def sets, String dir) {
-        String path = getAjPath(dir);
-        sets.getByName(dir).java.srcDir(path);
-        return path;
-    }
-
-    def static DefaultDomainObjectSet<? extends BaseVariant> getVariants(Project project) {
-        DefaultDomainObjectSet<? extends BaseVariant> variants = isLibraryPlugin ? project.android.libraryVariants : project.android.applicationVariants;
-        variants.addAll(getTestVariants(project));
-        return variants;
-    }
-
-    def static DefaultDomainObjectSet<? extends BaseVariant> getTestVariants(Project project) {
-        project.android.testVariants;
-    }
-
-    def static getAjPath(String dir) {
-        return "src/$dir/aspectj";
-    }
-
-    def private static findVarData(def variantData, def variant) {
-        return variantData.name.equals(variant.name);
     }
 }

@@ -188,8 +188,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         // we should run after every other previous compilers;
         if (hasRetrolambda) {
-            def Task retrolambda = project.tasks["compileRetrolambda$variantName"];
-            retrolambda.dependsOn compileAspectTask;
+            try {
+                def Task retrolambda = project.tasks["compileRetrolambda$variantName"];
+                retrolambda.dependsOn compileAspectTask;
+            } catch (ignore) {}
         }
     }
 

@@ -135,7 +135,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             self.targetCompatibility = javaCompile.targetCompatibility
             self.encoding = javaCompile.options.encoding
 
-            self.aspectPath = javaCompile.classpath
+//            self.aspectPath = javaCompile.classpath
             self.destinationDir = javaCompile.destinationDir
             self.classpath = javaCompile.classpath
             self.bootClasspath = bootClasspath.join(File.pathSeparator)

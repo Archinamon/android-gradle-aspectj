@@ -88,7 +88,7 @@ class AspectjCompileTask extends AbstractCompile {
             args << "-proceedOnError" << "-noImportError";
         }
 
-        if (!aspectPath.isEmpty()) {
+        if (!aspectPath?.isEmpty()) {
             args << "-aspectpath" << getAspectPath().asPath;
         }
 

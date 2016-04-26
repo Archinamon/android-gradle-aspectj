@@ -13,20 +13,4 @@ public class AspectJExtension {
     def boolean interruptOnWarnings = true;
     def boolean interruptOnErrors = true;
     def boolean interruptOnFails = true;
-
-    def boolean execTestOnAjc = false;
-
-    def static findCurrentJdk() {
-        String javaHomeProp = System.properties.'java.home'
-        if (javaHomeProp) {
-            int jreIndex = javaHomeProp.lastIndexOf("${File.separator}jre")
-            if (jreIndex != -1) {
-                return javaHomeProp.substring(0, jreIndex)
-            } else {
-                return javaHomeProp
-            }
-        } else {
-            return System.getenv("JAVA_HOME");
-        }
-    }
 }

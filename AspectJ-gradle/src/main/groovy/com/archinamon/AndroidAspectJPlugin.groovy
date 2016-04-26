@@ -218,6 +218,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             if (!checkIfExecutableExists(ajc)) throw new ProjectConfigurationException("Cannot find executable: $ajc", null);
             ajc += " -jar ${project.configurations.gradleAjc.singleFile}";
 
+            project.logger.warn "Redefined test to run on ajc: $ajc";
+
             test.executable ajc;
         }
     }

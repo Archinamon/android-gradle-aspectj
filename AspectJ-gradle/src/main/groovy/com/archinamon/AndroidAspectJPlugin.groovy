@@ -95,6 +95,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 def final String[] srcDirs = ['androidTest', 'test', variant.buildType.name, *flavors].collect {"src/$it/aspectj"};
                 def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
                 def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
+                def final testDirs = ['androidTest/java', 'androidTest/kotlin', 'androidTest/groovy', 'androidTest/scala',
+                                      'test/java', 'test/kotlin', 'test/groovy', 'test/scala'];
 
                 def AspectjCompileTask aspectjCompile = project.task(newTaskName,
                         overwrite: true,
@@ -113,7 +115,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     self.destinationDir = javaCompile.destinationDir
                     self.classpath = javaCompile.classpath
                     self.bootClasspath = bootClasspath.join(File.pathSeparator)
-                    self.source = javaCompile.source + aspects + aptBuildFiles;
+                    self.source = javaCompile.source + aspects + aptBuildFiles + new SimpleFileCollection(testDirs.collect { project.file(it) });
 
                     //extension params
                     self.binaryWeave = ajParams.binaryWeave;
@@ -175,21 +177,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
                 //apply behavior
                 project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
-
-
-                //trying to apply aj-task after ${variant}UnitTestJava task
-                JavaCompile compileUnitTest = (JavaCompile) project.tasks.findByName("compile${variantName}UnitTestJavaWithJavac")
-                if (compileUnitTest) {
-                    project.logger.warn "Configuring compile${variantName}Aspectj task";
-                    compileUnitTest.mustRunAfter("compile${variantName}Aspectj");
-
-                    Test runTask = (Test) project.tasks.findByName("test$variantName")
-                    if (runTask) {
-                        runTask.doFirst {
-                            ensureRunOnAjc(project, ajParams, runTask);
-                        }
-                    }
-                }
             }
         }
     }
@@ -208,19 +195,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         def final variantName = variant.name as String;
         def final aptPathShift = "/generated/source/apt/${getSourcePath(variantName)}/";
 
-        // project.logger.warn(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
-    }
-
-    def private static ensureRunOnAjc(Project project, AspectJExtension aspectJ, Test test) {
-        if (aspectJ.execTestOnAjc) {
-            def ajc = "${aspectJ.findCurrentJdk()}/bin/java";
-            if (!checkIfExecutableExists(ajc)) throw new ProjectConfigurationException("Cannot find executable: $ajc", null);
-            ajc += " -jar ${project.configurations.gradleAjc.singleFile}";
-
-            project.logger.warn "Redefined test to run on ajc: $ajc";
-
-            test.executable ajc;
-        }
     }
 }

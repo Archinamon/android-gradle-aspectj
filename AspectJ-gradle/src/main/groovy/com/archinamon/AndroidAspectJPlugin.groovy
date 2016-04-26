@@ -178,7 +178,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
 
                 //trying to apply aj-task after ${variant}UnitTestJava task
-                JavaCompile compileUnitTest = (JavaCompile) project.tasks.findByName("compile${variantName}UnitTestJava")
+                JavaCompile compileUnitTest = (JavaCompile) project.tasks.findByName("compile${variantName}UnitTestJavaWithJavac")
                 if (compileUnitTest) {
                     project.logger.warn "Configuring compile${variantName}Aspectj task";
                     compileUnitTest.mustRunAfter("compile${variantName}Aspectj");

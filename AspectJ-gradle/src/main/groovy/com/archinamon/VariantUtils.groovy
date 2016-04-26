@@ -15,13 +15,11 @@ def static applyVariantPreserver(def sets, String dir) {
     return path;
 }
 
-def static DefaultDomainObjectSet<? extends BaseVariant> getVariants(def isLib, def android) {
-    DefaultDomainObjectSet<? extends BaseVariant> variants = isLib ? android.libraryVariants : android.applicationVariants;
-    variants.addAll(getTestVariants(android));
-    return variants;
+def static DefaultDomainObjectSet<? extends BaseVariant> androidVariants(def isLib, def android) {
+    isLib ? android.libraryVariants : android.applicationVariants;
 }
 
-def static DefaultDomainObjectSet<? extends BaseVariant> getTestVariants(def android) {
+def static DefaultDomainObjectSet<? extends BaseVariant> testVariants(def android) {
     android.testVariants;
 }
 

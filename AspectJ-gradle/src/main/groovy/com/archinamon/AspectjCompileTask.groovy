@@ -29,7 +29,7 @@ class AspectjCompileTask extends AbstractCompile {
     private boolean interruptOnErrors;
     private boolean interruptOnFails;
 
-    private FileCollection aspectPath = new SimpleFileCollection();
+    private FileCollection aspectPath;
     private String bootClasspath;
     def private binaryWeavePath = [];
 
@@ -66,7 +66,7 @@ class AspectjCompileTask extends AbstractCompile {
                 "-sourceroots", sourceRoots.join(File.pathSeparator)
         ];
 
-        if (getLogFile() != null) {
+        if (getLogFile()?.isEmpty()) {
             args << "-log" << getLogFile();
         }
 

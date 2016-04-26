@@ -1,5 +1,8 @@
 package com.archinamon
 
+import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.collections.SimpleFileCollection
+
 def static getSourcePath(String variantName) {
     def String[] types = variantName.split("(?=\\p{Upper})");
     if (types.length > 0 && types.length < 3) {
@@ -19,4 +22,10 @@ def static getSourcePath(String variantName) {
 def static concat(String buildPath, String _package) {
     String strPath = _package.replace(".", File.separator);
     return(buildPath + "/$strPath");
+}
+
+def static setupAspectPath(FileCollection javaTaskClassPath) {
+    new SimpleFileCollection(javaTaskClassPath.findAll {
+        !it.absolutePath.contains("intermediates/classes");
+    });
 }

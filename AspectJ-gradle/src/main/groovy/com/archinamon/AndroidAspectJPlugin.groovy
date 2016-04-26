@@ -13,7 +13,6 @@ import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.DefaultDomainObjectSet
@@ -21,7 +20,6 @@ import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.TaskState
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.api.tasks.testing.Test
 
 import static com.archinamon.FilesUtils.*
 import static com.archinamon.VariantUtils.*
@@ -95,8 +93,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 def final String[] srcDirs = ['androidTest', 'test', variant.buildType.name, *flavors].collect {"src/$it/aspectj"};
                 def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
                 def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
-                def final testDirs = ['androidTest/java', 'androidTest/kotlin', 'androidTest/groovy', 'androidTest/scala',
-                                      'test/java', 'test/kotlin', 'test/groovy', 'test/scala'];
 
                 def AspectjCompileTask aspectjCompile = project.task(newTaskName,
                         overwrite: true,
@@ -115,7 +111,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     self.destinationDir = javaCompile.destinationDir
                     self.classpath = javaCompile.classpath
                     self.bootClasspath = bootClasspath.join(File.pathSeparator)
-                    self.source = javaCompile.source + aspects + aptBuildFiles + new SimpleFileCollection(testDirs.collect { project.file(it) });
+                    self.source = javaCompile.source + aspects + aptBuildFiles;
 
                     //extension params
                     self.binaryWeave = ajParams.binaryWeave;
@@ -176,7 +172,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 }
 
                 //apply behavior
-                project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
+//                project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
             }
         }
     }

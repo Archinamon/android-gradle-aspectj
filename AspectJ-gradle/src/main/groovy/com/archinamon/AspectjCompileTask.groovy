@@ -31,7 +31,7 @@ class AspectjCompileTask extends AbstractCompile {
     private boolean interruptOnErrors;
     private boolean interruptOnFails;
 
-    private FileCollection aspectPath;
+    private FileCollection aspectPath = null;
     private String bootClasspath;
     def private binaryWeavePath = [];
 

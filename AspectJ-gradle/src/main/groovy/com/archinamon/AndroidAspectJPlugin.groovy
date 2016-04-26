@@ -165,14 +165,12 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 }
 
                 def compileAspectTask = project.tasks.getByName(newTaskName) as Task;
+                javaCompile.finalizedBy compileAspectTask
+
                 // we should run after every other previous compilers;
                 if (hasRetrolambda) {
                     def Task retrolambda = project.tasks["compileRetrolambda$variantName"];
                     retrolambda.dependsOn compileAspectTask;
-
-                    project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
-                } else {
-                    javaCompile.finalizedBy aspectjCompile
                 }
 
             }

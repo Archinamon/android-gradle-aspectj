@@ -68,7 +68,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
             final VariantManager manager = getVariantManager(plugin as BasePlugin);
 
-            variants.all { BaseVariant variant ->
+            variants.all { BaseVariant variant -> project.logger.warn "Configuring $variant.name"
                 BaseVariantData<? extends BaseVariantOutputData> data = manager.variantDataList.find { findVarData(it, variant); }
 
                 AbstractCompile javaCompiler = variant.javaCompiler

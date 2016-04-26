@@ -42,6 +42,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             throw new GradleException('You must apply the Android plugin or the Android library plugin')
         }
 
+        project.extensions.create('aspectj', AspectJExtension);
         def android = isLibraryPlugin ? (LibraryExtension) project.android : (AppExtension) project.android;
 
         androidVariants(isLibraryPlugin, android).all {
@@ -81,7 +82,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     def private static <E extends TestedExtension> void configureAspectJTask(Project project, def plugin, E android, BaseVariant variant) {
         final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
         final VariantManager manager = getVariantManager(plugin as BasePlugin);
-        final AspectJExtension ajParams = project.extensions.create('aspectj', AspectJExtension);
+        final AspectJExtension ajParams = project.extensions.findByType(AspectJExtension);
 
         BaseVariantData<? extends BaseVariantOutputData> data = manager.variantDataList.find { findVarData(it, variant); }
 

@@ -3,15 +3,12 @@ package com.archinamon
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
-import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
-
-import static com.archinamon.AndroidAspectJPlugin.getAjPath
 
 class AspectjCompileTask extends AbstractCompile {
 
@@ -31,7 +28,7 @@ class AspectjCompileTask extends AbstractCompile {
     private boolean interruptOnErrors;
     private boolean interruptOnFails;
 
-    private FileCollection aspectPath = null;
+    private FileCollection aspectPath = [];
     private String bootClasspath;
     def private binaryWeavePath = [];
 
@@ -252,9 +249,5 @@ class AspectjCompileTask extends AbstractCompile {
 //        }
 
         return sourceRoots;
-    }
-
-    def static File getFile(Project project, String path) {
-        return new File(project.projectDir.absolutePath + File.separator + getAjPath(path));
     }
 }

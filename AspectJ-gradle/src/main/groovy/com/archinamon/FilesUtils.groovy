@@ -20,3 +20,7 @@ def static concat(String buildPath, String _package) {
     String strPath = _package.replace(".", File.separator);
     return(buildPath + "/$strPath");
 }
+
+def static checkIfExecutableExists(String file) {
+    new File(file).exists() || new File(file+'.exe').exists();
+}

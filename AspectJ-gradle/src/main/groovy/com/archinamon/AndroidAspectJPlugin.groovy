@@ -13,6 +13,7 @@ import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.DefaultDomainObjectSet
@@ -20,6 +21,7 @@ import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.TaskState
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.testing.Test
 
 import static com.archinamon.FilesUtils.*
 import static com.archinamon.VariantUtils.*
@@ -31,7 +33,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         final def plugin;
-        final AndroidAspectJExtension params;
+        final AspectJExtension ajParams;
 
         if (project.plugins.hasPlugin(AppPlugin)) {
             plugin = project.plugins.getPlugin(AppPlugin);
@@ -44,7 +46,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         def android = isLibraryPlugin ? (LibraryExtension) project.android : (AppExtension) project.android;
         DefaultDomainObjectSet<? extends BaseVariant> variants = getVariants(isLibraryPlugin, android);
-        params = project.extensions.create('aspectj', AndroidAspectJExtension);
+        ajParams = project.extensions.create('aspectj', AspectJExtension);
 
         variants.all { BaseVariant variant ->
             final def sets = android.sourceSets;
@@ -62,8 +64,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             test.java.srcDir('src/test/aspectj');
         }
 
-        project.repositories { mavenCentral() }
-        project.dependencies { compile "org.aspectj:aspectjrt:1.8.9" }
+        project.repositories { project.repositories.mavenCentral() }
+        project.dependencies { project.dependencies.add("org.aspectj:aspectjrt:1.8.9", project.dependencies.gradleApi()) }
         project.afterEvaluate {
             final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
             final VariantManager manager = getVariantManager(plugin as BasePlugin);
@@ -114,15 +116,15 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                     self.source = javaCompile.source + aspects + aptBuildFiles;
 
                     //extension params
-                    self.binaryWeave = params.binaryWeave;
-                    self.binaryExclude = params.binaryExclude;
-                    self.logFile = params.logFileName;
-                    self.weaveInfo = params.weaveInfo;
-                    self.ignoreErrors = params.ignoreErrors;
-                    self.addSerialVUID = params.addSerialVersionUID;
-                    self.interruptOnWarnings = params.interruptOnWarnings;
-                    self.interruptOnErrors = params.interruptOnErrors;
-                    self.interruptOnFails = params.interruptOnFails;
+                    self.binaryWeave = ajParams.binaryWeave;
+                    self.binaryExclude = ajParams.binaryExclude;
+                    self.logFile = ajParams.logFileName;
+                    self.weaveInfo = ajParams.weaveInfo;
+                    self.ignoreErrors = ajParams.ignoreErrors;
+                    self.addSerialVUID = ajParams.addSerialVersionUID;
+                    self.interruptOnWarnings = ajParams.interruptOnWarnings;
+                    self.interruptOnErrors = ajParams.interruptOnErrors;
+                    self.interruptOnFails = ajParams.interruptOnFails;
                 }
 
                 aspectjCompile.doFirst {
@@ -173,6 +175,21 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
                 //apply behavior
                 project.tasks["compile${variantName}Ndk"].dependsOn compileAspectTask;
+
+
+                //trying to apply aj-task after ${variant}UnitTestJava task
+                JavaCompile compileUnitTest = (JavaCompile) project.tasks.findByName("compile${variantName}UnitTestJava")
+                if (compileUnitTest) {
+                    project.logger.warn "Configuring compile${variantName}Aspectj task";
+                    compileUnitTest.mustRunAfter("compile${variantName}Aspectj");
+
+                    Test runTask = (Test) project.tasks.findByName("test$variantName")
+                    if (runTask) {
+                        runTask.doFirst {
+                            ensureRunOnAjc(project, ajParams, runTask);
+                        }
+                    }
+                }
             }
         }
     }
@@ -193,5 +210,15 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         // project.logger.warn(aptPathShift);
         return project.files(project.buildDir.path + aptPathShift) as FileCollection;
+    }
+
+    def private static ensureRunOnAjc(Project project, AspectJExtension aspectJ, Test test) {
+        if (aspectJ.execTestOnAjc) {
+            def ajc = "${aspectJ.findCurrentJdk()}/bin/java";
+            if (!checkIfExecutableExists(ajc)) throw new ProjectConfigurationException("Cannot find executable: $ajc", null);
+            ajc += " -jar ${project.configurations.gradleAjc.singleFile}";
+
+            test.executable ajc;
+        }
     }
 }

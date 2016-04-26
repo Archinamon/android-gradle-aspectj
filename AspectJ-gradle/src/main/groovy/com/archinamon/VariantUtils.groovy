@@ -1,7 +1,10 @@
 package com.archinamon
 
 import com.android.build.gradle.BasePlugin
+import com.android.build.gradle.TestedExtension
 import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.api.TestVariant
+import com.android.build.gradle.api.UnitTestVariant
 import com.android.build.gradle.internal.VariantManager
 import org.gradle.api.internal.DefaultDomainObjectSet
 
@@ -15,12 +18,16 @@ def static applyVariantPreserver(def sets, String dir) {
     return path;
 }
 
-def static DefaultDomainObjectSet<? extends BaseVariant> androidVariants(def isLib, def android) {
+def static <E extends TestedExtension> DefaultDomainObjectSet<? extends BaseVariant> androidVariants(def isLib, E android) {
     isLib ? android.libraryVariants : android.applicationVariants;
 }
 
-def static DefaultDomainObjectSet<? extends BaseVariant> testVariants(def android) {
+def static <E extends TestedExtension> DefaultDomainObjectSet<? extends TestVariant> testVariants(E android) {
     android.testVariants;
+}
+
+def static <E extends TestedExtension> DefaultDomainObjectSet<? extends UnitTestVariant> unitTestVariants(E android) {
+    android.unitTestVariants;
 }
 
 def static findVarData(def variantData, def variant) {

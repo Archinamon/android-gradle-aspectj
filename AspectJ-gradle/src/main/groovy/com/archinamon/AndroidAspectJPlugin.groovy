@@ -32,10 +32,13 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     @Override
     void apply(Project project) {
         final def plugin;
+        final TestedExtension android;
 
         if (project.plugins.hasPlugin(AppPlugin)) {
+            android = project.extensions.getByType(AppExtension);
             plugin = project.plugins.getPlugin(AppPlugin);
         } else if (project.plugins.hasPlugin(LibraryPlugin)) {
+            android = project.extensions.getByType(LibraryExtension);
             plugin = project.plugins.getPlugin(LibraryPlugin);
             isLibraryPlugin = true;
         } else {
@@ -43,7 +46,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
 
         project.extensions.create('aspectj', AspectJExtension);
-        def android = isLibraryPlugin ? (LibraryExtension) project.android : (AppExtension) project.android;
 
         androidVariants(isLibraryPlugin, android).all {
             setupVariant(android, it);
@@ -64,6 +66,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             }
 
             testVariants(android).all {
+                configureAspectJTask(project, plugin, android, it);
+            }
+
+            unitTestVariants(android).all {
                 configureAspectJTask(project, plugin, android, it);
             }
         }
@@ -99,11 +105,9 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             bootClasspath = android.bootClasspath
         }
 
-        def flavors = variant.productFlavors*.name
-//                def types = variant.buildType*.name
-
         def variantName = variant.name.capitalize()
         def newTaskName = "compile${variantName}Aspectj"
+        def flavors = variant.productFlavors*.name
 
         def final String[] srcDirs = ['androidTest', 'test', variant.buildType.name, *flavors].collect {"src/$it/aspectj"};
         def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });

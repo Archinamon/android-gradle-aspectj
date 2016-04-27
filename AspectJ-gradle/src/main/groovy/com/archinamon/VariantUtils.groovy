@@ -11,12 +11,10 @@ import groovy.transform.CompileStatic
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.NamedDomainObjectContainer
 
-@CompileStatic
 def static VariantManager getVariantManager(BasePlugin plugin) {
     return plugin.variantManager;
 }
 
-@CompileStatic
 def static applyVariantPreserver(NamedDomainObjectContainer<AndroidSourceSet> sets, String dir) {
     String path = getAjPath(dir);
     sets.getByName(dir).java.srcDir(path);
@@ -27,12 +25,10 @@ def static <E extends TestedExtension> DomainObjectSet<? extends BaseVariant> an
     isLib ? android.libraryVariants : android.applicationVariants;
 }
 
-@CompileStatic
 def static <E extends TestedExtension> DomainObjectSet<? extends TestVariant> testVariants(E android) {
     android.testVariants;
 }
 
-@CompileStatic
 def static <E extends TestedExtension> DomainObjectSet<? extends UnitTestVariant> unitTestVariants(E android) {
     android.unitTestVariants;
 }

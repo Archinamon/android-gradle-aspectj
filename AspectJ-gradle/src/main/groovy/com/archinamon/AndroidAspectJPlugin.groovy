@@ -83,7 +83,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
     }
 
-    @CompileStatic
     def private static <E extends TestedExtension> void setupVariant(E android, BaseVariant variant) {
         final def sets = android.sourceSets;
         final def Closure applier = { String name ->
@@ -217,7 +216,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     }
 
     // fix to support Android Pre-processing Tools plugin
-    @CompileStatic
     def private static getAptBuildFilesRoot(Project project, BaseVariant variant) {
         def final variantName = variant.name as String;
         def final aptPathShift = "/generated/source/apt/${getSourcePath(variantName)}/";

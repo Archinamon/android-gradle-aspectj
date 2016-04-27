@@ -8,8 +8,8 @@ import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.api.UnitTestVariant
 import com.android.build.gradle.internal.VariantManager
 import groovy.transform.CompileStatic
+import org.gradle.api.DomainObjectSet
 import org.gradle.api.NamedDomainObjectContainer
-import org.gradle.api.internal.DefaultDomainObjectSet
 
 @CompileStatic
 def static VariantManager getVariantManager(BasePlugin plugin) {
@@ -23,17 +23,17 @@ def static applyVariantPreserver(NamedDomainObjectContainer<AndroidSourceSet> se
     return path;
 }
 
-def static <E extends TestedExtension> DefaultDomainObjectSet<? extends BaseVariant> androidVariants(def isLib, E android) {
+def static <E extends TestedExtension> DomainObjectSet<? extends BaseVariant> androidVariants(def isLib, E android) {
     isLib ? android.libraryVariants : android.applicationVariants;
 }
 
 @CompileStatic
-def static <E extends TestedExtension> DefaultDomainObjectSet<? extends TestVariant> testVariants(E android) {
+def static <E extends TestedExtension> DomainObjectSet<? extends TestVariant> testVariants(E android) {
     android.testVariants;
 }
 
 @CompileStatic
-def static <E extends TestedExtension> DefaultDomainObjectSet<? extends UnitTestVariant> unitTestVariants(E android) {
+def static <E extends TestedExtension> DomainObjectSet<? extends UnitTestVariant> unitTestVariants(E android) {
     android.unitTestVariants;
 }
 

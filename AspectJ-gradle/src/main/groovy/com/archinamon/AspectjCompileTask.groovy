@@ -96,21 +96,21 @@ class AspectjCompileTask extends AbstractCompile {
         for (IMessage message : handler.getMessages(null, true)) {
             switch (message.getKind()) {
                 case IMessage.ERROR:
-                    log.error message.message, message.thrown;
-                    if (!logFile.empty) log.error(errorReminder, logFile);
-                    if (getInterruptOnErrors()) throw new StopExecutionException(message.message);
+                    log.error message?.message, message?.thrown;
+                    if (!logFile?.empty) log.error(errorReminder, logFile);
+                    if (getInterruptOnErrors()) throw new StopExecutionException(message?.message);
                     break;
                 case IMessage.FAIL:
                 case IMessage.ABORT:
-                    log.error message.message, message.thrown;
-                    if (!logFile.empty) log.error(errorReminder, logFile);
-                    throw new StopExecutionException(message.message);
+                    log.error message?.message, message?.thrown;
+                    if (!logFile?.empty) log.error(errorReminder, logFile);
+                    throw new StopExecutionException(message?.message);
                 case IMessage.INFO:
                 case IMessage.DEBUG:
                 case IMessage.WARNING:
-                    log.warn message.message, message.thrown;
-                    if (!logFile.empty) log.error(errorReminder, logFile);
-                    if (getInterruptOnWarnings()) throw new StopExecutionException(message.message);
+                    log.warn message?.message, message?.thrown;
+                    if (!logFile?.empty) log.error(errorReminder, logFile);
+                    if (getInterruptOnWarnings()) throw new StopExecutionException(message?.message);
                     break;
             }
         }

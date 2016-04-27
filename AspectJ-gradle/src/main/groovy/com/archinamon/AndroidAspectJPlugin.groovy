@@ -11,6 +11,7 @@ import com.android.build.gradle.internal.VariantManager
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException
+import groovy.transform.CompileStatic
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -82,6 +83,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
     }
 
+    @CompileStatic
     def private static <E extends TestedExtension> void setupVariant(E android, BaseVariant variant) {
         final def sets = android.sourceSets;
         final def Closure applier = { String name ->
@@ -122,7 +124,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
         def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
 
-        def AspectjCompileTask aspectjCompile = project.task(newTaskName,
+        def aspectjCompile = project.task(newTaskName,
                 overwrite: true,
                 group: 'build',
                 description: 'Compiles AspectJ Source',
@@ -131,14 +133,14 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         aspectjCompile.configure {
             def self = aspectjCompile;
 
-            self.sourceCompatibility = javaCompile.sourceCompatibility
-            self.targetCompatibility = javaCompile.targetCompatibility
-            self.encoding = javaCompile.options.encoding
+            self.sourceCompatibility = javaCompile.sourceCompatibility;
+            self.targetCompatibility = javaCompile.targetCompatibility;
+            self.encoding = javaCompile.options.encoding;
 
-            self.aspectPath = setupAspectPath(javaCompile.classpath);
-            self.destinationDir = javaCompile.destinationDir
-            self.classpath = javaCompile.classpath
-            self.bootClasspath = bootClasspath.join(File.pathSeparator)
+            self.aspectPath = javaCompile.classpath;
+            self.destinationDir = javaCompile.destinationDir;
+            self.classpath = javaCompile.classpath;
+            self.bootClasspath = bootClasspath.join(File.pathSeparator);
             self.source = javaCompile.source + aspects + aptBuildFiles;
 
             //extension params
@@ -189,7 +191,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         // uPhyca's fix
         // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run
         javaCompile.doLast {
-            aspectjCompile.classpath = javaCompile.classpath
+            aspectjCompile.classpath = javaCompile.classpath;
         }
 
         def compileAspectTask = project.tasks.getByName(newTaskName) as Task;
@@ -204,6 +206,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
     }
 
+    @CompileStatic
     def private static cleanBuildDir(def path) {
         def buildDir = new File(path as String);
         if (buildDir.exists()) {
@@ -214,7 +217,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     }
 
     // fix to support Android Pre-processing Tools plugin
-    def private static getAptBuildFilesRoot(Project project, variant) {
+    @CompileStatic
+    def private static getAptBuildFilesRoot(Project project, BaseVariant variant) {
         def final variantName = variant.name as String;
         def final aptPathShift = "/generated/source/apt/${getSourcePath(variantName)}/";
 

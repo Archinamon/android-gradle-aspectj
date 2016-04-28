@@ -17,7 +17,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.TaskState
 import org.gradle.api.tasks.compile.AbstractCompile
@@ -130,7 +129,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             self.targetCompatibility = javaCompile.targetCompatibility;
             self.encoding = javaCompile.options.encoding;
 
-            self.aspectPath = setupAspectPath(javaCompile.classpath, testTask).add(aspects);
+            self.aspectPath = setupAspectPath(javaCompile.classpath, aspects, testTask);
             self.destinationDir = javaCompile.destinationDir;
             self.classpath = javaCompile.classpath;
             self.bootClasspath = (bootClasspath as List).join(File.pathSeparator);

@@ -3,15 +3,12 @@ package com.archinamon
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
-import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.StopExecutionException
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
-
-import static com.archinamon.AndroidAspectJPlugin.getAjPath
 
 class AspectjCompileTask extends AbstractCompile {
 
@@ -64,11 +61,11 @@ class AspectjCompileTask extends AbstractCompile {
                 "-target", getTargetCompatibility(),
                 "-d", destinationDir.absolutePath,
                 "-classpath", classpath.asPath,
-                "-bootclasspath", bootClasspath,
+                "-bootclasspath", getBootClasspath(),
                 "-sourceroots", sourceRoots.join(File.pathSeparator)
         ];
 
-        if (getLogFile() != null) {
+        if (!getLogFile()?.isEmpty()) {
             args << "-log" << getLogFile();
         }
 
@@ -88,7 +85,7 @@ class AspectjCompileTask extends AbstractCompile {
             args << "-proceedOnError" << "-noImportError";
         }
 
-        if (!aspectPath.isEmpty()) {
+        if (!aspectPath?.isEmpty()) {
             args << "-aspectpath" << getAspectPath().asPath;
         }
 
@@ -99,21 +96,21 @@ class AspectjCompileTask extends AbstractCompile {
         for (IMessage message : handler.getMessages(null, true)) {
             switch (message.getKind()) {
                 case IMessage.ERROR:
-                    log.error message.message, message.thrown;
-                    if (!logFile.empty) log.error(errorReminder, logFile);
-                    if (getInterruptOnErrors()) throw new StopExecutionException(message.message);
+                    log.error message?.message, message?.thrown;
+                    if (!logFile?.empty) log.error(errorReminder, logFile);
+                    if (getInterruptOnErrors()) throw new StopExecutionException(message?.message);
                     break;
                 case IMessage.FAIL:
                 case IMessage.ABORT:
-                    log.error message.message, message.thrown;
-                    if (!logFile.empty) log.error(errorReminder, logFile);
-                    throw new StopExecutionException(message.message);
+                    log.error message?.message, message?.thrown;
+                    if (!logFile?.empty) log.error(errorReminder, logFile);
+                    throw new StopExecutionException(message?.message);
                 case IMessage.INFO:
                 case IMessage.DEBUG:
                 case IMessage.WARNING:
-                    log.warn message.message, message.thrown;
-                    if (!logFile.empty) log.error(errorReminder, logFile);
-                    if (getInterruptOnWarnings()) throw new StopExecutionException(message.message);
+                    log.warn message?.message, message?.thrown;
+                    if (!logFile?.empty) log.error(errorReminder, logFile);
+                    if (getInterruptOnWarnings()) throw new StopExecutionException(message?.message);
                     break;
             }
         }
@@ -252,9 +249,5 @@ class AspectjCompileTask extends AbstractCompile {
 //        }
 
         return sourceRoots;
-    }
-
-    def static File getFile(Project project, String path) {
-        return new File(project.projectDir.absolutePath + File.separator + getAjPath(path));
     }
 }

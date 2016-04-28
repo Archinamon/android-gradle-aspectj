@@ -112,7 +112,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         def newTaskName = "compile${variantName}Aspectj"
         def flavors = variant.productFlavors*.name
 
-        def final String[] srcDirs = ['main', 'androidTest', 'test', variant.buildType.name, *flavors].collect {"src/$it/aspectj"};
+        def srcSet = ['androidTest', 'test', variant.buildType.name, *flavors];
+        if (testTask) srcSet << 'main';
+
+        def final String[] srcDirs = srcSet.collect {"src/$it/aspectj"};
         def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
         def final FileCollection aptBuildFiles = getAptBuildFilesRoot(project, variant);
 

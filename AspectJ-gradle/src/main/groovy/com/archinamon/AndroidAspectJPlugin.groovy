@@ -123,6 +123,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 overwrite: true,
                 group: 'build',
                 description: 'Compiles AspectJ Source',
+                depandsOn: [javaCompile],
                 type: AspectjCompileTask) as AspectjCompileTask;
 
         aspectjCompile.configure {

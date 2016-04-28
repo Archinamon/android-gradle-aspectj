@@ -74,11 +74,11 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             }
 
             testVariants(android).all {
-                configureAspectJTask(project, plugin, android, it);
+                configureAspectJTask(project, plugin, android, it, true);
             }
 
             unitTestVariants(android).all {
-                configureAspectJTask(project, plugin, android, it);
+                configureAspectJTask(project, plugin, android, it, true);
             }
         }
     }
@@ -93,7 +93,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         variant.buildType*.name.each(applier);
     }
 
-    def private static <E extends TestedExtension> void configureAspectJTask(Project project, def plugin, E android, BaseVariant variant) {
+    def private static <E extends TestedExtension> void configureAspectJTask(Project project, def plugin, E android, BaseVariant variant, def testTask = false) {
         project.logger.warn "Configuring $variant.name";
 
         final def hasRetrolambda = project.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
@@ -107,13 +107,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             throw new CompilerException("AspectJ plugin doesn't support other java-compilers, only javac");
 
         final def JavaCompile javaCompile = (JavaCompile) javaCompiler;
-
-        def bootClasspath
-        if (plugin.properties['runtimeJarList']) {
-            bootClasspath = plugin.runtimeJarList
-        } else {
-            bootClasspath = android.bootClasspath
-        }
+        def bootClasspath = plugin.properties['runtimeJarList'] ?: android.bootClasspath;
 
         def variantName = variant.name.capitalize()
         def newTaskName = "compile${variantName}Aspectj"
@@ -136,10 +130,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             self.targetCompatibility = javaCompile.targetCompatibility;
             self.encoding = javaCompile.options.encoding;
 
-            self.aspectPath = javaCompile.classpath;
+            self.aspectPath = setupAspectPath(javaCompile.classpath, testTask).add(aspects);
             self.destinationDir = javaCompile.destinationDir;
             self.classpath = javaCompile.classpath;
-            self.bootClasspath = bootClasspath.join(File.pathSeparator);
+            self.bootClasspath = (bootClasspath as List).join(File.pathSeparator);
             self.source = javaCompile.source + aspects + aptBuildFiles;
 
             //extension params

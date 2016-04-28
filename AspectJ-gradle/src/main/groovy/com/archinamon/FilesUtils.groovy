@@ -1,6 +1,8 @@
 package com.archinamon
 
 import groovy.transform.CompileStatic
+import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.collections.SimpleFileCollection
 
 @CompileStatic
 def static getSourcePath(String variantName) {
@@ -23,4 +25,11 @@ def static getSourcePath(String variantName) {
 def static concat(String buildPath, String _package) {
     String strPath = _package.replace(".", File.separator);
     return(buildPath + "/$strPath");
+}
+
+@CompileStatic
+def static setupAspectPath(FileCollection javaTaskClassPath, def isTestVariant = false) {
+    new SimpleFileCollection(javaTaskClassPath.findAll { File file ->
+        !file.absolutePath.contains("intermediates/classes");
+    });
 }

@@ -29,9 +29,11 @@ def static concat(String buildPath, String _package) {
 
 @CompileStatic
 def static setupAspectPath(FileCollection javaTaskClassPath, FileCollection aspects, def isTestVariant = false) {
-    def files = new SimpleFileCollection(javaTaskClassPath.findAll { File file ->
+    def files = javaTaskClassPath.findAll { File file ->
         !file.absolutePath.contains("intermediates/classes");
-    });
+    };
 
-    if (isTestVariant) files.add(aspects);
+    if (isTestVariant) files.addAll(aspects.files);
+
+    new SimpleFileCollection(files);
 }

@@ -3,7 +3,8 @@ package com.archinamon;
 public class AspectJExtension {
 
     def boolean binaryWeave = false;
-    def String binaryExclude = "";
+    def boolean weaveTests = false; //experimental option
+    def String exclude = "";
 
     def boolean weaveInfo = true;
     def boolean ignoreErrors = false;

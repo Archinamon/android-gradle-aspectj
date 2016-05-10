@@ -18,7 +18,8 @@ class AspectjCompileTask extends AbstractCompile {
     private String encoding;
 
     private boolean binaryWeave;
-    private String binaryExclude;
+    private boolean weaveTests; //experimental option
+    private String exclude;
 
     private boolean weaveInfo;
     private boolean addSerialVUID;
@@ -82,14 +83,14 @@ class AspectjCompileTask extends AbstractCompile {
         }
 
         if (getIgnoreErrors()) {
-            args << "-proceedOnError" << "-noImportError";
+            args << "-proceedOnError";
         }
 
         if (!aspectPath?.isEmpty()) {
             args << "-aspectpath" << getAspectPath().asPath;
         }
 
-        log.debug "ajc args: " + Arrays.toString(args as String[]);
+        log.warn "ajc args: " + Arrays.toString(args as String[]);
 
         MessageHandler handler = new MessageHandler(true);
         new Main().run(args as String[], handler);
@@ -145,12 +146,21 @@ class AspectjCompileTask extends AbstractCompile {
     }
 
     @Input
+    boolean getWeaveTests() {
+        return weaveTests;
+    }
+
+    void setWeaveTests(boolean val) {
+        this.weaveTests = val;
+    }
+
+    @Input
     def getBinaryExclude() {
-        return binaryExclude;
+        return exclude;
     }
 
     void setBinaryExclude(def val) {
-        this.binaryExclude = val;
+        this.exclude = val;
     }
 
     @Input

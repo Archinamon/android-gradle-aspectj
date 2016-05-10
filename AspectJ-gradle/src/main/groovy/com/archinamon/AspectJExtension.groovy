@@ -1,6 +1,6 @@
 package com.archinamon;
 
-public class AndroidAspectJExtension {
+public class AspectJExtension {
 
     def boolean binaryWeave = false;
     def String binaryExclude = "";

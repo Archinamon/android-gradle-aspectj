@@ -3,7 +3,7 @@ apply plugin: 'maven'
 apply from: 'https://github.yandex-team.ru/raw/archinamon/android-gradle-maven-deployer/patch-1/yaMavenDeployer.gradle'
 
 yaMavenDeployer {
-    artifactId = name;
+    artifactId = rootProject.name;
 }
 
 targetCompatibility = JavaVersion.VERSION_1_6

@@ -17,7 +17,7 @@ This workaround is friendly with <a href="https://bitbucket.org/hvisser/android-
 <a href="https://github.com/excilys/androidannotations" target="_blank">AndroidAnnotations</a>, <a href="https://github.com/square/dagger" target="_blank">Dagger</a> are also supported and works fine.
 <a href="https://github.com/JakeWharton/butterknife" target="_blank">Butterknife</a> now doesn't support ad could works with bugs and errors. WIP on that problem.
 
-This plugin based on <a href="https://github.com/uPhyca/gradle-android-aspectj-plugin/" target="_blank">uPhyca's plugin</a>.
+This plugin was based on <a href="https://github.com/uPhyca/gradle-android-aspectj-plugin/" target="_blank">uPhyca's plugin</a>. Nowdays my plugin has completely re-written code base.
 
 Key features
 -----
@@ -198,8 +198,9 @@ Changelog
 * added MultiDex support;
  
 #### Known limitations
-* You can't speak with native aspects from java — this case won't be fixed due to compile sequence rules;
+* You can't speak with native aspects from java — this case won't be fixed due to android's compile sequence rules;
 * Doesn't support gradle-experimental plugin;
+* UnitTest variants doesn't properly compiled under Retrolambda plugin due to <a href="https://github.com/evant/gradle-retrolambda/pull/185" target="_blank">known RL bug</a>;
 
 All these limits are fighting on and I'll be glad to introduce new build as soon as I solve these problems.
 

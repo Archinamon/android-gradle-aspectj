@@ -134,6 +134,9 @@ So concrete rule is:
 
 Changelog
 -------
+#### 1.3.2 -- One more fix
+* now correctly sets destinationDir
+
 #### 1.3.1 -- Hot-fixes
 * changed module name from `AspectJ-gradle` to `android-gradle-aspectj`;
 * fixed couple of problems with test flavours processing;

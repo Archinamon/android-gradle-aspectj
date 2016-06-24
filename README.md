@@ -4,6 +4,8 @@ A Gradle plugin which enables AspectJ for Android builds.
 Supports writing code with AspectJ-lang in `.aj` files which then builds into annotated java class.
 Full support of Android product flavors and build types.
 
+Actual version: `com.archinamon:android-gradle-aspectj:1.3.1`.
+
 Compilation order:
 ```groovy
   if (hasRetrolambda)
@@ -15,7 +17,7 @@ This workaround is friendly with <a href="https://bitbucket.org/hvisser/android-
 <a href="https://github.com/excilys/androidannotations" target="_blank">AndroidAnnotations</a>, <a href="https://github.com/square/dagger" target="_blank">Dagger</a> are also supported and works fine.
 <a href="https://github.com/JakeWharton/butterknife" target="_blank">Butterknife</a> now doesn't support ad could works with bugs and errors. WIP on that problem.
 
-This plugin based on <a href="https://github.com/uPhyca/gradle-android-aspectj-plugin/" target="_blank">uPhyca's plugin</a>.
+This plugin was based on <a href="https://github.com/uPhyca/gradle-android-aspectj-plugin/" target="_blank">uPhyca's plugin</a>. Nowdays my plugin has completely re-written code base.
 
 Key features
 -----
@@ -38,25 +40,12 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:AspectJ-gradle:1.2.1'
+classpath 'com.archinamon:android-gradle-aspectj:1.3.1'
 ```
 
 Apply the `aspectj` plugin:
 ```groovy
 apply plugin: 'com.archinamon.aspectj'
-```
-
-To tune logging and error processing just add an extension:
-```groovy
-aspectj {
-  weaveInfo true //turns on debug weaving information
-  ignoreErrors false //explicitly ignores all aspectJ errors, could break a build
-  addSerialVersionUID false //adds serialUID for Serializable interface inter-type injections
-  logFileName "ajc_details.log" //custom name of default weaveInfo file
-  
-  binaryWeave true //turns on processing compiled .class files to inject aspects into jvm-based languages
-  binaryExclude "com.example.xpoint" //specify here an aspect's source package
-}
 ```
 
 Now you can write aspects using annotation style or native (even without IntelliJ IDEA Ultimate edition).
@@ -83,6 +72,43 @@ aspect AppStartNotifier {
 }
 ```
 
+Tune extension
+-------
+
+```groovy
+aspectj {
+  weaveInfo true
+  ignoreErrors false
+  addSerialVersionUID false
+  logFileName "ajc_details.log"
+  
+  interruptOnWarnings false
+  interruptOnErrors false
+  interruptOnFails true
+  
+  binaryWeave true
+  weaveTests true
+  exclude "com.example.xpoint"
+}
+```
+
+- `weaveInfo` Enables printing info messages from Aj compiler
+- `ignoreErrors` Prevent compiler from aborting if errors occurrs during processing the sources
+- `addSerialVersionUID` Adds serialVersionUID field for Serializable-implemented aspect classes
+- `logFileName` Defines name for the log file where all Aj compiler info writes to
+- `interruptOn[level]` Defines compiler to abort execution if any message of defined level type throws
+- `binaryWeave` Enables processing jvm-based languages, like Kotlin, Groovy. Read more about binary weaving in corresponding paragraph
+- `weaveTests` Depands on binary processing and allows it for test flavours. That is an experimental option and may work incorrectly. Please, report if any abnormal behaviour occurrs
+- `exclude` This option should be defined if binary processing enabled. You should define here all packages separated by coma, where aspectj source code is located. Please, be careful and not mix aj and jvm languages code in the same packages, because these packages will be excluded from final processing within test flavours and binary processing step
+
+Working tests
+-------
+To work properly with test flavours you have to follow a few steps.
+First of all: do not write aspectj code inside the test flavours themself. Use aspects to process over production code only and test this cases by allowing aspects to process test-flavour code with general condition from within production code.
+Second is: try to avoid binary processing within test flavours due to some abnormal conditions may occurrs.
+
+The compilation flow also operates over built bytecode files. Ajc removes packages from `exclude` specified param to avoid mixing source files on dexTransform build step while deploying apk file.
+
 ProGuard
 -------
 Correct tuning will depends on your own usage of aspect classes. So if you declares inter-type injections you'll have to predict side-effects and define your annotations/interfaces which you inject into java classes/methods/etc. in proguard config.
@@ -108,6 +134,17 @@ So concrete rule is:
 
 Changelog
 -------
+#### 1.3.1 -- Hot-fixes
+* changed module name from `AspectJ-gradle` to `android-gradle-aspectj`;
+* fixed couple of problems with test flavours processing;
+* added experimental option: `weaveTests`;
+* added finally post-compile processing for tests;
+
+#### 1.3.0 -- Merging binary processing and tests
+* enables binary processing for test flavours;
+* properly aspectpath and after-compile source processing for test flavours;
+* corresponding sources processing between application modules;
+
 #### 1.2.1 -- Hot-fix of Gradle DSL
 * removed unnecessary parameters from aspectj-extension class;
 * fixed gradle dsl-model;
@@ -161,8 +198,9 @@ Changelog
 * added MultiDex support;
  
 #### Known limitations
-* You can't speak with native aspects from java — this case won't be fixed due to compile sequence rules;
+* You can't speak with native aspects from java — this case won't be fixed due to android's compile sequence rules;
 * Doesn't support gradle-experimental plugin;
+* UnitTest variants doesn't properly compiled under Retrolambda plugin due to <a href="https://github.com/evant/gradle-retrolambda/pull/185" target="_blank">known RL bug</a>;
 
 All these limits are fighting on and I'll be glad to introduce new build as soon as I solve these problems.
 

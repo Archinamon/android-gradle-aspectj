@@ -106,8 +106,6 @@ class AndroidAspectJPlugin implements Plugin<Project> {
     }
 
     def private void configureAspectJTask(BaseVariant variant, String testTask = null) {
-        buildSideDir = getNewBuildDir(rootProject.buildDir.absolutePath, buildDirPostfix as String, variant.name);
-
         final VariantManager manager = getVariantManager(plugin as BasePlugin);
         final AspectJExtension ajParams = rootProject.extensions.findByType(AspectJExtension);
 
@@ -130,6 +128,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         if (isTestFlav) {
             srcSet << 'main';
         }
+
+        buildSideDir = javaCompile.destinationDir;
 
         rootProject.logger.warn "$TAG Capturing sourceSets: ${srcSet.toListString()}";
 
@@ -236,6 +236,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         hasRetrolambda ? "retrolambda" : "intermediates/classes";
     }
 
+    @Deprecated
     @CompileStatic
     def private static getNewBuildDir(String rootBuildDir, String postfix, String variantName) {
         "$rootBuildDir/$postfix/$variantName";

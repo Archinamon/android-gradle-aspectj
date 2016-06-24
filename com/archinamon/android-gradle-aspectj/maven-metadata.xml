@@ -3,10 +3,11 @@
   <groupId>com.archinamon</groupId>
   <artifactId>android-gradle-aspectj</artifactId>
   <versioning>
-    <release>1.3.1</release>
+    <release>1.3.2</release>
     <versions>
       <version>1.3.1</version>
+      <version>1.3.2</version>
     </versions>
-    <lastUpdated>20160511103656</lastUpdated>
+    <lastUpdated>20160624224335</lastUpdated>
   </versioning>
 </metadata>

@@ -134,6 +134,9 @@ So concrete rule is:
 
 Changelog
 -------
+#### 1.3.3 -- Rt qualifier
+* added external runtime version qualifier;
+
 #### 1.3.2 -- One more fix
 * now correctly sets destinationDir
 

@@ -2,6 +2,8 @@ package com.archinamon;
 
 public class AspectJExtension {
 
+    def String ajc = "1.8.9";
+
     def boolean binaryWeave = false;
     def boolean weaveTests = false; //experimental option
     def String exclude = "";

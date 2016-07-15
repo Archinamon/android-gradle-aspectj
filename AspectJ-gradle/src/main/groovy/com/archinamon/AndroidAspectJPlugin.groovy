@@ -55,7 +55,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             throw new GradleException("$TAG You must apply the Android plugin or the Android library plugin");
         }
 
-        rootProject.extensions.create('aspectj', AspectJExtension);
+        def settings = rootProject.extensions.create('aspectj', AspectJExtension);
 
         androidVariants(isLibraryPlugin, extAndroid).all {
             setupVariant(it);
@@ -76,7 +76,7 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         }
 
         rootProject.repositories { rootProject.repositories.mavenCentral() }
-        rootProject.dependencies { compile "org.aspectj:aspectjrt:1.8.9" }
+        rootProject.dependencies { compile "org.aspectj:aspectjrt:$settings.ajc" }
         rootProject.afterEvaluate {
             hasRetrolambda = rootProject.plugins.hasPlugin('me.tatarka.retrolambda') as boolean;
             buildDirPostfix = getBuildDirPostfix(hasRetrolambda);

@@ -4,7 +4,7 @@ A Gradle plugin which enables AspectJ for Android builds.
 Supports writing code with AspectJ-lang in `.aj` files which then builds into annotated java class.
 Full support of Android product flavors and build types.
 
-Actual version: `com.archinamon:android-gradle-aspectj:1.3.2`.
+Actual version: `com.archinamon:android-gradle-aspectj:1.3.3`.
 
 Compilation order:
 ```groovy
@@ -40,7 +40,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:1.3.1'
+classpath 'com.archinamon:android-gradle-aspectj:1.3.3'
 ```
 
 Apply the `aspectj` plugin:

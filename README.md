@@ -77,6 +77,8 @@ Tune extension
 
 ```groovy
 aspectj {
+  ajc "1.8.9"
+
   weaveInfo true
   ignoreErrors false
   addSerialVersionUID false
@@ -92,6 +94,7 @@ aspectj {
 }
 ```
 
+- `ajc` Allows to define the aspectj runtime jar version manually
 - `weaveInfo` Enables printing info messages from Aj compiler
 - `ignoreErrors` Prevent compiler from aborting if errors occurrs during processing the sources
 - `addSerialVersionUID` Adds serialVersionUID field for Serializable-implemented aspect classes

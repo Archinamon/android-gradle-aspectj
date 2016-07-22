@@ -1,43 +1,45 @@
 package com.archinamon
 
 import com.android.build.gradle.BasePlugin
-import com.android.build.gradle.TestedExtension
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.api.BaseVariant
-import com.android.build.gradle.api.TestVariant
-import com.android.build.gradle.api.UnitTestVariant
-import com.android.build.gradle.internal.VariantManager
+import com.android.build.gradle.internal.variant.BaseVariantData
+import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import groovy.transform.CompileStatic
-import org.gradle.api.DomainObjectSet
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
+import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.collections.SimpleFileCollection
+import org.gradle.api.tasks.SourceTask
+import org.gradle.api.tasks.compile.JavaCompile
 
-def static VariantManager getVariantManager(BasePlugin plugin) {
-    return plugin.variantManager;
+def static SourceTask getJavaTask(BaseVariantData<BaseVariantOutputData> baseVariantData) {
+    if (baseVariantData.metaClass.getMetaProperty('javaCompileTask')) {
+        return baseVariantData.javaCompileTask
+    } else if (baseVariantData.metaClass.getMetaProperty('javaCompilerTask')) {
+        return baseVariantData.javaCompilerTask
+    }
+    return null
 }
 
-def static applyVariantPreserver(NamedDomainObjectContainer<AndroidSourceSet> sets, String dir) {
-    String path = getAjPath(dir);
-    sets.getByName(dir).java.srcDir(path);
-    return path;
+def static FileCollection getAjSourceAndExcludeFromJavac(Project project, BaseVariantData<BaseVariantOutputData> variantData) {
+    def JavaCompile javaTask = getJavaTask(variantData);
+
+    def flavors = variantData.variantConfiguration.productFlavors*.name;
+    def srcSet = ['main', variantData.variantConfiguration.buildType.name, *flavors];
+
+    def final String[] srcDirs = srcSet.collect {"src/$it/aspectj"};
+    def final FileCollection aspects = new SimpleFileCollection(srcDirs.collect { project.file(it) });
+
+    javaTask.exclude { treeElem ->
+        treeElem.file in aspects.files;
+    }
+
+    aspects.filter { file ->
+        file.exists();
+    };
 }
 
-def static <E extends TestedExtension> DomainObjectSet<? extends BaseVariant> androidVariants(def isLib, E android) {
-    isLib ? android.libraryVariants : android.applicationVariants;
-}
-
-def static <E extends TestedExtension> DomainObjectSet<? extends TestVariant> testVariants(E android) {
-    android.testVariants;
-}
-
-def static <E extends TestedExtension> DomainObjectSet<? extends UnitTestVariant> unitTestVariants(E android) {
-    android.unitTestVariants;
-}
-
-def static findVarData(def variantData, def variant) {
-    variantData.name.equals(variant.name);
-}
-
-@CompileStatic
-def private static getAjPath(String dir) {
-    return "src/$dir/aspectj";
+def static List<BaseVariantData<? extends BaseVariantOutputData>> getVariantDataList(BasePlugin plugin) {
+    return plugin.variantManager.variantDataList;
 }

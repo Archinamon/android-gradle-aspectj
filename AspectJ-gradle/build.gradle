@@ -16,16 +16,18 @@ dependencies {
 
     compile gradleApi()
     compile localGroovy()
-    compile 'com.android.tools.build:gradle:1.3.1'
+
+    compile 'com.android.tools.build:gradle:2.1.+'
     compile "org.aspectj:aspectjrt:$aspectjVersion"
     compile "org.aspectj:aspectjtools:$aspectjVersion"
+    compile 'com.android.tools.build:transform-api:1.5.0'
 
     testCompile 'junit:junit:4.10'
     testCompile 'org.easytesting:fest-assert-core:2.0M10'
 }
 
 group = 'com.archinamon'
-version = '1.3.3'
+version = '2.0.0'
 
 // local archive :: debug mode
 uploadArchives {

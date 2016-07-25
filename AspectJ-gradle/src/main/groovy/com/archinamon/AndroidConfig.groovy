@@ -3,6 +3,7 @@ package com.archinamon;
 import com.android.build.gradle.*
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.artifacts.DependencySet
 
 /**
  * @author archinamon

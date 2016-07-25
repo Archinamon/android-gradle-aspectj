@@ -1,12 +1,10 @@
 package com.archinamon
 
+import com.android.build.gradle.AppExtension
 import com.android.build.gradle.BasePlugin
-import com.android.build.gradle.api.AndroidSourceSet
-import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
-import groovy.transform.CompileStatic
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.collections.SimpleFileCollection
@@ -43,3 +41,8 @@ def static FileCollection getAjSourceAndExcludeFromJavac(Project project, BaseVa
 def static List<BaseVariantData<? extends BaseVariantOutputData>> getVariantDataList(BasePlugin plugin) {
     return plugin.variantManager.variantDataList;
 }
+
+//def static BaseVariantData<? extends BaseVariantOutputData> getTargetVariant(AndroidConfig config) {
+//    if (config.isLibraryPlugin) return (LibraryExtension) config.extAndroid;
+//    else return ((AppExtension) config.extAndroid).applicationVariants.
+//}

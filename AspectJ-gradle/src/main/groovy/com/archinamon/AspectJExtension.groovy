@@ -1,19 +1,17 @@
 package com.archinamon
 
-import org.gradle.api.JavaVersion;
-
 public class AspectJExtension {
 
     def String ajc = "1.8.9";
 
+    def boolean defaultIncludeAllJars = true;
     List<String> includeJarFilter = new ArrayList<String>();
     List<String> excludeJarFilter = new ArrayList<String>();
 
     def boolean weaveInfo = true;
     def boolean addSerialVersionUID = false;
     def boolean noInlineAround = false;
-
-    def JavaVersion javaVersion = JavaVersion.VERSION_1_7;
+    def boolean ignoreErrors = false;
 
     def String logFileName = "ajc-details.log";
 

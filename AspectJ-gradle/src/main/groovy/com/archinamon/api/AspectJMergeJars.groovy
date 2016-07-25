@@ -16,7 +16,7 @@ import groovy.transform.CompileStatic
  */
 public class AspectJMergeJars {
 
-    private final String target = "aspectj";
+    private final String target = AspectTransform.TRANSFORM_NAME;
     private AspectTransform transform;
 
     AspectJMergeJars(AspectTransform transformer) {

@@ -22,10 +22,9 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         this.config = new AndroidConfig(project);
         def settings = project.extensions.create('aspectj', AspectJExtension);
 
-        project.repositories { project.repositories.mavenCentral() }
-        project.dependencies { compile "org.aspectj:aspectjrt:$settings.ajc" }
-
-        prepareVariant(config.extAndroid.sourceSets);
+        project.repositories { project.repositories.mavenCentral(); }
+        project.dependencies { compile "org.aspectj:aspectjrt:$settings.ajc"; }
+        project.afterEvaluate { prepareVariant(config.extAndroid.sourceSets); }
 
         project.gradle.addListener(new BuildTimeListener());
         final AspectTransform transformer = new AspectTransform(project)

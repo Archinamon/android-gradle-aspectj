@@ -18,6 +18,7 @@ class AspectJWeaver {
     boolean weaveInfo;
     boolean addSerialVUID;
     boolean noInlineAround;
+    boolean ignoreErrors;
 
     ArrayList<File> ajSources = new ArrayList<>();
     ArrayList<File> aspectPath = new ArrayList<>();
@@ -32,7 +33,7 @@ class AspectJWeaver {
         this.project = project;
     }
 
-    protected void weave() {
+    protected void doWeave() {
 
         final def log = project.logger;
 
@@ -62,8 +63,7 @@ class AspectJWeaver {
                 "-classpath", classPath.join(File.pathSeparator),
                 "-inpath", inPath.join(File.pathSeparator),
                 "-aspectpath", aspectPath.join(File.pathSeparator),
-                "-sourceroots", ajSources.join(File.pathSeparator),
-                "-preserveAllLocals"
+                "-sourceroots", ajSources.join(File.pathSeparator)
         ];
 
         if (!logFile?.isEmpty()) {
@@ -80,6 +80,10 @@ class AspectJWeaver {
 
         if (noInlineAround) {
             args << "-XnoInline";
+        }
+
+        if (ignoreErrors) {
+            args << "-proceedOnError" << "-noImportError";
         }
 
         log.warn "ajc args: " + Arrays.toString(args as String[]);

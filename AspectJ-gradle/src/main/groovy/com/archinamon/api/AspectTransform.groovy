@@ -1,28 +1,32 @@
-package com.archinamon.api;
+package com.archinamon.api
 
+import com.android.build.api.transform.Context;
 import com.android.build.api.transform.DirectoryInput
 import com.android.build.api.transform.Format
 import com.android.build.api.transform.JarInput
 import com.android.build.api.transform.QualifiedContent
 import com.android.build.api.transform.Transform
 import com.android.build.api.transform.TransformException
+import com.android.build.api.transform.TransformInput
 import com.android.build.api.transform.TransformInvocation
 import com.android.build.api.transform.TransformOutputProvider
+import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
+import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.VariantUtils
-import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
 
 class AspectTransform extends Transform {
 
-    def private static final TRANSFORM_NAME = "aspectj";
+    def static final TRANSFORM_NAME = "aspectj";
 
     Project project;
     AndroidConfig config;
@@ -54,6 +58,7 @@ class AspectTransform extends Transform {
             aspectJWeaver.weaveInfo = extension.weaveInfo;
             aspectJWeaver.addSerialVUID = extension.addSerialVersionUID;
             aspectJWeaver.noInlineAround = extension.noInlineAround;
+            aspectJWeaver.ignoreErrors = extension.ignoreErrors;
             aspectJWeaver.setLogFile(extension.logFileName);
         }
         this;
@@ -61,14 +66,8 @@ class AspectTransform extends Transform {
 
     def <T extends BaseVariantData<? extends BaseVariantOutputData>> void setupVariant(AspectJWeaver aspectJWeaver, AndroidConfig config, T variantData) {
         def JavaCompile javaTask = VariantUtils.getJavaTask(variantData);
-
-        def aspects = VariantUtils.getAjSourceAndExcludeFromJavac(project, variantData);
-
-        aspectJWeaver.setAjSources(aspects.files.toArray(new File[aspects.size()]));
+        VariantUtils.getAjSourceAndExcludeFromJavac(project, variantData);
         aspectJWeaver.encoding = javaTask.options.encoding;
-        aspectJWeaver.bootClasspath = config.bootClasspath.join(File.pathSeparator);
-        aspectJWeaver.sourceCompatibility = extension.javaVersion.toString();
-        aspectJWeaver.targetCompatibility = extension.javaVersion.toString();
     }
 
     /* External API */
@@ -98,6 +97,15 @@ class AspectTransform extends Transform {
         return false;
     }
 
+    @Override //support of older gradle plugins
+    void transform(Context context, Collection<TransformInput> inputs, Collection<TransformInput> referencedInputs, TransformOutputProvider outputProvider, boolean isIncremental) throws IOException, TransformException, InterruptedException {
+        this.transform(new TransformInvocationBuilder(context)
+                .addInputs(inputs)
+                .addReferencedInputs(referencedInputs)
+                .addOutputProvider(outputProvider)
+                .setIncrementalMode(isIncremental).build());
+    }
+
     @Override
     void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         TransformOutputProvider outputProvider = transformInvocation.outputProvider;
@@ -108,11 +116,15 @@ class AspectTransform extends Transform {
             outputProvider.deleteAll();
         }
 
-        final File resultDir = outputProvider.getContentLocation("aspectj", outputTypes, scopes, Format.DIRECTORY);
-        FileUtils.mkdirs(resultDir);
-        FileUtils.emptyFolder(resultDir);
+        final File outputDir = outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY);
+        FileUtils.mkdirs(outputDir);
+        FileUtils.emptyFolder(outputDir);
 
-        aspectJWeaver.destinationDir = resultDir.absolutePath;
+        aspectJWeaver.setAjSources(findAjSourcesForVariant(transformInvocation.context.variantName));
+        aspectJWeaver.destinationDir = outputDir.absolutePath;
+        aspectJWeaver.bootClasspath = config.bootClasspath.join(File.pathSeparator);
+        aspectJWeaver.sourceCompatibility = JavaVersion.VERSION_1_7.toString();
+        aspectJWeaver.targetCompatibility = JavaVersion.VERSION_1_7.toString();
 
         transformInvocation.inputs.each { input ->
             if (input.directoryInputs.empty && input.jarInputs.empty)
@@ -129,22 +141,55 @@ class AspectTransform extends Transform {
                 aspectJWeaver.classPath << jarInput.file;
 
                 String jarPath = jarInput.file.absolutePath;
-                if (isIncludeFilterMatched(jarPath, includeJarFilter) &&
-                        !isExcludeFilterMatched(jarPath, excludeJarFilter)) {
-                    println "includeJar :: ${jarPath}";
-                    aspectJWeaver.inPath << jarInput.file;
+                if (extension.defaultIncludeAllJars) {
+                    if (!isExcludeFilterMatched(jarPath, excludeJarFilter)) {
+                        includeJar(jarInput, jarPath);
+                    } else {
+                        excludeJar(outputProvider, jarInput, jarPath);
+                    }
                 } else {
-                    println "excludeJar :: ${jarPath}";
-                    copyJar(outputProvider, jarInput);
+                    if (isIncludeFilterMatched(jarPath, includeJarFilter)) {
+                        includeJar(jarInput, jarPath);
+                    } else {
+                        excludeJar(outputProvider, jarInput, jarPath);
+                    }
                 }
             }
         }
 
-        aspectJWeaver.weave();
-        aspectJMerger.doMerge(outputProvider, resultDir);
+        aspectJWeaver.doWeave();
+        aspectJMerger.doMerge(outputProvider, outputDir);
+    }
+
+    def private void includeJar(JarInput jarInput, String jarPath) {
+        println "includeJar :: ${jarPath}";
+        aspectJWeaver.inPath << jarInput.file;
+    }
+
+    def static void excludeJar(TransformOutputProvider provider, JarInput jarInput, String jarPath) {
+        println "excludeJar :: ${jarPath}";
+        copyJar(provider, jarInput);
     }
 
     /* Internal */
+
+    File[] findAjSourcesForVariant(String variantName) {
+        def possibleDirs = [project.file("src/main/aspectj")];
+        def String[] types = variantName.split("(?=\\p{Upper})");
+
+        File[] root = project.file("src").listFiles();
+        root.each { File file ->
+            types.each {
+                if (file.name.contains(it.toLowerCase()) &&
+                        file.list().any { it.contains("aspectj"); } &&
+                        !possibleDirs.contains(file)) {
+                    possibleDirs << new File(file, 'aspectj');
+                }
+            }
+        }
+
+        possibleDirs.toArray(new File[possibleDirs.size()]);
+    }
 
     boolean isExcludeFilterMatched(String str, List<String> filters) {
         return isFilterMatched(str, filters, FilterPolicy.EXCLUDE);

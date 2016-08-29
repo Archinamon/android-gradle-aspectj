@@ -1,32 +1,34 @@
 # GradleAspectJ-Android
 
 A Gradle plugin which enables AspectJ for Android builds.
-Supports writing code with AspectJ-lang in `.aj` files which then builds into annotated java class.
+Supports writing code with AspectJ-lang in `.aj` files and in java-annotation style.
 Full support of Android product flavors and build types.
+Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:1.3.3`.
+Actual version: `com.archinamon:android-gradle-aspectj:2.0.1`.
+Re-written with brand new <a href="http://tools.android.com/tech-docs/new-build-system/transform-api" target="_blank">Transform API</a>!
 
-Compilation order:
-```groovy
-  if (hasRetrolambda)
-    retrolambdaTask.dependsOn(aspectCompileTask)
-  else
-    javaComplieTask.finalizedBy(aspectCompileTask)
-```
-This workaround is friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project.
+This plugin is completely friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project (not beta, sadly but rl-transformer not works properly with my plugin now).
 <a href="https://github.com/excilys/androidannotations" target="_blank">AndroidAnnotations</a>, <a href="https://github.com/square/dagger" target="_blank">Dagger</a> are also supported and works fine.
-<a href="https://github.com/JakeWharton/butterknife" target="_blank">Butterknife</a> now doesn't support ad could works with bugs and errors. WIP on that problem.
 
-This plugin was based on <a href="https://github.com/uPhyca/gradle-android-aspectj-plugin/" target="_blank">uPhyca's plugin</a>. Nowdays my plugin has completely re-written code base.
+My plugin has many ideas from the others similar projects, but no one of them grants full pack of features like mine.
+Nowdays it has been completely re-written using Transform API.
 
 Key features
 -----
+
+Augments Java, Kotlin, Groovy bytecode simultaneously!
+Works with background mechanics of jvm-based languages out-of-box!
 
 It is easy to isolate your code with aspect classes, that will be simply injected via cross-point functions, named `advices`, into your core application. The main idea is — code less, do more!
 
 AspectJ-Gradle plugin provides supply of all known JVM-based languages, such as Groovy, Kotlin, etc. That means you can easily write cool isolated stuff which may be inject into any JVM language, not only Java itself! :)
 
-To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>.
+To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>. In case aspectj-native not supported by Android Studio, you may write a java-classes with aspectj annotations.
+
+Two simple rules you may consider when writing aspect classes.
+- Do not write aspects outside the `src/$flavor/aspectj` source set! These java-classes will be excluded from java compiler.
+- Do not try to access aspect classes from java/kotlin/etc. In case java compiler doesn't know anything about aspectj, it will lead to compile errors on javac step.
 
 Usage
 -----
@@ -40,7 +42,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:1.3.3'
+classpath 'com.archinamon:android-gradle-aspectj:2.0.1'
 ```
 
 Apply the `aspectj` plugin:
@@ -63,11 +65,12 @@ aspect AppStartNotifier {
     after() returning: postInit() {
         Application app = (Application) thisJoinPoint.getTarget();
         NotificationManager nmng = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
-        nmng.notify(9999, new NotificationCompat.Builder(app).setTicker("Hello AspectJ")
-                                                             .setContentTitle("Notification from aspectJ")
-                                                             .setContentText("privileged aspect AppAdvice")
-                                                             .setSmallIcon(R.drawable.ic_launcher)
-                                                             .build());
+        nmng.notify(9999, new NotificationCompat.Builder(app)
+                              .setTicker("Hello AspectJ")
+                              .setContentTitle("Notification from aspectJ")
+                              .setContentText("privileged aspect AppAdvice")
+                              .setSmallIcon(R.drawable.ic_launcher)
+                              .build());
     }
 }
 ```
@@ -77,40 +80,37 @@ Tune extension
 
 ```groovy
 aspectj {
-  ajc "1.8.9"
+    ajc '1.8.9'
 
-  weaveInfo true
-  ignoreErrors false
-  addSerialVersionUID false
-  logFileName "ajc_details.log"
-  
-  interruptOnWarnings false
-  interruptOnErrors false
-  interruptOnFails true
-  
-  binaryWeave true
-  weaveTests true
-  exclude "com.example.xpoint"
+    defaultIncludeAllJars true
+    includeJarFilter 'design', 'support-v4', 'dagger'
+    excludeJarFilter 'rx', 'picasso'
+
+    weaveInfo true
+    addSerialVersionUID false
+    noInlineAround false
+    ignoreErrors false
+
+    logFileName 'ajc-details.log'
 }
 ```
 
-- `ajc` Allows to define the aspectj runtime jar version manually
+- `ajc` Allows to define the aspectj runtime jar version manually (1.8.9 current)
+
+- `defaultIncludeAllJars` Default option to include or exclude all jars simultaneously
+- `includeJarFilter` Name filter to include any jar/aar which name or path satisfies the filter
+- `excludeJarFilter` Name filter to exclude any jar/aar which name or path satisfies the filter
+
 - `weaveInfo` Enables printing info messages from Aj compiler
-- `ignoreErrors` Prevent compiler from aborting if errors occurrs during processing the sources
 - `addSerialVersionUID` Adds serialVersionUID field for Serializable-implemented aspect classes
+- `noInlineAround` Strict ajc to inline around advice's body into the target methods
+- `ignoreErrors` Prevent compiler from aborting if errors occurrs during processing the sources
+
 - `logFileName` Defines name for the log file where all Aj compiler info writes to
-- `interruptOn[level]` Defines compiler to abort execution if any message of defined level type throws
-- `binaryWeave` Enables processing jvm-based languages, like Kotlin, Groovy. Read more about binary weaving in corresponding paragraph
-- `weaveTests` Depands on binary processing and allows it for test flavours. That is an experimental option and may work incorrectly. Please, report if any abnormal behaviour occurrs
-- `exclude` This option should be defined if binary processing enabled. You should define here all packages separated by coma, where aspectj source code is located. Please, be careful and not mix aj and jvm languages code in the same packages, because these packages will be excluded from final processing within test flavours and binary processing step
 
 Working tests
 -------
-To work properly with test flavours you have to follow a few steps.
-First of all: do not write aspectj code inside the test flavours themself. Use aspects to process over production code only and test this cases by allowing aspects to process test-flavour code with general condition from within production code.
-Second is: try to avoid binary processing within test flavours due to some abnormal conditions may occurrs.
-
-The compilation flow also operates over built bytecode files. Ajc removes packages from `exclude` specified param to avoid mixing source files on dexTransform build step while deploying apk file.
+Just write a test and run them! If any errors occurrs please write an issue :)
 
 ProGuard
 -------
@@ -137,11 +137,22 @@ So concrete rule is:
 
 Changelog
 -------
+#### 2.0.1 -- Hotfix :)
+* proper scan of productFlavors and buildTypes folders for aj source sets;
+* more complex selecting aj sources to compile;
+* more precise work with jars;
+* changed jar filter policy;
+* optimized weave flags;
+
+#### 2.0.0 -- Brand new mechanics
+* full refactor on Transform API;
+* added new options to aspectj-extension;
+
 #### 1.3.3 -- Rt qualifier
 * added external runtime version qualifier;
 
 #### 1.3.2 -- One more fix
-* now correctly sets destinationDir
+* now correctly sets destinationDir;
 
 #### 1.3.1 -- Hot-fixes
 * changed module name from `AspectJ-gradle` to `android-gradle-aspectj`;
@@ -207,9 +218,8 @@ Changelog
 * added MultiDex support;
  
 #### Known limitations
-* You can't speak with native aspects from java — this case won't be fixed due to android's compile sequence rules;
+* You can't speak with sources in aspectj folder due to excluding it from java compiler;
 * Doesn't support gradle-experimental plugin;
-* UnitTest variants doesn't properly compiled under Retrolambda plugin due to <a href="https://github.com/evant/gradle-retrolambda/pull/185" target="_blank">known RL bug</a>;
 
 All these limits are fighting on and I'll be glad to introduce new build as soon as I solve these problems.
 

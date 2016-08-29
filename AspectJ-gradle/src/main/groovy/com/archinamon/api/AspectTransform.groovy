@@ -142,13 +142,13 @@ class AspectTransform extends Transform {
 
                 String jarPath = jarInput.file.absolutePath;
                 if (extension.defaultIncludeAllJars) {
-                    if (!isExcludeFilterMatched(jarPath, excludeJarFilter)) {
+                    if (excludeJarFilter.empty || !isExcludeFilterMatched(jarPath, excludeJarFilter)) {
                         includeJar(jarInput, jarPath);
                     } else {
                         excludeJar(outputProvider, jarInput, jarPath);
                     }
                 } else {
-                    if (isIncludeFilterMatched(jarPath, includeJarFilter)) {
+                    if (!includeJarFilter.empty && isIncludeFilterMatched(jarPath, includeJarFilter)) {
                         includeJar(jarInput, jarPath);
                     } else {
                         excludeJar(outputProvider, jarInput, jarPath);

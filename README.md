@@ -137,6 +137,10 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.0.3 -- Gradle instant run
+* merged pull request with the latest gradle plugin update;
+* fixed errors after update;
+
 #### 2.0.2 -- Fixed filters
 * problem with empty filters now fixed;
 

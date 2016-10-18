@@ -27,7 +27,7 @@ dependencies {
 }
 
 group = 'com.archinamon'
-version = '2.0.2'
+version = '2.0.3'
 
 // local archive :: debug mode
 uploadArchives {

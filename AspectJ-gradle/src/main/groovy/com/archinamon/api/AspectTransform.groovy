@@ -117,8 +117,8 @@ class AspectTransform extends Transform {
         }
 
         final File outputDir = outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY);
+        if (outputDir.isDirectory()) FileUtils.deleteDirectoryContents(outputDir);
         FileUtils.mkdirs(outputDir);
-        FileUtils.emptyFolder(outputDir);
 
         aspectJWeaver.setAjSources(findAjSourcesForVariant(transformInvocation.context.variantName));
         aspectJWeaver.destinationDir = outputDir.absolutePath;

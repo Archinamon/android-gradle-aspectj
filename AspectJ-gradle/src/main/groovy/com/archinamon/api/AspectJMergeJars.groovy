@@ -35,7 +35,7 @@ public class AspectJMergeJars {
             try {
                 jarMerger.setFilter(new ZipEntryFilter() {
                     @Override
-                    boolean checkEntry(String s) throws ZipAbortException {
+                    boolean checkEntry(String archivePath) throws ZipAbortException {
                         return archivePath.endsWith(SdkConstants.DOT_CLASS);
                     }
                 });

@@ -137,6 +137,16 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.1.0 -- Transform api fix
+* finally fixed errors with multidex;
+* fixed jar merge errors;
+* fixed errors with new gradle plugin;
+* fixed Java 8 support;
+* fixed Retrolambda compatibility;
+
+#### 2.0.4 -- Small fix
+* fixed error with mandatory default aj-directory;
+
 #### 2.0.3 -- Gradle instant run
 * merged pull request with the latest gradle plugin update;
 * fixed errors after update;

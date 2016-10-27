@@ -1,18 +1,8 @@
 package com.archinamon.api
 
-import com.android.build.api.transform.Context;
-import com.android.build.api.transform.DirectoryInput
-import com.android.build.api.transform.Format
-import com.android.build.api.transform.JarInput
-import com.android.build.api.transform.QualifiedContent
-import com.android.build.api.transform.Transform
-import com.android.build.api.transform.TransformException
-import com.android.build.api.transform.TransformInput
-import com.android.build.api.transform.TransformInvocation
-import com.android.build.api.transform.TransformOutputProvider
+import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
-import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
@@ -172,9 +162,11 @@ class AspectTransform extends Transform {
     }
 
     /* Internal */
-
     File[] findAjSourcesForVariant(String variantName) {
-        def possibleDirs = [project.file("src/main/aspectj")];
+        def possibleDirs = [];
+        if (project.file("src/main/aspectj").exists()) {
+            possibleDirs << project.file("src/main/aspectj")
+        }
         def String[] types = variantName.split("(?=\\p{Upper})");
 
         File[] root = project.file("src").listFiles();

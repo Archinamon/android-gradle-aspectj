@@ -66,6 +66,8 @@ class AspectTransform extends Transform {
         def JavaCompile javaTask = VariantUtils.getJavaTask(variantData);
         VariantUtils.getAjSourceAndExcludeFromJavac(project, variantData);
         aspectJWeaver.encoding = javaTask.options.encoding;
+        aspectJWeaver.sourceCompatibility = javaTask.sourceCompatibility;
+        aspectJWeaver.targetCompatibility = javaTask.targetCompatibility;
     }
 
     /* External API */
@@ -126,8 +128,6 @@ class AspectTransform extends Transform {
         aspectJWeaver.setAjSources(findAjSourcesForVariant(transformInvocation.context.variantName));
         aspectJWeaver.destinationDir = outputDir.absolutePath;
         aspectJWeaver.bootClasspath = config.bootClasspath.join(File.pathSeparator);
-        aspectJWeaver.sourceCompatibility = JavaVersion.VERSION_1_7.toString();
-        aspectJWeaver.targetCompatibility = JavaVersion.VERSION_1_7.toString();
 
         transformInvocation.referencedInputs.each { input ->
             if (input.directoryInputs.empty && input.jarInputs.empty)
@@ -164,12 +164,12 @@ class AspectTransform extends Transform {
     }
 
     def private void includeJar(JarInput jarInput, String jarPath) {
-        println "includeJar :: ${jarPath}";
+//        println "includeJar :: ${jarPath}";
         aspectJWeaver.inPath << jarInput.file;
     }
 
     def static void excludeJar(TransformOutputProvider provider, JarInput jarInput, String jarPath) {
-        println "excludeJar :: ${jarPath}";
+//        println "excludeJar :: ${jarPath}";
         copyJar(provider, jarInput);
     }
 

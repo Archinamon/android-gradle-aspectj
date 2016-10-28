@@ -22,7 +22,7 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
 
-    compile 'com.android.tools.build:gradle:2.1.+'
+    compile 'com.android.tools.build:gradle:2.2.1'
     compile "org.aspectj:aspectjrt:$aspectjVersion"
     compile "org.aspectj:aspectjtools:$aspectjVersion"
     compile 'com.android.tools.build:transform-api:1.5.0'

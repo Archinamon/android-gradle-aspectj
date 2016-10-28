@@ -5,7 +5,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:2.0.2`.
+Actual version: `com.archinamon:android-gradle-aspectj:2.1.0`.
 Re-written with brand new <a href="http://tools.android.com/tech-docs/new-build-system/transform-api" target="_blank">Transform API</a>!
 
 This plugin is completely friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project (not beta, sadly but rl-transformer not works properly with my plugin now).
@@ -42,7 +42,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:2.0.2'
+classpath 'com.archinamon:android-gradle-aspectj:2.1.0'
 ```
 
 Apply the `aspectj` plugin:
@@ -137,6 +137,20 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.1.0 -- Transform api fix
+* finally fixed errors with multidex;
+* fixed jar merge errors;
+* fixed errors with new gradle plugin;
+* fixed Java 8 support;
+* fixed Retrolambda compatibility;
+
+#### 2.0.4 -- Small fix
+* fixed error with mandatory default aj-directory;
+
+#### 2.0.3 -- Gradle instant run
+* merged pull request with the latest gradle plugin update;
+* fixed errors after update;
+
 #### 2.0.2 -- Fixed filters
 * problem with empty filters now fixed;
 

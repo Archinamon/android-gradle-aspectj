@@ -5,7 +5,8 @@ import com.android.build.api.transform.Format
 import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformOutputProvider
 import com.android.build.gradle.internal.transforms.JarMerger
-import com.android.builder.signing.SignedJarBuilder
+import com.android.builder.packaging.ZipAbortException
+import com.android.builder.packaging.ZipEntryFilter
 import com.android.utils.FileUtils
 import groovy.transform.CompileStatic
 
@@ -14,6 +15,7 @@ import groovy.transform.CompileStatic
  *
  * @author archinamon on 15/07/16.
  */
+@Deprecated
 public class AspectJMergeJars {
 
     private final String target = AspectTransform.TRANSFORM_NAME;
@@ -32,10 +34,9 @@ public class AspectJMergeJars {
 
             JarMerger jarMerger = new JarMerger(jarFile);
             try {
-                jarMerger.setFilter(new SignedJarBuilder.IZipEntryFilter() {
-
+                jarMerger.setFilter(new ZipEntryFilter() {
                     @Override
-                    public boolean checkEntry(String archivePath) throws SignedJarBuilder.IZipEntryFilter.ZipAbortException {
+                    boolean checkEntry(String archivePath) throws ZipAbortException {
                         return archivePath.endsWith(SdkConstants.DOT_CLASS);
                     }
                 });
@@ -49,6 +50,6 @@ public class AspectJMergeJars {
 
         }
 
-        FileUtils.deleteFolder(resultDir);
+        FileUtils.deletePath(resultDir);
     }
 }

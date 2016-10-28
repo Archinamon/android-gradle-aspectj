@@ -12,13 +12,13 @@ import com.android.build.api.transform.TransformInvocation
 import com.android.build.api.transform.TransformOutputProvider
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
-import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.VariantUtils
+import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
@@ -33,12 +33,10 @@ class AspectTransform extends Transform {
     AspectJExtension extension;
 
     AspectJWeaver aspectJWeaver;
-    AspectJMergeJars aspectJMerger;
 
     public AspectTransform(Project project) {
         this.project = project;
         this.aspectJWeaver = new AspectJWeaver(project);
-        this.aspectJMerger = new AspectJMergeJars(this);
     }
 
     AspectTransform withConfig(AndroidConfig config) {
@@ -89,6 +87,11 @@ class AspectTransform extends Transform {
 
     @Override
     Set<QualifiedContent.Scope> getScopes() {
+        return Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT);
+    }
+
+    @Override
+    Set<QualifiedContent.Scope> getReferencedScopes() {
         return TransformManager.SCOPE_FULL_PROJECT;
     }
 
@@ -117,8 +120,8 @@ class AspectTransform extends Transform {
         }
 
         final File outputDir = outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY);
+        if (outputDir.isDirectory()) FileUtils.deleteDirectoryContents(outputDir);
         FileUtils.mkdirs(outputDir);
-        FileUtils.emptyFolder(outputDir);
 
         aspectJWeaver.setAjSources(findAjSourcesForVariant(transformInvocation.context.variantName));
         aspectJWeaver.destinationDir = outputDir.absolutePath;
@@ -126,7 +129,7 @@ class AspectTransform extends Transform {
         aspectJWeaver.sourceCompatibility = JavaVersion.VERSION_1_7.toString();
         aspectJWeaver.targetCompatibility = JavaVersion.VERSION_1_7.toString();
 
-        transformInvocation.inputs.each { input ->
+        transformInvocation.referencedInputs.each { input ->
             if (input.directoryInputs.empty && input.jarInputs.empty)
                 return; //if no inputs so nothing to proceed
 
@@ -158,7 +161,6 @@ class AspectTransform extends Transform {
         }
 
         aspectJWeaver.doWeave();
-        aspectJMerger.doMerge(outputProvider, outputDir);
     }
 
     def private void includeJar(JarInput jarInput, String jarPath) {
@@ -174,7 +176,10 @@ class AspectTransform extends Transform {
     /* Internal */
 
     File[] findAjSourcesForVariant(String variantName) {
-        def possibleDirs = [project.file("src/main/aspectj")];
+        def possibleDirs = [];
+        if (project.file("src/main/aspectj").exists()) {
+            possibleDirs << project.file("src/main/aspectj");
+        }
         def String[] types = variantName.split("(?=\\p{Upper})");
 
         File[] root = project.file("src").listFiles();

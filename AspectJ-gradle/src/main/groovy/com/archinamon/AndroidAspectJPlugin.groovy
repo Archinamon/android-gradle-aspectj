@@ -7,6 +7,7 @@ import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.archinamon.api.AspectTransform
 import com.archinamon.api.BuildTimeListener
+import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -31,6 +32,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
                 .withConfig(config)
                 .withExtension(settings)
                 .prepareProject();
+
+        if (project.plugins.findPlugin("me.tatarka.retrolambda")) {
+            throw new GradleException("AspectJ gradle plugin should be applied before Retrolambda");
+        }
 
         if (config.isLibraryPlugin) {
             LibraryExtension library = project.extensions.getByType(LibraryExtension);

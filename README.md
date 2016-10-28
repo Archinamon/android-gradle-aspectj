@@ -8,7 +8,7 @@ Support Kotlin, Groovy, Scala and any other languages that compiles into java by
 Actual version: `com.archinamon:android-gradle-aspectj:2.1.0`.
 Re-written with brand new <a href="http://tools.android.com/tech-docs/new-build-system/transform-api" target="_blank">Transform API</a>!
 
-This plugin is completely friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project (not beta, sadly but rl-transformer not works properly with my plugin now).
+This plugin is completely friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project.
 <a href="https://github.com/excilys/androidannotations" target="_blank">AndroidAnnotations</a>, <a href="https://github.com/square/dagger" target="_blank">Dagger</a> are also supported and works fine.
 
 My plugin has many ideas from the others similar projects, but no one of them grants full pack of features like mine.
@@ -82,10 +82,6 @@ Tune extension
 aspectj {
     ajc '1.8.9'
 
-    defaultIncludeAllJars true
-    includeJarFilter 'design', 'support-v4', 'dagger'
-    excludeJarFilter 'rx', 'picasso'
-
     weaveInfo true
     addSerialVersionUID false
     noInlineAround false
@@ -96,10 +92,6 @@ aspectj {
 ```
 
 - `ajc` Allows to define the aspectj runtime jar version manually (1.8.9 current)
-
-- `defaultIncludeAllJars` Default option to include or exclude all jars simultaneously
-- `includeJarFilter` Name filter to include any jar/aar which name or path satisfies the filter
-- `excludeJarFilter` Name filter to exclude any jar/aar which name or path satisfies the filter
 
 - `weaveInfo` Enables printing info messages from Aj compiler
 - `addSerialVersionUID` Adds serialVersionUID field for Serializable-implemented aspect classes

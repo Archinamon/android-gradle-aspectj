@@ -26,6 +26,8 @@ AspectJ-Gradle plugin provides supply of all known JVM-based languages, such as 
 
 To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>. In case aspectj-native not supported by Android Studio, you may write a java-classes with aspectj annotations.
 
+May not work with InstantRun due to a slicer bug. Please, <a href="http://stackoverflow.com/a/35169716/483603" target="_blank">switch off InstanceRun</a> if you have faced any problems (e.g. class file not found in DexPath in runtime).
+
 Two simple rules you may consider when writing aspect classes.
 - Do not write aspects outside the `src/$flavor/aspectj` source set! These aj-classes will be excluded from java compiler.
 - Do not try to access aspect classes from java/kotlin/etc. In case java compiler doesn't know anything about aspectj, it will lead to compile errors on javac step.

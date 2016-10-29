@@ -3,6 +3,7 @@ package com.archinamon.api
 import org.aspectj.bridge.IMessage
 import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.tasks.StopExecutionException
 
@@ -21,6 +22,7 @@ class AspectJWeaver {
     boolean noInlineAround;
     boolean ignoreErrors;
 
+    boolean breakOnError;
     boolean experimental;
 
     ArrayList<File> ajSources = new ArrayList<>();
@@ -105,19 +107,27 @@ class AspectJWeaver {
             switch (message.getKind()) {
                 case IMessage.ERROR:
                     log.error message?.message, message?.thrown;
-                    if (!logFile?.empty) log.error(errorReminder, logFile);
+                    if (breakOnError) throw new GradleException(String.format(errorReminder, logFile));
                     break;
                 case IMessage.FAIL:
                 case IMessage.ABORT:
                     log.error message?.message, message?.thrown;
-                    if (!logFile?.empty) log.error(errorReminder, logFile);
-                    throw new StopExecutionException(message?.message);
+                    throw new GradleException(message?.message);
                 case IMessage.INFO:
                 case IMessage.DEBUG:
                 case IMessage.WARNING:
                     log.warn message?.message, message?.thrown;
                     if (!logFile?.empty) log.error(errorReminder, logFile);
                     break;
+            }
+        }
+
+        File lf = new File(logFile);
+        if (lf.exists()) {
+            lf.readLines().each { String line ->
+                if (line.contains("[error]")) {
+                    throw new GradleException(String.format(errorReminder, logFile));
+                }
             }
         }
     }

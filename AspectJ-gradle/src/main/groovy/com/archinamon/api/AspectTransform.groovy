@@ -66,6 +66,7 @@ class AspectTransform extends Transform {
             aspectJWeaver.noInlineAround = extension.noInlineAround;
             aspectJWeaver.ignoreErrors = extension.ignoreErrors;
             aspectJWeaver.setLogFile(extension.logFileName);
+            aspectJWeaver.breakOnError = extension.breakOnError;
             aspectJWeaver.experimental = extension.experimental;
         }
         this;

@@ -13,6 +13,7 @@ public class AspectJExtension {
     def boolean noInlineAround = false;
     def boolean ignoreErrors = false;
 
+    def boolean breakOnError = true;
     def boolean experimental = false;
 
     def String logFileName = "ajc-details.log";

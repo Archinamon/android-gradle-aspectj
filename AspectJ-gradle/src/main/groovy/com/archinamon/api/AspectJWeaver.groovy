@@ -122,14 +122,7 @@ class AspectJWeaver {
             }
         }
 
-        File lf = new File(logFile);
-        if (lf.exists()) {
-            lf.readLines().each { String line ->
-                if (line.contains("[error]")) {
-                    throw new GradleException(String.format(errorReminder, logFile));
-                }
-            }
-        }
+        detectErrors();
     }
 
     void setLogFile(String name) {
@@ -141,6 +134,17 @@ class AspectJWeaver {
         for (File input : ajSources) {
             if (!this.ajSources.contains(input)) {
                 this.ajSources.add(input);
+            }
+        }
+    }
+
+    def private detectErrors() {
+        File lf = new File(logFile);
+        if (lf.exists()) {
+            lf.readLines().reverseEach { String line ->
+                if (line.contains("[error]") && breakOnError) {
+                    throw new GradleException(String.format(errorReminder, logFile));
+                }
             }
         }
     }

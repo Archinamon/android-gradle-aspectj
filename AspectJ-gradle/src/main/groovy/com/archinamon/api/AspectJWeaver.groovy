@@ -100,6 +100,7 @@ class AspectJWeaver {
         }
 
         log.warn "ajc args: " + Arrays.toString(args as String[]);
+        prepareLogger();
 
         MessageHandler handler = new MessageHandler(true);
         new Main().run(args as String[], handler);
@@ -135,6 +136,13 @@ class AspectJWeaver {
             if (!this.ajSources.contains(input)) {
                 this.ajSources.add(input);
             }
+        }
+    }
+
+    def private prepareLogger() {
+        File lf = new File(logFile);
+        if (lf.exists()) {
+            lf.delete();
         }
     }
 

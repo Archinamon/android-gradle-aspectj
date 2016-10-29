@@ -16,9 +16,12 @@ class AspectJWeaver {
     String encoding;
 
     boolean weaveInfo;
+    boolean debugInfo;
     boolean addSerialVUID;
     boolean noInlineAround;
     boolean ignoreErrors;
+
+    boolean experimental;
 
     ArrayList<File> ajSources = new ArrayList<>();
     ArrayList<File> aspectPath = new ArrayList<>();
@@ -61,13 +64,17 @@ class AspectJWeaver {
                 "-d", destinationDir,
                 "-bootclasspath", bootClasspath,
                 "-classpath", classPath.join(File.pathSeparator),
-                "-inpath", inPath.join(File.pathSeparator),
+                "-sourceroots", ajSources.join(File.pathSeparator),
                 "-aspectpath", aspectPath.join(File.pathSeparator),
-                "-sourceroots", ajSources.join(File.pathSeparator)
+                "-inpath", inPath.join(File.pathSeparator)
         ];
 
         if (!logFile?.isEmpty()) {
             args << "-log" << logFile;
+        }
+
+        if (debugInfo) {
+            args << "-g";
         }
 
         if (weaveInfo) {
@@ -84,6 +91,10 @@ class AspectJWeaver {
 
         if (ignoreErrors) {
             args << "-proceedOnError" << "-noImportError";
+        }
+
+        if (experimental) {
+            args << "-XhasMember" << "-Xjoinpoints:synchronization,arrayconstruction";
         }
 
         log.warn "ajc args: " + Arrays.toString(args as String[]);

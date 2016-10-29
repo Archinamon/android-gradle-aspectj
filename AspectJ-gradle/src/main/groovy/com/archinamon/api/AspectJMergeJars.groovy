@@ -15,7 +15,6 @@ import groovy.transform.CompileStatic
  *
  * @author archinamon on 15/07/16.
  */
-@Deprecated
 public class AspectJMergeJars {
 
     private final String target = AspectTransform.TRANSFORM_NAME;

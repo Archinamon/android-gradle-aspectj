@@ -46,17 +46,17 @@ class AspectTransform extends Transform {
         this.aspectJMerger = new AspectJMergeJars(this);
     }
 
-    AspectTransform withConfig(AndroidConfig config) {
+    def withConfig(AndroidConfig config) {
         this.config = config;
         this;
     }
 
-    AspectTransform withExtension(AspectJExtension extension) {
+    def withExtension(AspectJExtension extension) {
         this.extension = extension;
         this;
     }
 
-    AspectTransform prepareProject() {
+    def prepareProject() {
         project.afterEvaluate {
             VariantUtils.getVariantDataList(config.plugin).each { setupVariant(aspectJWeaver, config, it); }
 
@@ -196,35 +196,35 @@ class AspectTransform extends Transform {
         possibleDirs.toArray(new File[possibleDirs.size()]);
     }
 
-    boolean isExcludeFilterMatched(String str, List<String> filters) {
-        return isFilterMatched(str, filters, FilterPolicy.EXCLUDE);
+    def isExcludeFilterMatched(String str, List<String> filters) {
+        isFilterMatched(str, filters, FilterPolicy.EXCLUDE);
     }
 
-    boolean  isIncludeFilterMatched(String str, List<String> filters) {
-        return isFilterMatched(str, filters, FilterPolicy.INCLUDE);
+    def isIncludeFilterMatched(String str, List<String> filters) {
+        isFilterMatched(str, filters, FilterPolicy.INCLUDE);
     }
 
-    boolean isFilterMatched(String str, List<String> filters, FilterPolicy filterPolicy) {
+    def isFilterMatched(String str, List<String> filters, FilterPolicy filterPolicy) {
         if(str == null) {
-            return false
+            false;
         }
 
         if (filters == null || filters.isEmpty()) {
-            return filterPolicy == FilterPolicy.INCLUDE;
+            filterPolicy == FilterPolicy.INCLUDE;
         }
 
         for (String s : filters) {
             if (isContained(str, s)) {
-                return true;
+                true;
             }
         }
 
-        return false;
+        false;
     }
 
-    static boolean copyJar(TransformOutputProvider outputProvider, JarInput jarInput) {
+    def static copyJar(TransformOutputProvider outputProvider, JarInput jarInput) {
         if (outputProvider == null || jarInput == null) {
-            return false;
+            false;
         }
 
         String jarName = jarInput.name;
@@ -236,26 +236,26 @@ class AspectTransform extends Transform {
 
         FileUtil.copyFile(jarInput.file, dest);
 
-        return true;
+        true;
     }
 
-    static boolean isContained(String str, String filter) {
+    def static isContained(String str, String filter) {
         if (str == null) {
-            return false;
+            false;
         }
 
         String filterTmp = filter;
         if (str.contains(filterTmp)) {
-            return true
+            true;
         } else {
             if (filterTmp.contains("/")) {
-                return str.contains(filterTmp.replace("/", File.separator));
+                str.contains(filterTmp.replace("/", File.separator));
             } else if (filterTmp.contains("\\")) {
-                return str.contains(filterTmp.replace("\\", File.separator));
+                str.contains(filterTmp.replace("\\", File.separator));
             }
         }
 
-        return false
+        false;
     }
 
     enum FilterPolicy {

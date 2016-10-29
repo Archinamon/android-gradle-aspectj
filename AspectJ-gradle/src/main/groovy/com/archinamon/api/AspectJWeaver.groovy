@@ -39,25 +39,9 @@ class AspectJWeaver {
     }
 
     protected void doWeave() {
-
         final def log = project.logger;
 
         //http://www.eclipse.org/aspectj/doc/released/devguide/ajc-ref.html
-        //
-        // -sourceroots:
-        //  Find and build all .java or .aj source files under any directory listed in DirPaths. DirPaths, like classpath, is a single argument containing a list of paths to directories, delimited by the platform- specific classpath delimiter. Required by -incremental.
-        // -inpath:
-        //  Accept as source bytecode any .class files in the .jar files or directories on Path. The output will include these classes, possibly as woven with any applicable aspects. Path is a single argument containing a list of paths to zip files or directories, delimited by the platform-specific path delimiter.
-        // -classpath:
-        //  Specify where to find user class files. Path is a single argument containing a list of paths to zip files or directories, delimited by the platform-specific path delimiter.
-        // -aspectpath:
-        //  Weave binary aspects from jar files and directories on path into all sources. The aspects should have been output by the same version of the compiler. When running the output classes, the run classpath should contain all aspectPath entries. Path, like classpath, is a single argument containing a list of paths to jar files, delimited by the platform- specific classpath delimiter.
-        // -bootclasspath:
-        //  Override location of VM's bootClasspath for purposes of evaluating types when compiling. Path is a single argument containing a list of paths to zip files or directories, delimited by the platform-specific path delimiter.
-        // -d:
-        //  Specify where to place generated .class files. If not specified, Directory defaults to the current working dir.
-        // -preserveAllLocals:
-        //  Preserve all local variables during code generation (to facilitate debugging).
 
         def args = [
                 "-encoding", encoding,

@@ -17,8 +17,9 @@ Nowdays it has been completely re-written using Transform API.
 Key features
 -----
 
-Augments Java, Kotlin, Groovy bytecode simultaneously!
-Works with background mechanics of jvm-based languages out-of-box!
+Augments Java, Kotlin, Groovy bytecode simultaneously!<br />
+Works with background mechanics of jvm-based languages out-of-box!<br />
+[How to teach Android Studio to understand the AspectJ!](IDE)
 
 It is easy to isolate your code with aspect classes, that will be simply injected via cross-point functions, named `advices`, into your core application. The main idea is — code less, do more!
 

@@ -1,4 +1,5 @@
 # GradleAspectJ-Android
+[![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android)
 
 A Gradle plugin which enables AspectJ for Android builds.
 Supports writing code with AspectJ-lang in `.aj` files and in java-annotation style.
@@ -42,13 +43,13 @@ Usage
 First add a maven repo link into your `repositories` block of module build file:
 ```groovy
 mavenCentral()
-maven { url 'https://github.com/Archinamon/GradleAspectJ-Android/raw/master' }
+maven { url "https://jitpack.io" }
 ```
 Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gradle module.
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:2.2.0'
+classpath 'com.github.Archinamon:GradleAspectJ-Android:2.2.0'
 ```
 
 Apply the `aspectj` plugin:

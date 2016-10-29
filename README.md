@@ -113,7 +113,7 @@ aspectj {
 - `ignoreErrors` Prevent compiler from aborting if errors occurrs during processing the sources
 
 - `breakOnError` Allows to continue project building when ajc fails or throws any errors
-- `experimental` Enables experimental ajc options: -XhasMember and -Xjoinpoints:synchronization,arrayconstruction. More details in issue #18
+- `experimental` Enables experimental ajc options: `-XhasMember` and `-Xjoinpoints:synchronization,arrayconstruction`. More details in <a href="https://github.com/Archinamon/GradleAspectJ-Android/issues/18" target="_blank">issue #18</a>
 
 - `logFileName` Defines name for the log file where all Aj compiler info writes to
 

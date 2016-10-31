@@ -68,6 +68,7 @@ class AspectTransform extends Transform {
             aspectJWeaver.setLogFile(extension.logFileName);
             aspectJWeaver.breakOnError = extension.breakOnError;
             aspectJWeaver.experimental = extension.experimental;
+            aspectJWeaver.ajcArgs.addAll(extension.ajcExtraArgs);
         }
 
         return this;
@@ -125,8 +126,8 @@ class AspectTransform extends Transform {
     @Override
     void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         TransformOutputProvider outputProvider = transformInvocation.outputProvider;
-        List<String> includeJars = project.aspectj.includeJarFilter;
-        List<String> includeAspects = project.aspectj.binaryAspectsFilter;
+        List<String> includeJars = project.aspectj.includeJar;
+        List<String> includeAspects = project.aspectj.includeAspectsFromJar;
 
         if (!transformInvocation.incremental) {
             outputProvider.deleteAll();

@@ -24,6 +24,8 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
 
+import java.math.MathContext
+
 import static com.archinamon.StatusLogger.logAugmentationStart
 import static com.archinamon.StatusLogger.logAugmentationFinish
 import static com.archinamon.StatusLogger.logJarAspectAdded
@@ -112,7 +114,8 @@ class AspectTransform extends Transform {
         return false;
     }
 
-    @Override //support of older gradle plugins
+    @Override
+    //support of older gradle plugins
     void transform(Context context, Collection<TransformInput> inputs, Collection<TransformInput> referencedInputs, TransformOutputProvider outputProvider, boolean isIncremental) throws IOException, TransformException, InterruptedException {
         this.transform(new TransformInvocationBuilder(context)
                 .addInputs(inputs)
@@ -149,7 +152,6 @@ class AspectTransform extends Transform {
                 aspectJWeaver.inPath << dir.file;
                 aspectJWeaver.classPath << dir.file;
             }
-
             input.jarInputs.each { JarInput jar ->
                 aspectJWeaver.classPath << jar.file;
 
@@ -205,26 +207,25 @@ class AspectTransform extends Transform {
     }
 
     def isFilterMatched(String str, List<String> filters, FilterPolicy filterPolicy) {
-        if(str == null) {
-            false;
+        if (str == null) {
+            return false;
         }
 
         if (filters == null || filters.isEmpty()) {
-            filterPolicy == FilterPolicy.INCLUDE;
+            return filterPolicy == FilterPolicy.INCLUDE;
         }
 
         for (String s : filters) {
             if (isContained(str, s)) {
-                true;
+                return true;
             }
         }
-
-        false;
+        return false;
     }
 
     def static copyJar(TransformOutputProvider outputProvider, JarInput jarInput) {
         if (outputProvider == null || jarInput == null) {
-            false;
+          return  false;
         }
 
         String jarName = jarInput.name;
@@ -236,30 +237,28 @@ class AspectTransform extends Transform {
 
         FileUtil.copyFile(jarInput.file, dest);
 
-        true;
+        return true;
     }
 
     def static isContained(String str, String filter) {
         if (str == null) {
-            false;
+            return false;
         }
 
         String filterTmp = filter;
         if (str.contains(filterTmp)) {
-            true;
+            return true;
         } else {
             if (filterTmp.contains("/")) {
-                str.contains(filterTmp.replace("/", File.separator));
+                return str.contains(filterTmp.replace("/", File.separator));
             } else if (filterTmp.contains("\\")) {
-                str.contains(filterTmp.replace("\\", File.separator));
+                return str.contains(filterTmp.replace("\\", File.separator));
             }
         }
-
-        false;
+        return false;
     }
 
     enum FilterPolicy {
-
         INCLUDE,
         EXCLUDE
     }

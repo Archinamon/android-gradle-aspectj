@@ -7,11 +7,16 @@ import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.archinamon.api.AspectTransform
 import com.archinamon.api.BuildTimeListener
+import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
 class AndroidAspectJPlugin implements Plugin<Project> {
+
+    private static final ASPECTJ_PLUGIN = "com.archinamon.aspectj";
+    private static final RETROLAMBDA = "me.tatarka.retrolambda";
+    private static final MISDEFINITION = "Illegal definition: $ASPECTJ_PLUGIN should be defined after $RETROLAMBDA plugin";
 
     private Project project;
     private AndroidConfig config;
@@ -39,6 +44,8 @@ class AndroidAspectJPlugin implements Plugin<Project> {
             AppExtension android = project.extensions.getByType(AppExtension);
             android.registerTransform(transformer);
         }
+
+        checkIfPluginAppliedAfterRetrolambda(project);
     }
 
     def void prepareVariant(final NamedDomainObjectContainer<AndroidSourceSet> sets) {
@@ -56,6 +63,18 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         VariantUtils.getVariantDataList(config.plugin).each { BaseVariantData<? extends BaseVariantOutputData> variant ->
             variant.variantConfiguration.productFlavors*.name.each(applier);
             variant.variantConfiguration.buildType*.name.each(applier);
+        }
+    }
+
+    def static checkIfPluginAppliedAfterRetrolambda(final Project project) {
+        boolean appears = project.plugins.findPlugin(RETROLAMBDA);
+        if (!appears) {
+            project.afterEvaluate {
+                //RL was defined before AJ plugin
+                if (!appears && project.plugins.findPlugin(RETROLAMBDA)) {
+                    throw new GradleException(MISDEFINITION);
+                }
+            }
         }
     }
 }

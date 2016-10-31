@@ -24,8 +24,6 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
 
-import java.math.MathContext
-
 import static com.archinamon.StatusLogger.logAugmentationStart
 import static com.archinamon.StatusLogger.logAugmentationFinish
 import static com.archinamon.StatusLogger.logJarAspectAdded
@@ -114,8 +112,7 @@ class AspectTransform extends Transform {
         return false;
     }
 
-    @Override
-    //support of older gradle plugins
+    @Override //support of older gradle plugins
     void transform(Context context, Collection<TransformInput> inputs, Collection<TransformInput> referencedInputs, TransformOutputProvider outputProvider, boolean isIncremental) throws IOException, TransformException, InterruptedException {
         this.transform(new TransformInvocationBuilder(context)
                 .addInputs(inputs)
@@ -220,7 +217,8 @@ class AspectTransform extends Transform {
                 return true;
             }
         }
-        return false;
+
+        false;
     }
 
     def static copyJar(TransformOutputProvider outputProvider, JarInput jarInput) {
@@ -237,7 +235,7 @@ class AspectTransform extends Transform {
 
         FileUtil.copyFile(jarInput.file, dest);
 
-        return true;
+        true;
     }
 
     def static isContained(String str, String filter) {
@@ -255,7 +253,8 @@ class AspectTransform extends Transform {
                 return str.contains(filterTmp.replace("\\", File.separator));
             }
         }
-        return false;
+
+        false;
     }
 
     enum FilterPolicy {

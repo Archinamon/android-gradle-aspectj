@@ -1,8 +1,6 @@
 package com.archinamon
 
-import com.android.build.gradle.AppExtension
 import com.android.build.gradle.BasePlugin
-import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import org.gradle.api.Project
@@ -41,8 +39,3 @@ def static FileCollection getAjSourceAndExcludeFromJavac(Project project, BaseVa
 def static List<BaseVariantData<? extends BaseVariantOutputData>> getVariantDataList(BasePlugin plugin) {
     return plugin.variantManager.variantDataList;
 }
-
-//def static BaseVariantData<? extends BaseVariantOutputData> getTargetVariant(AndroidConfig config) {
-//    if (config.isLibraryPlugin) return (LibraryExtension) config.extAndroid;
-//    else return ((AppExtension) config.extAndroid).applicationVariants.
-//}

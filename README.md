@@ -1,4 +1,5 @@
 # GradleAspectJ-Android
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android)
 
 A Gradle plugin which enables AspectJ for Android builds.
 Supports writing code with AspectJ-lang in `.aj` files and in java-annotation style.
@@ -17,14 +18,17 @@ Nowdays it has been completely re-written using Transform API.
 Key features
 -----
 
-Augments Java, Kotlin, Groovy bytecode simultaneously!
-Works with background mechanics of jvm-based languages out-of-box!
+Augments Java, Kotlin, Groovy bytecode simultaneously!<br />
+Works with background mechanics of jvm-based languages out-of-box!<br />
+[How to teach Android Studio to understand the AspectJ!](IDE)
 
 It is easy to isolate your code with aspect classes, that will be simply injected via cross-point functions, named `advices`, into your core application. The main idea is — code less, do more!
 
 AspectJ-Gradle plugin provides supply of all known JVM-based languages, such as Groovy, Kotlin, etc. That means you can easily write cool stuff which may be inject into any JVM language, not only Java itself! :)
 
 To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>. In case aspectj-native not supported by Android Studio, you may write a java-classes with aspectj annotations.
+
+May not work with InstantRun due to a slicer bug. Please, <a href="http://stackoverflow.com/a/35169716/483603" target="_blank">switch off InstanceRun</a> if you have faced any problems (e.g. class file not found in DexPath in runtime).
 
 Two simple rules you may consider when writing aspect classes.
 - Do not write aspects outside the `src/$flavor/aspectj` source set! These aj-classes will be excluded from java compiler.
@@ -39,13 +43,13 @@ Usage
 First add a maven repo link into your `repositories` block of module build file:
 ```groovy
 mavenCentral()
-maven { url 'https://github.com/Archinamon/GradleAspectJ-Android/raw/master' }
+maven { url "https://jitpack.io" }
 ```
 Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gradle module.
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:2.2.0'
+classpath 'com.github.Archinamon:GradleAspectJ-Android:2.2.0'
 ```
 
 Apply the `aspectj` plugin:
@@ -113,7 +117,7 @@ aspectj {
 - `ignoreErrors` Prevent compiler from aborting if errors occurrs during processing the sources
 
 - `breakOnError` Allows to continue project building when ajc fails or throws any errors
-- `experimental` Enables experimental ajc options: -XhasMember and -Xjoinpoints:synchronization,arrayconstruction. More details in issue #18
+- `experimental` Enables experimental ajc options: `-XhasMember` and `-Xjoinpoints:synchronization,arrayconstruction`. More details in <a href="https://github.com/Archinamon/GradleAspectJ-Android/issues/18" target="_blank">issue #18</a>
 
 - `logFileName` Defines name for the log file where all Aj compiler info writes to
 

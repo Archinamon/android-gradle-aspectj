@@ -48,12 +48,12 @@ class AspectTransform extends Transform {
 
     def withConfig(AndroidConfig config) {
         this.config = config;
-        this;
+        return this;
     }
 
     def withExtension(AspectJExtension extension) {
         this.extension = extension;
-        this;
+        return this;
     }
 
     def prepareProject() {
@@ -69,7 +69,8 @@ class AspectTransform extends Transform {
             aspectJWeaver.breakOnError = extension.breakOnError;
             aspectJWeaver.experimental = extension.experimental;
         }
-        this;
+
+        return this;
     }
 
     def <T extends BaseVariantData<? extends BaseVariantOutputData>> void setupVariant(AspectJWeaver aspectJWeaver, AndroidConfig config, T variantData) {
@@ -218,7 +219,7 @@ class AspectTransform extends Transform {
             }
         }
 
-        false;
+        return false;
     }
 
     def static copyJar(TransformOutputProvider outputProvider, JarInput jarInput) {
@@ -235,7 +236,7 @@ class AspectTransform extends Transform {
 
         FileUtil.copyFile(jarInput.file, dest);
 
-        true;
+        return true;
     }
 
     def static isContained(String str, String filter) {
@@ -254,7 +255,7 @@ class AspectTransform extends Transform {
             }
         }
 
-        false;
+        return false;
     }
 
     enum FilterPolicy {

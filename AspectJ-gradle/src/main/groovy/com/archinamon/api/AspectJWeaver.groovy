@@ -51,9 +51,12 @@ class AspectJWeaver {
                 "-bootclasspath", bootClasspath,
                 "-classpath", classPath.join(File.pathSeparator),
                 "-sourceroots", ajSources.join(File.pathSeparator),
-                "-aspectpath", aspectPath.join(File.pathSeparator),
                 "-inpath", inPath.join(File.pathSeparator)
         ];
+
+        if (!aspectPath.empty) {
+            args << "-aspectpath" << aspectPath.join(File.pathSeparator);
+        }
 
         if (!logFile?.isEmpty()) {
             args << "-log" << logFile;

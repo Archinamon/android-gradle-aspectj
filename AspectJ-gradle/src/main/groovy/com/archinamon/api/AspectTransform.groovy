@@ -206,16 +206,16 @@ class AspectTransform extends Transform {
 
     def isFilterMatched(String str, List<String> filters, FilterPolicy filterPolicy) {
         if(str == null) {
-            false;
+            return false;
         }
 
         if (filters == null || filters.isEmpty()) {
-            filterPolicy == FilterPolicy.INCLUDE;
+            return filterPolicy == FilterPolicy.INCLUDE;
         }
 
         for (String s : filters) {
             if (isContained(str, s)) {
-                true;
+                return true;
             }
         }
 
@@ -241,17 +241,17 @@ class AspectTransform extends Transform {
 
     def static isContained(String str, String filter) {
         if (str == null) {
-            false;
+            return false;
         }
 
         String filterTmp = filter;
         if (str.contains(filterTmp)) {
-            true;
+            return true;
         } else {
             if (filterTmp.contains("/")) {
-                str.contains(filterTmp.replace("/", File.separator));
+                return str.contains(filterTmp.replace("/", File.separator));
             } else if (filterTmp.contains("\\")) {
-                str.contains(filterTmp.replace("\\", File.separator));
+                return str.contains(filterTmp.replace("\\", File.separator));
             }
         }
 

@@ -150,6 +150,10 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.2.1 -- Hot-fix
+* fixed illegal 'return' statement;
+* change included in `updated` 2.2.0 artifacts;
+
 #### 2.2.0 -- Ajc fixes and improvements
 * fixed problem with -aspectPath building project with multidex;
 * fixed scope problems with Transform API;

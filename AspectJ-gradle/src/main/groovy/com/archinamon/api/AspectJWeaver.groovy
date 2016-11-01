@@ -5,7 +5,9 @@ import org.aspectj.bridge.MessageHandler
 import org.aspectj.tools.ajc.Main
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.tasks.StopExecutionException
+
+import static com.archinamon.StatusLogger.logBuildParametersAdapted
+import static com.archinamon.StatusLogger.logExtraAjcArgumentAlreayExists
 
 class AspectJWeaver {
 
@@ -25,6 +27,8 @@ class AspectJWeaver {
     boolean breakOnError;
     boolean experimental;
 
+    ArrayList<String> ajcArgs = new ArrayList<>();
+
     ArrayList<File> ajSources = new ArrayList<>();
     ArrayList<File> aspectPath = new ArrayList<>();
     ArrayList<File> inPath = new ArrayList<>();
@@ -39,7 +43,7 @@ class AspectJWeaver {
     }
 
     protected void doWeave() {
-        final def log = project.logger;
+        File log = prepareLogger();
 
         //http://www.eclipse.org/aspectj/doc/released/devguide/ajc-ref.html
 
@@ -86,26 +90,36 @@ class AspectJWeaver {
             args << "-XhasMember" << "-Xjoinpoints:synchronization,arrayconstruction";
         }
 
-        log.warn "ajc args: " + Arrays.toString(args as String[]);
-        prepareLogger();
+        if (!ajcArgs.empty) {
+            ajcArgs.each { String extra ->
+                if (extra.startsWith('-') && args.contains(extra)) {
+                    logExtraAjcArgumentAlreayExists(extra);
+                    log << "[warning] Duplicate argument found while composing ajc config! Build may be corrupted.\n\n"
+                }
+                args << extra;
+            }
+        }
+
+        log << "Full ajc build args: ${Arrays.toString(args as String[])}\n\n";
+        logBuildParametersAdapted(args as String[], log.name);
 
         MessageHandler handler = new MessageHandler(true);
         new Main().run(args as String[], handler);
         for (IMessage message : handler.getMessages(null, true)) {
             switch (message.getKind()) {
                 case IMessage.ERROR:
-                    log.error message?.message, message?.thrown;
+                    log << "[error]" << message?.message << "${message?.thrown}\n\n";
                     if (breakOnError) throw new GradleException(String.format(errorReminder, logFile));
                     break;
                 case IMessage.FAIL:
                 case IMessage.ABORT:
-                    log.error message?.message, message?.thrown;
+                    log << "[error]" << message?.message << "${message?.thrown}\n\n";
                     throw new GradleException(message?.message);
                 case IMessage.INFO:
                 case IMessage.DEBUG:
                 case IMessage.WARNING:
-                    log.warn message?.message, message?.thrown;
-                    if (!logFile?.empty) log.error(errorReminder, logFile);
+                    log << "[warning]" << message?.message << "${message?.thrown}\n\n";
+                    if (!logFile?.empty) log << "${String.format(errorReminder, logFile)}\n\n";
                     break;
             }
         }
@@ -131,6 +145,8 @@ class AspectJWeaver {
         if (lf.exists()) {
             lf.delete();
         }
+
+        return lf;
     }
 
     def private detectErrors() {

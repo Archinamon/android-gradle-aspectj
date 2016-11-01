@@ -6,7 +6,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:2.2.0`.
+Actual version: `com.archinamon:android-gradle-aspectj:2.2.2`.
 Re-written with brand new <a href="http://tools.android.com/tech-docs/new-build-system/transform-api" target="_blank">Transform API</a>!
 
 This plugin is completely friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project (but Java 8 not supported in .aj files).
@@ -49,7 +49,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.github.Archinamon:GradleAspectJ-Android:2.2.0'
+classpath 'com.github.Archinamon:GradleAspectJ-Android:2.2.2'
 ```
 
 Apply the `aspectj` plugin:
@@ -91,6 +91,7 @@ aspectj {
 
     includeJar 'design', 'support-v4', 'dagger'
     includeAspectsFromJar 'my-aj-logger-lib', 'any-other-libs-with-aspects'
+    ajcExtraArgs << '-referenceInfo' << '-warn:deprecation'
 
     weaveInfo true
     debugInfo false
@@ -109,6 +110,7 @@ aspectj {
 
 - `includeJar` Name filter to include any jar/aar which name or path satisfies the filter
 - `includeAspectsFromJar` Name filter to include any jar/aar with compiled binary aspects you wanna affect your project
+- `ajcExtraArgs` Additional parameters for aspectj compiler
 
 - `weaveInfo` Enables printing info messages from Aj compiler
 - `debugInfo` Adds special debug info in aspect's bytecode
@@ -150,6 +152,16 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.2.2 -- Improvements
+* fixed build config namings;
+* re-designed work with log file and errors handling;
+* pretty formatting ajc arguments for build stdout;
+* implemented handling custom ajc arguments via build.gradle config;
+
+#### 2.2.1 -- Hot-fix
+* fixed illegal 'return' statement;
+* change included in `updated` 2.2.0 artifacts;
+
 #### 2.2.0 -- Ajc fixes and improvements
 * fixed problem with -aspectPath building project with multidex;
 * fixed scope problems with Transform API;

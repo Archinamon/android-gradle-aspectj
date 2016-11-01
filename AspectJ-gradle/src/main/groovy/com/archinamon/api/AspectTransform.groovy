@@ -48,12 +48,12 @@ class AspectTransform extends Transform {
 
     def withConfig(AndroidConfig config) {
         this.config = config;
-        this;
+        return this;
     }
 
     def withExtension(AspectJExtension extension) {
         this.extension = extension;
-        this;
+        return this;
     }
 
     def prepareProject() {
@@ -68,8 +68,10 @@ class AspectTransform extends Transform {
             aspectJWeaver.setLogFile(extension.logFileName);
             aspectJWeaver.breakOnError = extension.breakOnError;
             aspectJWeaver.experimental = extension.experimental;
+            aspectJWeaver.ajcArgs.addAll(extension.ajcExtraArgs);
         }
-        this;
+
+        return this;
     }
 
     def <T extends BaseVariantData<? extends BaseVariantOutputData>> void setupVariant(AspectJWeaver aspectJWeaver, AndroidConfig config, T variantData) {
@@ -124,8 +126,8 @@ class AspectTransform extends Transform {
     @Override
     void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         TransformOutputProvider outputProvider = transformInvocation.outputProvider;
-        List<String> includeJars = project.aspectj.includeJarFilter;
-        List<String> includeAspects = project.aspectj.binaryAspectsFilter;
+        List<String> includeJars = project.aspectj.includeJar;
+        List<String> includeAspects = project.aspectj.includeAspectsFromJar;
 
         if (!transformInvocation.incremental) {
             outputProvider.deleteAll();
@@ -149,7 +151,6 @@ class AspectTransform extends Transform {
                 aspectJWeaver.inPath << dir.file;
                 aspectJWeaver.classPath << dir.file;
             }
-
             input.jarInputs.each { JarInput jar ->
                 aspectJWeaver.classPath << jar.file;
 
@@ -205,7 +206,7 @@ class AspectTransform extends Transform {
     }
 
     def isFilterMatched(String str, List<String> filters, FilterPolicy filterPolicy) {
-        if(str == null) {
+        if (str == null) {
             return false;
         }
 
@@ -219,12 +220,12 @@ class AspectTransform extends Transform {
             }
         }
 
-        false;
+        return false;
     }
 
     def static copyJar(TransformOutputProvider outputProvider, JarInput jarInput) {
         if (outputProvider == null || jarInput == null) {
-            false;
+          return  false;
         }
 
         String jarName = jarInput.name;
@@ -236,7 +237,7 @@ class AspectTransform extends Transform {
 
         FileUtil.copyFile(jarInput.file, dest);
 
-        true;
+        return true;
     }
 
     def static isContained(String str, String filter) {
@@ -255,11 +256,10 @@ class AspectTransform extends Transform {
             }
         }
 
-        false;
+        return false;
     }
 
     enum FilterPolicy {
-
         INCLUDE,
         EXCLUDE
     }

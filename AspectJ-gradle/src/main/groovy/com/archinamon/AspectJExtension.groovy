@@ -4,8 +4,9 @@ public class AspectJExtension {
 
     def String ajc = "1.8.9";
 
-    List<String> includeJarFilter = new ArrayList<String>();
-    List<String> binaryAspectsFilter = new ArrayList<String>();
+    List<String> includeJar = new ArrayList<String>();
+    List<String> includeAspectsFromJar = new ArrayList<String>();
+    List<String> ajcExtraArgs = new ArrayList<String>();
 
     def boolean weaveInfo = true;
     def boolean debugInfo = false;
@@ -18,17 +19,23 @@ public class AspectJExtension {
 
     def String logFileName = "ajc-details.log";
 
-    public AspectJExtension includeJar(String...filters) {
+    public AspectJExtension ajcExtraArgs(String... args) {
+        if (args != null) {
+            ajcExtraArgs.addAll(args);
+        }
+    }
+
+    public AspectJExtension includeJar(String... filters) {
         if (filters != null) {
-            includeJarFilter.addAll(filters);
+            includeJar.addAll(filters);
         }
 
         return this
     }
 
-    public AspectJExtension includeAspectsFromJar(String...filters) {
+    public AspectJExtension includeAspectsFromJar(String... filters) {
         if (filters != null) {
-            binaryAspectsFilter.addAll(filters);
+            includeAspectsFromJar.addAll(filters);
         }
 
         return this

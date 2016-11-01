@@ -17,3 +17,14 @@ def public static logJarInpathAdded(JarInput jar) {
 def public static logJarAspectAdded(JarInput jar) {
     println "include aspects from :: $jar.file.absolutePath";
 }
+
+def public static logExtraAjcArgumentAlreayExists(String arg) {
+    println "extra AjC argument $arg already exists in build config";
+}
+
+def public static logBuildParametersAdapted(String[] args, String logfile) {
+    def params = "";
+    args.each { params += it.startsWith('-') ? "$it :: " : (it.length() > 200 ? "[ list files ],\n" : "$it, ") }
+    println "Ajc config: $params";
+    println "Detailed log in $logfile";
+}

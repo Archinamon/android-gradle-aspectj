@@ -26,24 +26,25 @@ import org.gradle.api.tasks.compile.JavaCompile
 
 import static com.archinamon.StatusLogger.logAugmentationStart
 import static com.archinamon.StatusLogger.logAugmentationFinish
+import static com.archinamon.StatusLogger.logEnvInvalid
 import static com.archinamon.StatusLogger.logJarAspectAdded
 import static com.archinamon.StatusLogger.logJarInpathAdded
+import static com.archinamon.StatusLogger.logNoAugmentation
 
 class AspectTransform extends Transform {
 
     def static final TRANSFORM_NAME = "aspectj";
+    def static final AJRUNTIME      = "aspectjrt";
 
     Project project;
     AndroidConfig config;
     AspectJExtension extension;
 
     AspectJWeaver aspectJWeaver;
-    AspectJMergeJars aspectJMerger;
 
     public AspectTransform(Project project) {
         this.project = project;
         this.aspectJWeaver = new AspectJWeaver(project);
-        this.aspectJMerger = new AspectJMergeJars(this);
     }
 
     def withConfig(AndroidConfig config) {
@@ -168,10 +169,15 @@ class AspectTransform extends Transform {
             }
         }
 
-        aspectJWeaver.doWeave();
-        aspectJMerger.doMerge(outputProvider, outputDir);
+        def hasAjRt = aspectJWeaver.classPath.find { it.name.contains(AJRUNTIME); };
 
-        logAugmentationFinish();
+        if (hasAjRt) {
+            aspectJWeaver.doWeave();
+            logAugmentationFinish();
+        } else {
+            logEnvInvalid();
+            logNoAugmentation();
+        }
     }
 
     /* Internal */

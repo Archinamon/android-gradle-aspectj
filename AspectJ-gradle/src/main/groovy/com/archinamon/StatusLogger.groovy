@@ -10,6 +10,14 @@ def public static logAugmentationFinish() {
     println "---------- Finish AspectJ transformer ----------";
 }
 
+def public static logNoAugmentation() {
+    println "---------- Exit AspectJ transformer w/o processing ----------";
+}
+
+def public static logEnvInvalid() {
+    println "Ajc classpath doesn't has needed runtime environment";
+}
+
 def public static logJarInpathAdded(JarInput jar) {
     println "include jar :: $jar.file.absolutePath";
 }

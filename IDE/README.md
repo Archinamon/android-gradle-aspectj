@@ -3,7 +3,7 @@
 * First go to Settings/Plugins
 <br /><img src="pic1.png" width="500" />
 
-* Click on `Install plugin from disk...` button and sequentialy install both file: <a href="aop-common.zip">aop-common.zip</a> and <a href="aspect.zip">aspect.zip</a>.
+* Click on `Install plugin from disk...` button and sequentialy install both file: <a href="aop-common.zip">aop-common.zip</a> and <a href="aspectj.zip">aspectj.zip</a>.
 <br /><img src="pic2.png" width="300" />
 
 * Restart Android Studio

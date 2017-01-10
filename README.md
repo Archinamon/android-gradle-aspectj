@@ -6,7 +6,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:2.2.2`.
+Actual version: `com.archinamon:android-gradle-aspectj:2.3.0`.
 Re-written with brand new <a href="http://tools.android.com/tech-docs/new-build-system/transform-api" target="_blank">Transform API</a>!
 
 This plugin is completely friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project (but Java 8 not supported in .aj files).
@@ -26,9 +26,7 @@ It is easy to isolate your code with aspect classes, that will be simply injecte
 
 AspectJ-Gradle plugin provides supply of all known JVM-based languages, such as Groovy, Kotlin, etc. That means you can easily write cool stuff which may be inject into any JVM language, not only Java itself! :)
 
-To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>. In case aspectj-native not supported by Android Studio, you may write a java-classes with aspectj annotations.
-
-May not work with InstantRun due to a slicer bug. Please, <a href="http://stackoverflow.com/a/35169716/483603" target="_blank">switch off InstanceRun</a> if you have faced any problems (e.g. class file not found in DexPath in runtime).
+To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>. In case aspectj-native not supported by Android Studio (even with IDE-plugin it's using is complicated), you may write a java-classes with aspectj annotations.
 
 Two simple rules you may consider when writing aspect classes.
 - Do not write aspects outside the `src/$flavor/aspectj` source set! These aj-classes will be excluded from java compiler.
@@ -49,7 +47,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.github.Archinamon:GradleAspectJ-Android:2.2.2'
+classpath 'com.github.Archinamon:GradleAspectJ-Android:2.3.0'
 ```
 
 Apply the `aspectj` plugin:
@@ -152,6 +150,12 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.3.0 -- Major fixes
+* InstantRun support;
+* fails androidTest hot launch;
+* ZipException within augmenting third party libraries via AspectJ;
+* more clear logging and errors emitting;
+
 #### 2.2.2 -- Improvements
 * fixed build config namings;
 * re-designed work with log file and errors handling;

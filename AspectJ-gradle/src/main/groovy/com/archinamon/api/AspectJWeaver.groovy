@@ -54,11 +54,14 @@ class AspectJWeaver {
                 "-target", targetCompatibility,
                 "-d", destinationDir,
                 "-bootclasspath", bootClasspath,
-                "-classpath", classPath.join(File.pathSeparator),
-                "-sourceroots", ajSources.join(File.pathSeparator)
+                "-classpath", classPath.join(File.pathSeparator)
         ];
 
-        if (!inPath?.empty) {
+        if (!ajSources.empty) {
+            args << "-sourceroots" << ajSources.join(File.pathSeparator);
+        }
+
+        if (!inPath.empty) {
             args << "-inpath" << inPath.join(File.pathSeparator);
         }
 

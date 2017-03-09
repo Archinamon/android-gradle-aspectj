@@ -107,14 +107,7 @@ class AspectTransform extends Transform {
 
     @Override
     Set<QualifiedContent.Scope> getReferencedScopes() {
-        return Sets.immutableEnumSet(
-            QualifiedContent.Scope.PROJECT,
-            QualifiedContent.Scope.PROJECT_LOCAL_DEPS,
-            QualifiedContent.Scope.SUB_PROJECTS,
-            QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
-            QualifiedContent.Scope.EXTERNAL_LIBRARIES,
-            QualifiedContent.Scope.PROVIDED_ONLY
-        );
+        return TransformManager.SCOPE_FULL_PROJECT;
     }
 
     @Override

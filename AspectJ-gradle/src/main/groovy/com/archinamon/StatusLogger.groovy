@@ -2,6 +2,14 @@ package com.archinamon
 
 import com.android.build.api.transform.JarInput
 
+def public static logCompilationStart() {
+    println "---------- Starting AspectJ sources compilation ----------";
+}
+
+def public static logCompilationFinish() {
+    println "---------- Finish AspectJ compiler ----------";
+}
+
 def public static logAugmentationStart() {
     println "---------- Starting augmentation with AspectJ compiler ----------";
 }

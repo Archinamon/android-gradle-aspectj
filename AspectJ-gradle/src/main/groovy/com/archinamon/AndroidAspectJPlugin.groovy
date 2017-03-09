@@ -1,16 +1,22 @@
-package com.archinamon;
+package com.archinamon
 
 import com.android.build.gradle.AppExtension
+import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
+import com.archinamon.api.AspectJCompileTask
 import com.archinamon.api.AspectTransform
 import com.archinamon.api.BuildTimeListener
+import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException
 import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.compile.AbstractCompile
+import org.gradle.api.tasks.compile.JavaCompile
 
 class AndroidAspectJPlugin implements Plugin<Project> {
 
@@ -29,7 +35,10 @@ class AndroidAspectJPlugin implements Plugin<Project> {
 
         project.repositories { project.repositories.mavenCentral(); }
         project.dependencies { compile "org.aspectj:aspectjrt:$settings.ajc"; }
-        project.afterEvaluate { prepareVariant(config.extAndroid.sourceSets); }
+        project.afterEvaluate {
+            prepareVariant(config.extAndroid.sourceSets);
+            configureCompiler();
+        }
 
         project.gradle.addListener(new BuildTimeListener());
         final AspectTransform transformer = new AspectTransform(project)
@@ -63,6 +72,25 @@ class AndroidAspectJPlugin implements Plugin<Project> {
         VariantUtils.getVariantDataList(config.plugin).each { BaseVariantData<? extends BaseVariantOutputData> variant ->
             variant.variantConfiguration.productFlavors*.name.each(applier);
             variant.variantConfiguration.buildType*.name.each(applier);
+        }
+    }
+
+    def void configureCompiler() {
+        VariantUtils.getVariantDataList(config.plugin).each { BaseVariantData<? extends BaseVariantOutputData> variant ->
+            def variantName = variant.name.capitalize();
+            def taskName = "compile${variantName}AspectJ";
+
+            AbstractCompile javaCompiler = variant.javacTask;
+            if (!javaCompiler instanceof JavaCompile)
+                throw new CompilerException("AspectJ plugin supports only javac");
+
+            new AspectJCompileTask.Builder(project)
+                .plugin(project.plugins.getPlugin(config.isLibraryPlugin ? LibraryPlugin : AppPlugin))
+                .config(project.extensions.getByType(AspectJExtension))
+                .compiler(javaCompiler)
+                .variant(variant.name)
+                .name(taskName)
+                .build();
         }
     }
 

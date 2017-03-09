@@ -2,11 +2,13 @@ package com.archinamon
 
 public class AspectJExtension {
 
-    def String ajc = "1.8.9";
+    def String ajc = "1.8.10";
+
+    def boolean includeAllJars = false;
 
     List<String> includeJar = new ArrayList<String>();
     List<String> includeAspectsFromJar = new ArrayList<String>();
-    List<String> ajcExtraArgs = new ArrayList<String>();
+    List<String> ajcArgs = new ArrayList<String>();
 
     def boolean weaveInfo = true;
     def boolean debugInfo = false;
@@ -17,11 +19,12 @@ public class AspectJExtension {
     def boolean breakOnError = true;
     def boolean experimental = false;
 
-    def String logFileName = "ajc-details.log";
+    def String transformLogFile = "ajc-transform.log";
+    def String compilationLogFile = "ajc-compile.log";
 
-    public AspectJExtension ajcExtraArgs(String... args) {
+    public AspectJExtension ajcArgs(String... args) {
         if (args != null) {
-            ajcExtraArgs.addAll(args);
+            ajcArgs.addAll(args);
         }
     }
 

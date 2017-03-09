@@ -36,6 +36,27 @@ def static FileCollection getAjSourceAndExcludeFromJavac(Project project, BaseVa
     };
 }
 
+def static File[] findAjSourcesForVariant(Project project, String variantName) {
+    def possibleDirs = [];
+    if (project.file("src/main/aspectj").exists()) {
+        possibleDirs << project.file("src/main/aspectj");
+    }
+    def String[] types = variantName.split("(?=\\p{Upper})");
+
+    File[] root = project.file("src").listFiles();
+    root.each { File file ->
+        types.each {
+            if (file.name.contains(it.toLowerCase()) &&
+                    file.list().any { it.contains("aspectj"); } &&
+                    !possibleDirs.contains(file)) {
+                possibleDirs << new File(file, 'aspectj');
+            }
+        }
+    }
+
+    possibleDirs.toArray(new File[possibleDirs.size()]);
+}
+
 def static List<BaseVariantData<? extends BaseVariantOutputData>> getVariantDataList(BasePlugin plugin) {
     return plugin.variantManager.variantDataList;
 }

@@ -12,6 +12,7 @@ import com.android.build.api.transform.TransformInvocation
 import com.android.build.api.transform.TransformOutputProvider
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
+import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
@@ -19,7 +20,6 @@ import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.VariantUtils
 import com.google.common.collect.Sets
-import org.aspectj.util.FileUtil
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
@@ -66,10 +66,10 @@ class AspectTransform extends Transform {
             aspectJWeaver.addSerialVUID = extension.addSerialVersionUID;
             aspectJWeaver.noInlineAround = extension.noInlineAround;
             aspectJWeaver.ignoreErrors = extension.ignoreErrors;
-            aspectJWeaver.setLogFile(extension.logFileName);
+            aspectJWeaver.setTransformLogFile(extension.transformLogFile);
             aspectJWeaver.breakOnError = extension.breakOnError;
             aspectJWeaver.experimental = extension.experimental;
-            aspectJWeaver.ajcArgs.addAll(extension.ajcExtraArgs);
+            aspectJWeaver.ajcArgs.addAll extension.ajcArgs;
         }
 
         return this;
@@ -92,7 +92,7 @@ class AspectTransform extends Transform {
 
     @Override
     Set<QualifiedContent.ContentType> getInputTypes() {
-        return TransformManager.CONTENT_CLASS;
+        return Sets.immutableEnumSet(QualifiedContent.DefaultContentType.CLASSES);
     }
 
     @Override
@@ -107,7 +107,14 @@ class AspectTransform extends Transform {
 
     @Override
     Set<QualifiedContent.Scope> getReferencedScopes() {
-        return TransformManager.SCOPE_FULL_PROJECT;
+        return Sets.immutableEnumSet(
+            QualifiedContent.Scope.PROJECT,
+            QualifiedContent.Scope.PROJECT_LOCAL_DEPS,
+            QualifiedContent.Scope.SUB_PROJECTS,
+            QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
+            QualifiedContent.Scope.EXTERNAL_LIBRARIES,
+            QualifiedContent.Scope.PROVIDED_ONLY
+        );
     }
 
     @Override
@@ -127,8 +134,8 @@ class AspectTransform extends Transform {
     @Override
     void transform(TransformInvocation transformInvocation) throws TransformException, InterruptedException, IOException {
         TransformOutputProvider outputProvider = transformInvocation.outputProvider;
-        List<String> includeJars = project.aspectj.includeJar;
-        List<String> includeAspects = project.aspectj.includeAspectsFromJar;
+        List<String> includeJars = extension.includeJar;
+        List<String> includeAspects = extension.includeAspectsFromJar;
 
         if (!transformInvocation.incremental) {
             outputProvider.deleteAll();
@@ -138,11 +145,19 @@ class AspectTransform extends Transform {
         if (outputDir.isDirectory()) FileUtils.deleteDirectoryContents(outputDir);
         FileUtils.mkdirs(outputDir);
 
-        aspectJWeaver.setAjSources(findAjSourcesForVariant(transformInvocation.context.variantName));
         aspectJWeaver.destinationDir = outputDir.absolutePath;
         aspectJWeaver.bootClasspath = config.bootClasspath.join(File.pathSeparator);
 
+        // clear weaver input, so each transformation can have its own configuration
+        // (e.g. different build types / variants)
+        // thanks to @philippkumar
+        aspectJWeaver.inPath.clear();
+        aspectJWeaver.aspectPath.clear();
+
         logAugmentationStart();
+
+        // attaching source classes compiled by compile${variantName}AspectJ task
+        includeCompiledAspects(transformInvocation);
 
         transformInvocation.referencedInputs.each { input ->
             if (input.directoryInputs.empty && input.jarInputs.empty)
@@ -155,11 +170,9 @@ class AspectTransform extends Transform {
             input.jarInputs.each { JarInput jar ->
                 aspectJWeaver.classPath << jar.file;
 
-                if (!includeJars.empty && isIncludeFilterMatched(jar.file.absolutePath, includeJars)) {
+                if (project.aspectj.includeAllJars || (!includeJars.empty && isIncludeFilterMatched(jar.file.absolutePath, includeJars))) {
                     logJarInpathAdded(jar);
                     aspectJWeaver.inPath << jar.file;
-                } else {
-                    copyJar(outputProvider, jar);
                 }
 
                 if (!includeAspects.empty && isIncludeFilterMatched(jar.file.absolutePath, includeAspects)) {
@@ -182,25 +195,11 @@ class AspectTransform extends Transform {
 
     /* Internal */
 
-    File[] findAjSourcesForVariant(String variantName) {
-        def possibleDirs = [];
-        if (project.file("src/main/aspectj").exists()) {
-            possibleDirs << project.file("src/main/aspectj");
+    def private includeCompiledAspects(TransformInvocation transformInvocation) {
+        def compiledAj = project.file("$project.buildDir/aspectj/${(transformInvocation.context as TransformTask).variantName}");
+        if (compiledAj.exists()) {
+            aspectJWeaver.aspectPath << compiledAj;
         }
-        def String[] types = variantName.split("(?=\\p{Upper})");
-
-        File[] root = project.file("src").listFiles();
-        root.each { File file ->
-            types.each {
-                if (file.name.contains(it.toLowerCase()) &&
-                        file.list().any { it.contains("aspectj"); } &&
-                        !possibleDirs.contains(file)) {
-                    possibleDirs << new File(file, 'aspectj');
-                }
-            }
-        }
-
-        possibleDirs.toArray(new File[possibleDirs.size()]);
     }
 
     def isExcludeFilterMatched(String str, List<String> filters) {
@@ -227,23 +226,6 @@ class AspectTransform extends Transform {
         }
 
         return false;
-    }
-
-    def static copyJar(TransformOutputProvider outputProvider, JarInput jarInput) {
-        if (outputProvider == null || jarInput == null) {
-          return  false;
-        }
-
-        String jarName = jarInput.name;
-        if (jarName.endsWith(".jar")) {
-            jarName = jarName.substring(0, jarName.length() - 4);
-        }
-
-        File dest = outputProvider.getContentLocation(jarName, jarInput.contentTypes, jarInput.scopes, Format.JAR);
-
-        FileUtil.copyFile(jarInput.file, dest);
-
-        return true;
     }
 
     def static isContained(String str, String filter) {

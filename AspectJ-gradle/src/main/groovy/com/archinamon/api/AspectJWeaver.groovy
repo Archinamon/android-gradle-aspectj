@@ -15,7 +15,8 @@ class AspectJWeaver {
 
     private Project project;
 
-    String logFile;
+    String compilationLogFile;
+    String transformLogFile;
     String encoding;
 
     boolean weaveInfo;
@@ -54,15 +55,18 @@ class AspectJWeaver {
                 "-d", destinationDir,
                 "-bootclasspath", bootClasspath,
                 "-classpath", classPath.join(File.pathSeparator),
-                "-sourceroots", ajSources.join(File.pathSeparator),
-                "-inpath", inPath.join(File.pathSeparator)
+                "-sourceroots", ajSources.join(File.pathSeparator)
         ];
+
+        if (!inPath?.empty) {
+            args << "-inpath" << inPath.join(File.pathSeparator);
+        }
 
         if (!aspectPath.empty) {
             args << "-aspectpath" << aspectPath.join(File.pathSeparator);
         }
 
-        if (!logFile?.isEmpty()) {
+        if (!logFile?.empty) {
             args << "-log" << logFile;
         }
 
@@ -119,7 +123,7 @@ class AspectJWeaver {
                 case IMessage.DEBUG:
                 case IMessage.WARNING:
                     log << "[warning]" << message?.message << "${message?.thrown}\n\n";
-                    if (!logFile?.empty) log << "${String.format(errorReminder, logFile)}\n\n";
+                    if (!logFile.empty) log << "${String.format(errorReminder, logFile)}\n\n";
                     break;
             }
         }
@@ -127,9 +131,18 @@ class AspectJWeaver {
         detectErrors();
     }
 
-    void setLogFile(String name) {
-        if (name != null && name.length() > 0)
-            this.logFile = project.buildDir.absolutePath + File.separator + name;
+    void setTransformLogFile(String name) {
+        if (name != null && name.length() > 0) {
+            this.transformLogFile = project.buildDir.absolutePath + File.separator + name;
+            this.compilationLogFile = null;
+        }
+    }
+
+    void setCompilationLogFile(String name) {
+        if (name != null && name.length() > 0) {
+            this.compilationLogFile = project.buildDir.absolutePath + File.separator + name;
+            this.transformLogFile = null;
+        }
     }
 
     void setAjSources(File... ajSources) {
@@ -140,8 +153,12 @@ class AspectJWeaver {
         }
     }
 
+    private String getLogFile() {
+        return compilationLogFile ?: transformLogFile;
+    }
+
     def private prepareLogger() {
-        File lf = new File(logFile);
+        File lf = project.file(logFile);
         if (lf.exists()) {
             lf.delete();
         }
@@ -150,11 +167,11 @@ class AspectJWeaver {
     }
 
     def private detectErrors() {
-        File lf = new File(logFile);
+        File lf = project.file(logFile);
         if (lf.exists()) {
             lf.readLines().reverseEach { String line ->
                 if (line.contains("[error]") && breakOnError) {
-                    throw new GradleException(String.format(errorReminder, logFile));
+                    throw new GradleException("$line\n${String.format(errorReminder, logFile)}");
                 }
             }
         }

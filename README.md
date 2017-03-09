@@ -6,7 +6,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:2.3.0`.
+Actual version: `com.archinamon:android-gradle-aspectj:2.3.1`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -48,7 +48,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.github.Archinamon:GradleAspectJ-Android:2.3.0'
+classpath 'com.github.Archinamon:GradleAspectJ-Android:2.3.1'
 ```
 
 Apply the `aspectj` plugin:
@@ -72,11 +72,11 @@ aspect AppStartNotifier {
         Application app = (Application) thisJoinPoint.getTarget();
         NotificationManager nmng = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
         nmng.notify(9999, new NotificationCompat.Builder(app)
-                              .setTicker("Hello AspectJ")
-                              .setContentTitle("Notification from aspectJ")
-                              .setContentText("privileged aspect AppAdvice")
-                              .setSmallIcon(R.drawable.ic_launcher)
-                              .build());
+            .setTicker("Hello AspectJ")
+            .setContentTitle("Notification from aspectJ")
+            .setContentText("privileged aspect AppAdvice")
+            .setSmallIcon(R.drawable.ic_launcher)
+            .build());
     }
 }
 ```
@@ -86,11 +86,12 @@ Tune extension
 
 ```groovy
 aspectj {
-    ajc '1.8.9'
+    ajc '1.8.10'
 
+    includeAllJars false
     includeJar 'design', 'support-v4', 'dagger'
     includeAspectsFromJar 'my-aj-logger-lib', 'any-other-libs-with-aspects'
-    ajcExtraArgs << '-referenceInfo' << '-warn:deprecation'
+    ajcArgs << '-referenceInfo' << '-warn:deprecation'
 
     weaveInfo true
     debugInfo false
@@ -101,12 +102,17 @@ aspectj {
     breakOnError true
     experimental false
 
-    logFileName 'ajc-details.log'
+    transformLogFile 'ajc-transform.log'
+    compilationLogFile 'ajc-compile.log'
 }
 ```
 
-- `ajc` Allows to define the aspectj runtime jar version manually (1.8.9 current)
+All the extension parameters are have default values (all of them are described above, except of includeJar/Aspects/ajcArgs options).
+So no need to define them manually.
 
+- `ajc` Allows to define the aspectj runtime jar version manually (1.8.10 current)
+
+- `includeAllJars` Explicitly include all available jar-files into -inpath to proceed by AJ-compiler
 - `includeJar` Name filter to include any jar/aar which name or path satisfies the filter
 - `includeAspectsFromJar` Name filter to include any jar/aar with compiled binary aspects you wanna affect your project
 - `ajcExtraArgs` Additional parameters for aspectj compiler
@@ -120,7 +126,8 @@ aspectj {
 - `breakOnError` Allows to continue project building when ajc fails or throws any errors
 - `experimental` Enables experimental ajc options: `-XhasMember` and `-Xjoinpoints:synchronization,arrayconstruction`. More details in <a href="https://github.com/Archinamon/GradleAspectJ-Android/issues/18" target="_blank">issue #18</a>
 
-- `logFileName` Defines name for the log file where all Aj compiler info writes to
+- `transformLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for Transformer
+- `compilationLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for CompileTask
 
 Working tests
 -------
@@ -151,6 +158,15 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.3.1 -- New two-step build mechanic
+* renamed extension parameter: ajcExtraArgs -> ajcArgs;
+* split parameter: logFileName -> [transformLogFile, compilationLogFile];
+* added separate compile task to build all sources under `/aspectj` folder;
+* aj-transformer now looks into `/build/aspectj/$variantName` folder for aspects class';
+* updated ajc-version to 1.8.10;
+* fixed issue with missing error printing to Messages when failing;
+* added inpath/aspectpath clearance before emitting transform inputs (by @philippkumar);
+
 #### 2.3.0 -- Major fixes
 * InstantRun support;
 * fails androidTest hot launch;

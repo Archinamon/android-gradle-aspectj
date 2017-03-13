@@ -171,6 +171,9 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.4.3 -- Hot-fixed  two-step compilation
+* compiled in first step aspect classes have not been copied to final output;
+
 #### 2.4.2 -- Hot-fix
 * fixed missed variable;
 * fixed imports;

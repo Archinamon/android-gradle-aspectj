@@ -1,6 +1,7 @@
-package com.archinamon
+package com.archinamon.utils
 
 import com.android.build.api.transform.JarInput
+import com.archinamon.api.AspectJAppTransform.BuildPolicy
 
 def public static logCompilationStart() {
     println "---------- Starting AspectJ sources compilation ----------";
@@ -24,6 +25,14 @@ def public static logNoAugmentation() {
 
 def public static logEnvInvalid() {
     println "Ajc classpath doesn't has needed runtime environment";
+}
+
+def public static logWeaverBuildPolicy(BuildPolicy policy) {
+    println "Weaving in ${policy.name().toLowerCase()} mode";
+}
+
+def public static logIgnoreInpathJars() {
+    println "Ignoring additional jars adding to -inpath in simple mode";
 }
 
 def public static logJarInpathAdded(JarInput jar) {

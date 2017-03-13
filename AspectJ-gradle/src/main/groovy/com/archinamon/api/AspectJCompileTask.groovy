@@ -2,14 +2,16 @@ package com.archinamon.api
 
 import com.android.build.gradle.BasePlugin
 import com.archinamon.AspectJExtension
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
+import org.gradle.api.tasks.compile.JavaCompile
 
-import static com.archinamon.StatusLogger.logCompilationFinish
-import static com.archinamon.StatusLogger.logCompilationStart
-import static com.archinamon.VariantUtils.findAjSourcesForVariant
+import static com.archinamon.utils.StatusLogger.logCompilationFinish
+import static com.archinamon.utils.StatusLogger.logCompilationStart
+import static com.archinamon.utils.VariantUtils.findAjSourcesForVariant
 
 class AspectJCompileTask extends AbstractCompile {
 
@@ -18,7 +20,7 @@ class AspectJCompileTask extends AbstractCompile {
         def Project project;
         def BasePlugin plugin;
         def AspectJExtension config;
-        def AbstractCompile javaCompiler;
+        def JavaCompile javaCompiler;
         def variantName;
         def taskName;
 
@@ -36,7 +38,7 @@ class AspectJCompileTask extends AbstractCompile {
             this;
         }
 
-        def compiler(AbstractCompile compiler) {
+        def compiler(JavaCompile compiler) {
             this.javaCompiler = compiler;
             this;
         }
@@ -68,8 +70,8 @@ class AspectJCompileTask extends AbstractCompile {
                 task.source(findAjSourcesForVariant(project, variantName));
                 task.setClasspath(classpath());
 
-                aspectJWeaver.targetCompatibility = "1.7";
-                aspectJWeaver.sourceCompatibility = "1.7";
+                aspectJWeaver.targetCompatibility = JavaVersion.VERSION_1_7.toString();
+                aspectJWeaver.sourceCompatibility = JavaVersion.VERSION_1_7.toString();
                 aspectJWeaver.destinationDir = buildDir.absolutePath;
                 aspectJWeaver.bootClasspath = bootCP();
                 aspectJWeaver.encoding = javaCompiler.options.encoding;

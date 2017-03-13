@@ -6,8 +6,8 @@ import org.aspectj.tools.ajc.Main
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
-import static com.archinamon.StatusLogger.logBuildParametersAdapted
-import static com.archinamon.StatusLogger.logExtraAjcArgumentAlreayExists
+import static com.archinamon.utils.StatusLogger.logBuildParametersAdapted
+import static com.archinamon.utils.StatusLogger.logExtraAjcArgumentAlreayExists
 
 class AspectJWeaver {
 

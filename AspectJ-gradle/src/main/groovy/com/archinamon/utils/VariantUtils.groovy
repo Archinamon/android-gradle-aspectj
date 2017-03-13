@@ -1,4 +1,4 @@
-package com.archinamon
+package com.archinamon.utils
 
 import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.internal.variant.BaseVariantData

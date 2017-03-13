@@ -10,6 +10,10 @@ import org.gradle.api.artifacts.DependencySet
  */
 class AndroidConfig {
 
+    def static final ASPECTJ_PLUGIN = "com.archinamon.aspectj";
+    def static final RETROLAMBDA = "me.tatarka.retrolambda";
+    def static final MISDEFINITION = "Illegal definition: $ASPECTJ_PLUGIN should be defined after $RETROLAMBDA plugin";
+
     def public static final TAG = "AJC:";
     private static final def PLUGIN_EXCEPTION = "$TAG You must apply the Android plugin or the Android library plugin";
 

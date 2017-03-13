@@ -18,33 +18,46 @@ import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
-import com.archinamon.VariantUtils
+import com.archinamon.utils.VariantUtils
 import com.google.common.collect.Sets
+import org.aspectj.util.FileUtil
+import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import org.gradle.api.tasks.compile.JavaCompile
 
-import static com.archinamon.StatusLogger.logAugmentationStart
-import static com.archinamon.StatusLogger.logAugmentationFinish
-import static com.archinamon.StatusLogger.logEnvInvalid
-import static com.archinamon.StatusLogger.logJarAspectAdded
-import static com.archinamon.StatusLogger.logJarInpathAdded
-import static com.archinamon.StatusLogger.logNoAugmentation
+import static com.archinamon.utils.StatusLogger.logAugmentationStart
+import static com.archinamon.utils.StatusLogger.logAugmentationFinish
+import static com.archinamon.utils.StatusLogger.logEnvInvalid
+import static com.archinamon.utils.StatusLogger.logIgnoreInpathJars
+import static com.archinamon.utils.StatusLogger.logJarAspectAdded
+import static com.archinamon.utils.StatusLogger.logJarInpathAdded
+import static com.archinamon.utils.StatusLogger.logNoAugmentation
+import static com.archinamon.utils.StatusLogger.logWeaverBuildPolicy
 
-class AspectTransform extends Transform {
+class AspectJAppTransform extends Transform {
 
-    def static final TRANSFORM_NAME = "aspectj";
-    def static final AJRUNTIME      = "aspectjrt";
+    def static final TRANSFORM_NAME        = "aspectj";
+    def static final AJRUNTIME             = "aspectjrt";
+    def static final SLICER_DETECTED_ERROR = "Running with InstantRun slicer when weaver extended not allowed!";
 
     Project project;
+    BuildPolicy policy;
     AndroidConfig config;
     AspectJExtension extension;
 
     AspectJWeaver aspectJWeaver;
+    AspectJMergeJars aspectJMerger;
 
-    public AspectTransform(Project project) {
+    public AspectJAppTransform(Project project) {
         this.project = project;
         this.aspectJWeaver = new AspectJWeaver(project);
+        this.aspectJMerger = new AspectJMergeJars(this);
+    }
+
+    def withPolicy(BuildPolicy policy) {
+        this.policy = policy;
+        return this;
     }
 
     def withConfig(AndroidConfig config) {
@@ -59,7 +72,7 @@ class AspectTransform extends Transform {
 
     def prepareProject() {
         project.afterEvaluate {
-            VariantUtils.getVariantDataList(config.plugin).each { setupVariant(aspectJWeaver, config, it); }
+            VariantUtils.getVariantDataList(config.plugin).each { setupVariant(aspectJWeaver, it); }
 
             aspectJWeaver.weaveInfo = extension.weaveInfo;
             aspectJWeaver.debugInfo = extension.debugInfo;
@@ -75,7 +88,13 @@ class AspectTransform extends Transform {
         return this;
     }
 
-    def <T extends BaseVariantData<? extends BaseVariantOutputData>> void setupVariant(AspectJWeaver aspectJWeaver, AndroidConfig config, T variantData) {
+    def <T extends BaseVariantData<? extends BaseVariantOutputData>> void setupVariant(AspectJWeaver aspectJWeaver, T variantData) {
+        if (variantData.getScope().getInstantRunBuildContext().isInInstantRunMode()) {
+            if (modeComplex()) {
+                throw new GradleException(SLICER_DETECTED_ERROR);
+            }
+        }
+
         def JavaCompile javaTask = VariantUtils.getJavaTask(variantData);
         VariantUtils.getAjSourceAndExcludeFromJavac(project, variantData);
         aspectJWeaver.encoding = javaTask.options.encoding;
@@ -102,12 +121,14 @@ class AspectTransform extends Transform {
 
     @Override
     Set<QualifiedContent.Scope> getScopes() {
-        return Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT);
+        return modeComplex() ?
+            TransformManager.SCOPE_FULL_PROJECT : Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT);
     }
 
     @Override
     Set<QualifiedContent.Scope> getReferencedScopes() {
-        return TransformManager.SCOPE_FULL_PROJECT;
+        return modeComplex() ?
+            super.getReferencedScopes() : TransformManager.SCOPE_FULL_PROJECT;
     }
 
     @Override
@@ -118,10 +139,10 @@ class AspectTransform extends Transform {
     @Override //support of older gradle plugins
     void transform(Context context, Collection<TransformInput> inputs, Collection<TransformInput> referencedInputs, TransformOutputProvider outputProvider, boolean isIncremental) throws IOException, TransformException, InterruptedException {
         this.transform(new TransformInvocationBuilder(context)
-                .addInputs(inputs)
-                .addReferencedInputs(referencedInputs)
-                .addOutputProvider(outputProvider)
-                .setIncrementalMode(isIncremental).build());
+            .addInputs(inputs)
+            .addReferencedInputs(referencedInputs)
+            .addOutputProvider(outputProvider)
+            .setIncrementalMode(isIncremental).build());
     }
 
     @Override
@@ -151,8 +172,9 @@ class AspectTransform extends Transform {
 
         // attaching source classes compiled by compile${variantName}AspectJ task
         includeCompiledAspects(transformInvocation);
+        Collection<TransformInput> inputs = modeComplex() ? transformInvocation.inputs : transformInvocation.referencedInputs;
 
-        transformInvocation.referencedInputs.each { input ->
+        inputs.each { input ->
             if (input.directoryInputs.empty && input.jarInputs.empty)
                 return; //if no inputs so nothing to proceed
 
@@ -163,12 +185,18 @@ class AspectTransform extends Transform {
             input.jarInputs.each { JarInput jar ->
                 aspectJWeaver.classPath << jar.file;
 
-                if (project.aspectj.includeAllJars || (!includeJars.empty && isIncludeFilterMatched(jar.file.absolutePath, includeJars))) {
-                    logJarInpathAdded(jar);
-                    aspectJWeaver.inPath << jar.file;
+                if (modeComplex()) {
+                    if (project.aspectj.includeAllJars || (!includeJars.empty && isIncludeFilterMatched(jar.file, includeJars))) {
+                        logJarInpathAdded(jar);
+                        aspectJWeaver.inPath << jar.file;
+                    } else {
+                        copyJar(outputProvider, jar);
+                    }
+                } else {
+                    if (!includeJars.empty) logIgnoreInpathJars();
                 }
 
-                if (!includeAspects.empty && isIncludeFilterMatched(jar.file.absolutePath, includeAspects)) {
+                if (!includeAspects.empty && isIncludeFilterMatched(jar.file, includeAspects)) {
                     logJarAspectAdded(jar);
                     aspectJWeaver.aspectPath << jar.file;
                 }
@@ -178,12 +206,22 @@ class AspectTransform extends Transform {
         def hasAjRt = aspectJWeaver.classPath.find { it.name.contains(AJRUNTIME); };
 
         if (hasAjRt) {
+            logWeaverBuildPolicy(policy);
             aspectJWeaver.doWeave();
+
+            if (modeComplex()) {
+                aspectJMerger.doMerge(outputProvider, outputDir);
+            }
+
             logAugmentationFinish();
         } else {
             logEnvInvalid();
             logNoAugmentation();
         }
+    }
+
+    def modeComplex() {
+        policy == BuildPolicy.COMPLEX;
     }
 
     /* Internal */
@@ -195,16 +233,33 @@ class AspectTransform extends Transform {
         }
     }
 
-    def isExcludeFilterMatched(String str, List<String> filters) {
-        isFilterMatched(str, filters, FilterPolicy.EXCLUDE);
+    def static copyJar(TransformOutputProvider outputProvider, JarInput jarInput) {
+        if (outputProvider == null || jarInput == null) {
+            return false;
+        }
+
+        String jarName = jarInput.name;
+        if (jarName.endsWith(".jar")) {
+            jarName = jarName.substring(0, jarName.length() - 4);
+        }
+
+        File dest = outputProvider.getContentLocation(jarName, jarInput.contentTypes, jarInput.scopes, Format.JAR);
+
+        FileUtil.copyFile(jarInput.file, dest);
+
+        return true;
     }
 
-    def isIncludeFilterMatched(String str, List<String> filters) {
-        isFilterMatched(str, filters, FilterPolicy.INCLUDE);
+    def isExcludeFilterMatched(File file, List<String> filters) {
+        isFilterMatched(file, filters, FilterPolicy.EXCLUDE);
     }
 
-    def isFilterMatched(String str, List<String> filters, FilterPolicy filterPolicy) {
-        if (str == null) {
+    def isIncludeFilterMatched(File file, List<String> filters) {
+        isFilterMatched(file, filters, FilterPolicy.INCLUDE);
+    }
+
+    def isFilterMatched(File file, List<String> filters, FilterPolicy filterPolicy) {
+        if (file == null) {
             return false;
         }
 
@@ -212,6 +267,7 @@ class AspectTransform extends Transform {
             return filterPolicy == FilterPolicy.INCLUDE;
         }
 
+        String str = AarExploringHelper.findPackageNameIfAar(file);
         for (String s : filters) {
             if (isContained(str, s)) {
                 return true;
@@ -243,5 +299,11 @@ class AspectTransform extends Transform {
     enum FilterPolicy {
         INCLUDE,
         EXCLUDE
+    }
+
+    enum BuildPolicy {
+        SIMPLE,
+        COMPLEX,
+        LIBRARY
     }
 }

@@ -171,7 +171,7 @@ class AspectJAppTransform extends Transform {
         logAugmentationStart();
 
         // attaching source classes compiled by compile${variantName}AspectJ task
-        includeCompiledAspects(transformInvocation);
+        includeCompiledAspects(transformInvocation, outputDir);
         Collection<TransformInput> inputs = modeComplex() ? transformInvocation.inputs : transformInvocation.referencedInputs;
 
         inputs.each { input ->
@@ -226,10 +226,13 @@ class AspectJAppTransform extends Transform {
 
     /* Internal */
 
-    def private includeCompiledAspects(TransformInvocation transformInvocation) {
+    def private includeCompiledAspects(TransformInvocation transformInvocation, File outputDir) {
         def compiledAj = project.file("$project.buildDir/aspectj/${(transformInvocation.context as TransformTask).variantName}");
         if (compiledAj.exists()) {
             aspectJWeaver.aspectPath << compiledAj;
+
+            //copy compiled .class files to output directory
+            FileUtil.copyDir compiledAj, outputDir;
         }
     }
 

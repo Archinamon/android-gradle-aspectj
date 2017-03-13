@@ -1,4 +1,4 @@
-package com.archinamon.plugin;
+package com.archinamon.plugin
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
@@ -9,11 +9,8 @@ import com.archinamon.AspectJExtension
 import com.archinamon.api.AspectJCompileTask
 import com.archinamon.api.BuildTimeListener
 import com.archinamon.utils.VariantUtils
-import com.sun.org.apache.xalan.internal.xsltc.compiler.CompilerException
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.tasks.compile.AbstractCompile
-import org.gradle.api.tasks.compile.JavaCompile
 
 def static configProject(Project project, AndroidConfig config, AspectJExtension settings) {
     project.repositories { project.repositories.mavenCentral(); }

@@ -158,6 +158,11 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 2.4.0 -- Added aspectj-ext plugin
+* `includeJar` parameter now able to read aar's manifest file to exactly detect required library;
+* `com.archinamon.aspectj-ext` plugin added to properly weave inpath jars, in this mode InstantRun doesn't allowed;
+* small fixes and package/name refactoring;
+
 #### 2.3.1 -- New two-step build mechanic
 * renamed extension parameter: ajcExtraArgs -> ajcArgs;
 * split parameter: logFileName -> [transformLogFile, compilationLogFile];

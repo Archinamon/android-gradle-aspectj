@@ -129,6 +129,19 @@ So no need to define them manually.
 - `transformLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for Transformer
 - `compilationLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for CompileTask
 
+Working with `includeJar` parameter
+-------
+Now this option requires some workaround to avoid `Multiple dex files exception`.
+As well as `includeAllJars` parameter too :)
+
+If you wanna weave any jars as inpath parameter, use instead another plugin config:
+```groovy
+apply plugin: 'com.archinamon.aspectj-ext'
+```
+
+And you should switch off InstantRun option. Plugin detects IR status and fails build if IR will be found.
+In future this hack won't be needed I hope.
+
 Working tests
 -------
 Just write a test and run them! If any errors occurrs please write an issue :)

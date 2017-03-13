@@ -56,7 +56,7 @@ private static void configureCompiler(Project project, AndroidConfig config) {
         new AspectJCompileTask.Builder(project)
             .plugin(project.plugins.getPlugin(config.isLibraryPlugin ? LibraryPlugin : AppPlugin))
             .config(project.extensions.getByType(AspectJExtension))
-            .compiler(VariantUtils.getJavaTask(variantData))
+            .compiler(VariantUtils.getJavaTask(variant))
             .variant(variant.name)
             .name(taskName)
             .build();

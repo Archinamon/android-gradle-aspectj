@@ -6,7 +6,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:2.4.3`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.0.0`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -171,6 +171,10 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.0.0 -- Grand refactoring in Kotlin
+* all groovy classes was obsolete;
+* new code-base in Kotlin 1.1.1 stable;
+
 #### 2.4.3 -- Hot-fixed  two-step compilation
 * compiled in first step aspect classes have not been copied to final output;
 

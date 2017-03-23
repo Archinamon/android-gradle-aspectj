@@ -2,10 +2,7 @@ package com.archinamon.api
 
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
-import com.archinamon.utils.findAjSourcesForVariant
-import com.archinamon.utils.from
-import com.archinamon.utils.logCompilationFinish
-import com.archinamon.utils.logCompilationStart
+import com.archinamon.utils.*
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -15,6 +12,7 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
+import java.util.*
 
 internal open class AspectJCompileTask: AbstractCompile() {
 
@@ -61,14 +59,20 @@ internal open class AspectJCompileTask: AbstractCompile() {
                 Pair("type", AspectJCompileTask::class.java)
             )
 
-            val task: AspectJCompileTask = project.task(options, taskName) as AspectJCompileTask
+            val task = project.task(options, taskName) as AspectJCompileTask
             val buildDir = project.file("${project.buildDir}/aspectj/$variantName")
+            val sources = findAjSourcesForVariant(project, variantName)
 
             task.destinationDir = buildDir
             task.aspectJWeaver = AspectJWeaver(project)
-            task.aspectJWeaver.ajSources = findAjSourcesForVariant(project, variantName)
-            task.source(findAjSourcesForVariant(project, variantName))
+
+            task.source(sources)
             task.classpath = classpath()
+
+            findCompiledAspectsInClasspath(task, config.includeAspectsFromJar)
+
+            task.aspectJWeaver.ajSources = sources
+            task.aspectJWeaver.inPath shl buildDir shl javaCompiler.destinationDir
 
             task.aspectJWeaver.targetCompatibility = JavaVersion.VERSION_1_7.toString()
             task.aspectJWeaver.sourceCompatibility = JavaVersion.VERSION_1_7.toString()
@@ -99,6 +103,20 @@ internal open class AspectJCompileTask: AbstractCompile() {
         private fun classpath(): FileCollection {
             return SimpleFileCollection(javaCompiler.classpath.files + javaCompiler.destinationDir)
         }
+
+        private fun findCompiledAspectsInClasspath(task: AspectJCompileTask, aspectsFromJar: List<String>) {
+            val classpath: FileCollection = task.classpath
+            val aspects: ArrayList<File> = ArrayList()
+
+            classpath.forEach { file ->
+                if (aspectsFromJar.isNotEmpty() && DependencyFilter.isIncludeFilterMatched(file, aspectsFromJar)) {
+                    logJarAspectAdded(file)
+                    aspects shl file
+                }
+            }
+
+            if (aspects.isNotEmpty()) task.aspectJWeaver.aspectPath from aspects
+        }
     }
 
     lateinit var aspectJWeaver: AspectJWeaver
@@ -109,7 +127,6 @@ internal open class AspectJCompileTask: AbstractCompile() {
 
         destinationDir.deleteRecursively()
 
-        println(classpath.joinToString(prefix = "[", postfix = "]") { file -> file.absolutePath })
         aspectJWeaver.classPath = ArrayList(classpath.files)
         aspectJWeaver.doWeave()
 

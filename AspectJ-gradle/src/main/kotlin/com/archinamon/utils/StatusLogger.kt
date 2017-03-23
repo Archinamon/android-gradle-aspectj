@@ -1,7 +1,8 @@
 package com.archinamon.utils
 
 import com.android.build.api.transform.JarInput
-import com.archinamon.api.AspectJTransform
+import com.archinamon.api.BuildPolicy
+import java.io.File
 
 internal fun logCompilationStart() {
     println("---------- Starting AspectJ sources compilation ----------")
@@ -27,7 +28,7 @@ internal fun logEnvInvalid() {
     println("Ajc classpath doesn't has needed runtime environment")
 }
 
-internal fun logWeaverBuildPolicy(policy: AspectJTransform.BuildPolicy) {
+internal fun logWeaverBuildPolicy(policy: BuildPolicy) {
     println("Weaving in ${policy.name.toLowerCase()} mode")
 }
 
@@ -41,6 +42,10 @@ internal fun logJarInpathAdded(jar: JarInput) {
 
 internal fun logJarAspectAdded(jar: JarInput) {
     println("include aspects from :: ${jar.file.absolutePath}")
+}
+
+internal fun logJarAspectAdded(file: File) {
+    println("include aspects from :: ${file.absolutePath}")
 }
 
 internal fun logExtraAjcArgumentAlreadyExists(arg: String) {

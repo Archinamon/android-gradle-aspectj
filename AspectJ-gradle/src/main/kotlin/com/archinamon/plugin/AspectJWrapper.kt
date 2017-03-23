@@ -6,6 +6,9 @@ import com.android.build.gradle.TestedExtension
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.api.AspectJTransform
+import com.archinamon.api.ExtTransformer
+import com.archinamon.api.LibTransformer
+import com.archinamon.api.StdTransformer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import javax.inject.Inject
@@ -13,11 +16,11 @@ import javax.inject.Inject
 internal sealed class AspectJWrapper: Plugin<Project> {
 
     internal class Std @Inject constructor(): AspectJWrapper() {
-        override fun getTransformer(project: Project): AspectJTransform = AspectJTransform.Std(project)
+        override fun getTransformer(project: Project): AspectJTransform = StdTransformer(project)
     }
 
     internal class Ext @Inject constructor(): AspectJWrapper() {
-        override fun getTransformer(project: Project): AspectJTransform = AspectJTransform.Ext(project)
+        override fun getTransformer(project: Project): AspectJTransform = ExtTransformer(project)
     }
 
     override fun apply(project: Project) {
@@ -29,7 +32,7 @@ internal sealed class AspectJWrapper: Plugin<Project> {
         val module: TestedExtension
         val transformer: AspectJTransform
         if (config.isLibraryPlugin) {
-            transformer = AspectJTransform.Lib(project)
+            transformer = LibTransformer(project)
             module = project.extensions.getByType(LibraryExtension::class.java)
         } else {
             transformer = getTransformer(project)

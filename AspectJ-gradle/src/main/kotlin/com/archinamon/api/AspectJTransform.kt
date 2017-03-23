@@ -9,6 +9,7 @@ import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
 import com.archinamon.utils.*
+import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
 import org.gradle.api.GradleException
@@ -19,6 +20,25 @@ import java.io.File
 internal const val TRANSFORM_NAME = "aspectj"
 private const val AJRUNTIME = "aspectjrt"
 private const val SLICER_DETECTED_ERROR = "Running with InstantRun slicer when weaver extended not allowed!"
+
+enum class BuildPolicy {
+    SIMPLE,
+    COMPLEX,
+    LIBRARY
+}
+
+internal class StdTransformer(project: Project): AspectJTransform(project, BuildPolicy.SIMPLE)
+internal class ExtTransformer(project: Project): AspectJTransform(project, BuildPolicy.COMPLEX)
+internal class LibTransformer(project: Project): AspectJTransform(project, BuildPolicy.LIBRARY) {
+
+    override fun getScopes(): MutableSet<QualifiedContent.Scope> {
+        return Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT)
+    }
+
+    override fun getReferencedScopes(): MutableSet<QualifiedContent.Scope> {
+        return TransformManager.SCOPE_FULL_PROJECT
+    }
+}
 
 internal sealed class AspectJTransform(val project: Project, private val policy: BuildPolicy): Transform() {
 
@@ -178,10 +198,6 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
 
     /* Internal */
 
-    private infix fun <E> ArrayList<in E>.shl(elem: E) {
-        this.add(elem)
-    }
-
     private fun includeCompiledAspects(transformInvocation: TransformInvocation, outputDir: File) {
         val compiledAj = project.file("${project.buildDir}/aspectj/${(transformInvocation.context as TransformTask).variantName}")
         if (compiledAj.exists()) {
@@ -207,64 +223,5 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
         FileUtil.copyFile(jarInput.file, dest)
 
         return true
-    }
-
-    private fun isExcludeFilterMatched(file: File?, filters: List<String>?): Boolean {
-        return isFilterMatched(file, filters, FilterPolicy.EXCLUDE)
-    }
-
-    private fun isIncludeFilterMatched(file: File?, filters: List<String>?): Boolean {
-        return isFilterMatched(file, filters, FilterPolicy.INCLUDE)
-    }
-
-    private fun isFilterMatched(file: File?, filters: List<String>?, filterPolicy: FilterPolicy): Boolean {
-        if (file === null) {
-            return false
-        }
-
-        if (filters === null || filters.isEmpty()) {
-            return filterPolicy === FilterPolicy.INCLUDE
-        }
-
-        val str = findPackageNameIfAar(file)
-        return filters.any { isContained(str, it) }
-    }
-
-    private fun isContained(str: String?, filter: String): Boolean {
-        if (str === null) {
-            return false
-        }
-
-        val filterTmp = filter
-        return when {
-            str.contains(filterTmp) -> true
-            filterTmp.contains("/") -> str.contains(filterTmp.replace("/", File.separator))
-            filterTmp.contains("\\") -> str.contains(filterTmp.replace("\\", File.separator))
-            else -> false
-        }
-    }
-
-    enum class FilterPolicy {
-        INCLUDE,
-        EXCLUDE
-    }
-
-    enum class BuildPolicy {
-        SIMPLE,
-        COMPLEX,
-        LIBRARY
-    }
-
-    internal class Std(project: Project): AspectJTransform(project, BuildPolicy.SIMPLE)
-    internal class Ext(project: Project): AspectJTransform(project, BuildPolicy.COMPLEX)
-    internal class Lib(project: Project): AspectJTransform(project, BuildPolicy.LIBRARY) {
-
-        override fun getScopes(): MutableSet<QualifiedContent.Scope> {
-            return Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT)
-        }
-
-        override fun getReferencedScopes(): MutableSet<QualifiedContent.Scope> {
-            return TransformManager.SCOPE_FULL_PROJECT
-        }
     }
 }

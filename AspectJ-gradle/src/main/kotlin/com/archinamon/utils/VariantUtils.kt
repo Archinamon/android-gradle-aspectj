@@ -61,6 +61,11 @@ fun getVariantDataList(plugin: BasePlugin): List<BaseVariantData<out BaseVariant
     return plugin.variantManager.variantDataList
 }
 
-internal infix fun <E> ArrayList<in E>.from(elems: MutableList<E>) {
+internal infix fun <E> ArrayList<in E>.shl(elem: E): ArrayList<in E> {
+    this.add(elem)
+    return this
+}
+
+internal infix fun <E> ArrayList<in E>.from(elems: List<E>) {
     this.addAll(elems)
 }

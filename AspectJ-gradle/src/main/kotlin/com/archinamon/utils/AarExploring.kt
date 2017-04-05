@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.*
 
 internal fun findPackageNameIfAar(input: File): String {
     if (!input.absolutePath.contains("build-cache")) return input.absolutePath
+    if (!input.exists()) return "[empty]"
 
     var f: File? = input
 

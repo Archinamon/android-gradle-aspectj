@@ -14,7 +14,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 import java.util.*
 
-internal open class AspectJCompileTask: AbstractCompile() {
+internal open class AspectJCompileTask : AbstractCompile() {
 
     internal class Builder(val project: Project) {
 
@@ -53,10 +53,10 @@ internal open class AspectJCompileTask: AbstractCompile() {
             val android = AndroidConfig(project)
 
             val options = mutableMapOf(
-                Pair("overwrite", true),
-                Pair("group", "build"),
-                Pair("description", "Compile .aj source files into java .class with meta instructions"),
-                Pair("type", AspectJCompileTask::class.java)
+                    Pair("overwrite", true),
+                    Pair("group", "build"),
+                    Pair("description", "Compile .aj source files into java .class with meta instructions"),
+                    Pair("type", AspectJCompileTask::class.java)
             )
 
             val task = project.task(options, taskName) as AspectJCompileTask
@@ -67,9 +67,6 @@ internal open class AspectJCompileTask: AbstractCompile() {
             task.aspectJWeaver = AspectJWeaver(project)
 
             task.source(sources)
-            task.classpath = classpath()
-
-            findCompiledAspectsInClasspath(task, config.includeAspectsFromJar)
 
             task.aspectJWeaver.ajSources = sources
             task.aspectJWeaver.inPath shl buildDir shl javaCompiler.destinationDir
@@ -94,6 +91,7 @@ internal open class AspectJCompileTask: AbstractCompile() {
             // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run
             javaCompiler.doLast {
                 task.classpath = classpath()
+                findCompiledAspectsInClasspath(task, config.includeAspectsFromJar)
             }
 
             //apply behavior

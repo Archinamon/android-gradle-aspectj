@@ -14,7 +14,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 import java.util.*
 
-internal open class AspectJCompileTask : AbstractCompile() {
+internal open class AspectJCompileTask: AbstractCompile() {
 
     internal class Builder(val project: Project) {
 

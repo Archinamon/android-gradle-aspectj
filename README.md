@@ -56,13 +56,6 @@ Apply the `aspectj` plugin:
 apply plugin: 'com.archinamon.aspectj'
 ```
 
-Add the AspectJ Runtime (required by ajc) to your `dependencies` section:
-```groovy
-    dependencies {
-        compile "org.aspectj:aspectjrt:1.8.10"
-    }
-```
-
 Now you can write aspects using annotation style or native (even without IntelliJ IDEA Ultimate edition).
 Let's write simple Application advice:
 ```java

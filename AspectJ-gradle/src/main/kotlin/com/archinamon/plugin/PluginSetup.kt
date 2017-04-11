@@ -1,7 +1,6 @@
 package com.archinamon.plugin
 
 import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.LibraryPlugin
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
@@ -18,6 +17,7 @@ import org.gradle.api.plugins.PluginContainer
 
 internal fun configProject(project: Project, config: AndroidConfig, settings: AspectJExtension) {
     project.repositories.mavenCentral()
+    project.dependencies.add("compile", "org.aspectj:aspectjrt:${settings.ajc}")
     project.afterEvaluate {
         prepareVariant(config)
         configureCompiler(project, config)

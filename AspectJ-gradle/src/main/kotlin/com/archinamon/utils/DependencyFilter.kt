@@ -15,15 +15,15 @@ internal object DependencyFilter {
         EXCLUDE
     }
 
-    internal fun isExcludeFilterMatched(file: File?, filters: List<String>?): Boolean {
+    internal fun isExcludeFilterMatched(file: File?, filters: Collection<String>?): Boolean {
         return isFilterMatched(file, filters, Policy.EXCLUDE)
     }
 
-    internal fun isIncludeFilterMatched(file: File?, filters: List<String>?): Boolean {
+    internal fun isIncludeFilterMatched(file: File?, filters: Collection<String>?): Boolean {
         return isFilterMatched(file, filters, Policy.INCLUDE)
     }
 
-    private fun isFilterMatched(file: File?, filters: List<String>?, filterPolicy: Policy): Boolean {
+    private fun isFilterMatched(file: File?, filters: Collection<String>?, filterPolicy: Policy): Boolean {
         if (file === null) {
             return false
         }

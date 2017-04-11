@@ -53,10 +53,10 @@ internal open class AspectJCompileTask : AbstractCompile() {
             val android = AndroidConfig(project)
 
             val options = mutableMapOf(
-                    Pair("overwrite", true),
-                    Pair("group", "build"),
-                    Pair("description", "Compile .aj source files into java .class with meta instructions"),
-                    Pair("type", AspectJCompileTask::class.java)
+                Pair("overwrite", true),
+                Pair("group", "build"),
+                Pair("description", "Compile .aj source files into java .class with meta instructions"),
+                Pair("type", AspectJCompileTask::class.java)
             )
 
             val task = project.task(options, taskName) as AspectJCompileTask
@@ -67,6 +67,8 @@ internal open class AspectJCompileTask : AbstractCompile() {
             task.aspectJWeaver = AspectJWeaver(project)
 
             task.source(sources)
+            task.classpath = classpath()
+            findCompiledAspectsInClasspath(task, config.includeAspectsFromJar)
 
             task.aspectJWeaver.ajSources = sources
             task.aspectJWeaver.inPath shl buildDir shl javaCompiler.destinationDir
@@ -102,9 +104,9 @@ internal open class AspectJCompileTask : AbstractCompile() {
             return SimpleFileCollection(javaCompiler.classpath.files + javaCompiler.destinationDir)
         }
 
-        private fun findCompiledAspectsInClasspath(task: AspectJCompileTask, aspectsFromJar: List<String>) {
+        private fun findCompiledAspectsInClasspath(task: AspectJCompileTask, aspectsFromJar: Collection<String>) {
             val classpath: FileCollection = task.classpath
-            val aspects: ArrayList<File> = ArrayList()
+            val aspects: MutableSet<File> = mutableSetOf()
 
             classpath.forEach { file ->
                 if (aspectsFromJar.isNotEmpty() && DependencyFilter.isIncludeFilterMatched(file, aspectsFromJar)) {
@@ -125,7 +127,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
 
         destinationDir.deleteRecursively()
 
-        aspectJWeaver.classPath = ArrayList(classpath.files)
+        aspectJWeaver.classPath = LinkedHashSet(classpath.files)
         aspectJWeaver.doWeave()
 
         logCompilationFinish()

@@ -88,8 +88,10 @@ Tune extension
 aspectj {
     ajc '1.8.10'
 
+    /* @see Ext plugin config **/
     includeAllJars false
     includeJar 'design', 'support-v4', 'dagger'
+
     includeAspectsFromJar 'my-aj-logger-lib', 'any-other-libs-with-aspects'
     ajcArgs << '-referenceInfo' << '-warn:deprecation'
 
@@ -129,18 +131,19 @@ So no need to define them manually.
 - `transformLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for Transformer
 - `compilationLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for CompileTask
 
-Working with `includeJar` parameter
--------
-Now this option requires some workaround to avoid `Multiple dex files exception`.
-As well as `includeAllJars` parameter too :)
-
-If you wanna weave any jars as inpath parameter, use instead another plugin config:
+Ext plugin config
+-----------------
 ```groovy
 apply plugin: 'com.archinamon.aspectj-ext'
 ```
 
-And you should switch off InstantRun option. Plugin detects IR status and fails build if IR will be found.
-In future this hack won't be needed I hope.
+Ext config:
+- allows usage of `includeJar` and `includeAllJars` parameters, with workaround to avoid `Multiple dex files exception`
+- supports `multiDex`
+- supports `Instrumented tests`
+
+Currently it has some limitations:
+- `InstantRun` must be switched off (Plugin detects IR status and fails build if IR will be found).
 
 Working tests
 -------

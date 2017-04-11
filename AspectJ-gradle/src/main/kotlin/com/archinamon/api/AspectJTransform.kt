@@ -180,10 +180,7 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
         if (hasAjRt) {
             logWeaverBuildPolicy(policy)
             aspectJWeaver.doWeave()
-
-            if (modeComplex()) {
-                aspectJMerger.doMerge(this, transformInvocation, outputDir)
-            }
+            aspectJMerger.doMerge(this, transformInvocation, outputDir)
 
             logAugmentationFinish()
         } else {

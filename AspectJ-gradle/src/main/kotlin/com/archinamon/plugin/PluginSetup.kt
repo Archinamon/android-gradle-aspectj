@@ -49,17 +49,21 @@ private fun prepareVariant(config: AndroidConfig) {
 }
 
 private fun configureCompiler(project: Project, config: AndroidConfig) {
-    getVariantDataList(config.plugin).forEach { variant ->
+    getVariantDataList(config.plugin).forEach variantScanner@ { variant ->
         val variantName = variant.name.capitalize()
-        val taskName = "compile${variantName}AspectJ"
 
+        // do not configure compiler task for non-test variants in ConfigScope.TEST
+        if (config.scope == ConfigScope.TEST && !variantName.contains("androidtest", true))
+            return@variantScanner
+
+        val taskName = "compile${variantName}AspectJ"
         AspectJCompileTask.Builder(project)
             .plugin(project.plugins.getPlugin(config))
             .config(project.extensions.getByType(AspectJExtension::class.java))
             .compiler(getJavaTask(variant)!!)
             .variant(variant.name)
             .name(taskName)
-            .buildAndAttach()
+            .buildAndAttach(config)
     }
 }
 

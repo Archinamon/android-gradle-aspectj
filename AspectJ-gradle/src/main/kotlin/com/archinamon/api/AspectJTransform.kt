@@ -8,6 +8,7 @@ import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
+import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
 import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
@@ -22,6 +23,7 @@ private const val AJRUNTIME = "aspectjrt"
 private const val SLICER_DETECTED_ERROR = "Running with InstantRun slicer when weaver extended not allowed!"
 
 enum class BuildPolicy {
+
     SIMPLE,
     COMPLEX,
     LIBRARY
@@ -120,6 +122,12 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
     }
 
     override fun transform(transformInvocation: TransformInvocation) {
+        // bypassing transformer for non-test variant data in ConfigScope.TEST
+        if (!verifyBypassInTestScope(transformInvocation.context)) {
+            logBypassTransformation()
+            return
+        }
+
         val outputProvider = transformInvocation.outputProvider
         val includeJars = config.aspectj().includeJar
         val includeAspects = config.aspectj().includeAspectsFromJar
@@ -198,6 +206,15 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
     }
 
     /* Internal */
+
+    private fun verifyBypassInTestScope(ctx: Context): Boolean {
+        val variant = (ctx as TransformTask).variantName
+
+        return when (config.scope) {
+            ConfigScope.TEST -> variant.contains("androidtest", true)
+            else -> true
+        }
+    }
 
     private fun includeCompiledAspects(transformInvocation: TransformInvocation, outputDir: File) {
         val compiledAj = project.file("${project.buildDir}/aspectj/${(transformInvocation.context as TransformTask).variantName}")

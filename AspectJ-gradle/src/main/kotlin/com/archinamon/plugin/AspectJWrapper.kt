@@ -10,22 +10,28 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import javax.inject.Inject
 
-internal sealed class AspectJWrapper: Plugin<Project> {
+internal sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
 
-    internal class Std @Inject constructor(): AspectJWrapper() {
+    internal companion object {
+        const val CONFIG_STD   = "std"
+        const val CONFIG_EXT   = "ext"
+        const val CONFIG_TEST  = "tst"
+    }
+
+    internal class Std @Inject constructor(): AspectJWrapper(ConfigScope.STD) {
         override fun getTransformer(project: Project): AspectJTransform = StdTransformer(project)
     }
 
-    internal class Ext @Inject constructor(): AspectJWrapper() {
+    internal class Ext @Inject constructor(): AspectJWrapper(ConfigScope.EXT) {
         override fun getTransformer(project: Project): AspectJTransform = ExtTransformer(project)
     }
 
-    internal class Test @Inject constructor(): AspectJWrapper() {
+    internal class Test @Inject constructor(): AspectJWrapper(ConfigScope.TEST) {
         override fun getTransformer(project: Project): AspectJTransform = TstTransformer(project)
     }
 
     override fun apply(project: Project) {
-        val config = AndroidConfig(project)
+        val config = AndroidConfig(project, scope)
         val settings = project.extensions.create("aspectj", AspectJExtension::class.java)
 
         configProject(project, config, settings)

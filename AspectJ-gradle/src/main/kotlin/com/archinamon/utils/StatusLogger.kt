@@ -4,6 +4,10 @@ import com.android.build.api.transform.JarInput
 import com.archinamon.api.BuildPolicy
 import java.io.File
 
+internal fun logBypassTransformation() {
+    println("---------- AspectJ tasks bypassed  with no outputs ----------")
+}
+
 internal fun logCompilationStart() {
     println("---------- Starting AspectJ sources compilation ----------")
 }

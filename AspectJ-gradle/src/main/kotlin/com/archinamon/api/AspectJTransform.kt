@@ -29,6 +29,7 @@ enum class BuildPolicy {
 
 internal class StdTransformer(project: Project): AspectJTransform(project, BuildPolicy.SIMPLE)
 internal class ExtTransformer(project: Project): AspectJTransform(project, BuildPolicy.COMPLEX)
+internal class TstTransformer(project: Project): AspectJTransform(project, BuildPolicy.COMPLEX)
 internal class LibTransformer(project: Project): AspectJTransform(project, BuildPolicy.LIBRARY) {
 
     override fun getScopes(): MutableSet<QualifiedContent.Scope> {

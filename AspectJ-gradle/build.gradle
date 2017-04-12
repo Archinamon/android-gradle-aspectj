@@ -31,11 +31,12 @@ dependencies {
     compile "org.aspectj:aspectjtools:$aspectjVersion"
 
     testCompile 'junit:junit:4.10'
-    testCompile 'org.easytesting:fest-assert-core:2.0M10'
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
 
 group = 'com.archinamon'
-version = '3.0.1'
+version = '3.0.2'
 
 // local archive :: debug mode
 uploadArchives {

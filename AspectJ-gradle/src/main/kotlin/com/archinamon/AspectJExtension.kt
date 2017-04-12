@@ -6,6 +6,7 @@ open class AspectJExtension {
 
     open var includeAllJars = false
     open var includeJar = mutableSetOf<String>()
+    open var extendClasspath = true
 
     open var includeAspectsFromJar = mutableSetOf<String>()
     open var ajcArgs = mutableSetOf<String>()

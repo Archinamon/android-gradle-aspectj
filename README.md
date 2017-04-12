@@ -6,7 +6,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.0.0`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.0.2`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -48,7 +48,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.github.Archinamon:GradleAspectJ-Android:3.0.0'
+classpath 'com.github.Archinamon:GradleAspectJ-Android:3.0.2'
 ```
 
 Apply the `aspectj` plugin:
@@ -91,6 +91,7 @@ aspectj {
     /* @see Ext plugin config **/
     includeAllJars false
     includeJar 'design', 'support-v4', 'dagger'
+    extendClasspath true
 
     includeAspectsFromJar 'my-aj-logger-lib', 'any-other-libs-with-aspects'
     ajcArgs << '-referenceInfo' << '-warn:deprecation'
@@ -113,6 +114,7 @@ All the extension parameters are have default values (all of them are described 
 So no need to define them manually.
 
 - `ajc` Allows to define the aspectj runtime jar version manually (1.8.10 current)
+- `extendClasspath` Explicitly controls whether plugin should mutate the classpath with aspectj-runtime itself
 
 - `includeAllJars` Explicitly include all available jar-files into -inpath to proceed by AJ-compiler
 - `includeJar` Name filter to include any jar/aar which name or path satisfies the filter

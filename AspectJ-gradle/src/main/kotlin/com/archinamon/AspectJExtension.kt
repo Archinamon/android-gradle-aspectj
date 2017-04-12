@@ -5,10 +5,10 @@ open class AspectJExtension {
     open var ajc = "1.8.10"
 
     open var includeAllJars = false
-    open var includeJar = mutableListOf<String>()
+    open var includeJar = mutableSetOf<String>()
 
-    open var includeAspectsFromJar = mutableListOf<String>()
-    open var ajcArgs = mutableListOf<String>()
+    open var includeAspectsFromJar = mutableSetOf<String>()
+    open var ajcArgs = mutableSetOf<String>()
 
     open var weaveInfo = true
     open var debugInfo = false

@@ -52,7 +52,7 @@ internal fun logExtraAjcArgumentAlreadyExists(arg: String) {
     println("extra AjC argument $arg already exists in build config")
 }
 
-internal fun logBuildParametersAdapted(args: MutableList<String?>, logfile: String) {
+internal fun logBuildParametersAdapted(args: MutableCollection<String?>, logfile: String) {
     var params: String = ""
 
     args.forEach { params += if (it?.startsWith('-')!!) "$it :: " else ( if (it.length > 200) "[ list files ],\n" else "$it, ") }

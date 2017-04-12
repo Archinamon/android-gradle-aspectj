@@ -1,7 +1,6 @@
 package com.archinamon.plugin
 
 import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.LibraryPlugin
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension

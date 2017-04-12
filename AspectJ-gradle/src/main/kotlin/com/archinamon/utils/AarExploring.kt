@@ -12,7 +12,7 @@ internal fun findPackageNameIfAar(input: File): String {
 
     do {
         f = f?.parentFile
-    } while (f?.isDirectory!! && !f.listFiles()?.any(::findManifest)!!)
+    } while (f?.isDirectory!! && !f.listFiles().any(::findManifest))
 
     val manifest = f.listFiles().find(::findManifest)
     if (manifest != null) {

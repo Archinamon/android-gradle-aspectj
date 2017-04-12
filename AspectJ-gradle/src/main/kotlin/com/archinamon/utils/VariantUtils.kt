@@ -8,7 +8,6 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
-import java.util.ArrayList
 
 fun getJavaTask(baseVariantData: BaseVariantData<out BaseVariantOutputData>): JavaCompile? {
     if (baseVariantData.javacTask != null) {
@@ -36,8 +35,8 @@ fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantDat
     return aspects.filter(File::exists)
 }
 
-fun findAjSourcesForVariant(project: Project, variantName: String): ArrayList<File> {
-    val possibleDirs: MutableList<File> = mutableListOf()
+fun findAjSourcesForVariant(project: Project, variantName: String): MutableSet<File> {
+    val possibleDirs: MutableSet<File> = mutableSetOf()
     if (project.file("src/main/aspectj").exists()) {
         possibleDirs.add(project.file("src/main/aspectj"))
     }
@@ -47,25 +46,24 @@ fun findAjSourcesForVariant(project: Project, variantName: String): ArrayList<Fi
     root.forEach { file ->
         types.forEach { type ->
             if (file.name.contains(type.toLowerCase()) &&
-                    file.list().any { it.contains("aspectj") } &&
-                    !possibleDirs.contains(file)) {
+                    file.list().any { it.contains("aspectj") }) {
                 possibleDirs.add(File(file, "aspectj"))
             }
         }
     }
 
-    return ArrayList(possibleDirs)
+    return LinkedHashSet(possibleDirs)
 }
 
 fun getVariantDataList(plugin: BasePlugin): List<BaseVariantData<out BaseVariantOutputData>> {
     return plugin.variantManager.variantDataList
 }
 
-internal infix fun <E> ArrayList<in E>.shl(elem: E): ArrayList<in E> {
+internal infix fun <E> MutableCollection<in E>.shl(elem: E): MutableCollection<in E> {
     this.add(elem)
     return this
 }
 
-internal infix fun <E> ArrayList<in E>.from(elems: List<E>) {
+internal infix fun <E> MutableCollection<in E>.from(elems: Collection<E>) {
     this.addAll(elems)
 }

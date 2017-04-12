@@ -39,17 +39,16 @@ internal class AspectJWeaver(val project: Project) {
     var breakOnError: Boolean = false
     var experimental: Boolean = false
 
-    var ajcArgs = ArrayList<String>()
+    var ajcArgs = LinkedHashSet<String>()
 
-    var ajSources: ArrayList<File> = ArrayList()
+    var ajSources: MutableSet<File> = LinkedHashSet()
         internal set(ajSources) {
-            ajSources.filterNot { this.ajSources.contains(it) }
-                .forEach { this.ajSources.add(it) }
+            ajSources.forEach { this.ajSources.add(it) }
         }
 
-    var aspectPath: ArrayList<File> = ArrayList()
-    var inPath: ArrayList<File> = ArrayList()
-    var classPath: ArrayList<File> = ArrayList()
+    var aspectPath: MutableSet<File> = LinkedHashSet()
+    var inPath: MutableSet<File> = LinkedHashSet()
+    var classPath: MutableSet<File> = LinkedHashSet()
     var bootClasspath: String? = null
     var sourceCompatibility: String? = null
     var targetCompatibility: String? = null
@@ -168,7 +167,7 @@ internal class AspectJWeaver(val project: Project) {
         }
     }
 
-    private inline operator fun <reified E> MutableList<in E>.plus(elem: E): MutableList<in E> {
+    private inline operator fun <reified E> MutableCollection<in E>.plus(elem: E): MutableCollection<in E> {
         this.add(elem)
         return this
     }

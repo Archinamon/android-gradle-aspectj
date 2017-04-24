@@ -4,8 +4,6 @@ import com.android.SdkConstants
 import com.android.build.api.transform.Format
 import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformInvocation
-import com.android.build.api.transform.TransformOutputProvider
-import com.android.build.gradle.internal.pipeline.IntermediateFolderUtils.getContentLocation
 import com.android.build.gradle.internal.transforms.JarMerger
 import com.android.utils.FileUtils
 import java.io.File

@@ -8,7 +8,7 @@ package com.archinamon.plugin
 
 internal enum class ConfigScope(internal val _name: String) {
 
-    STD(AspectJWrapper.CONFIG_STD),
-    EXT(AspectJWrapper.CONFIG_EXT),
-    TEST(AspectJWrapper.CONFIG_TEST);
+    STD(AspectJPlugin.CONFIG_STD),
+    EXT(AspectJPlugin.CONFIG_EXT),
+    TEST(AspectJPlugin.CONFIG_TEST);
 }

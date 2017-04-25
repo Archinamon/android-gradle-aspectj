@@ -16,6 +16,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import java.io.File
+import java.util.*
 
 internal const val TRANSFORM_NAME = "aspectj"
 private const val AJRUNTIME = "aspectjrt"
@@ -43,12 +44,8 @@ internal class TestTransformer(config: AndroidConfig) : AspectJTransform(config,
 
             val outputDir = transformInvocation.outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY)
             transformInvocation.inputs.forEach {
-                if (it.jarInputs.isNotEmpty()) {
-                    it.jarInputs.forEach { copyJar(transformInvocation.outputProvider, it) }
-                }
-                if (it.directoryInputs.isNotEmpty()) {
-                    it.directoryInputs.forEach { it.file.copyTo(outputDir) }
-                }
+                it.jarInputs.forEach { copyJar(transformInvocation.outputProvider, it) }
+                it.directoryInputs.forEach { it.file.copyTo(outputDir) }
             }
             AspectJMergeJars().doMerge(this, transformInvocation, outputDir)
             return
@@ -59,6 +56,21 @@ internal class TestTransformer(config: AndroidConfig) : AspectJTransform(config,
     private fun bypass(ctx: Context): Boolean {
         val variant = (ctx as TransformTask).variantName
         return !variant.contains("androidtest", true)
+    }
+
+    override fun prepareProject(): AspectJTransform {
+        config.project.afterEvaluate {
+            getVariantDataList(config.plugin)
+                    .filter { it.type.isForTesting }
+                    .forEach {
+                        val javaTask = getJavaTask(it)
+                        encoding = javaTask!!.options.encoding
+                        classpath from javaTask.classpath.files
+                        sourceCompatibility = JavaVersion.VERSION_1_7.toString()
+                        targetCompatibility = JavaVersion.VERSION_1_7.toString()
+                    }
+        }
+        return this
     }
 }
 
@@ -75,7 +87,8 @@ internal class LibTransformer(config: AndroidConfig) : AspectJTransform(config, 
 
 internal sealed class AspectJTransform(val config: AndroidConfig, private val policy: BuildPolicy) : Transform() {
 
-    fun prepareProject(): AspectJTransform {
+    open fun prepareProject(): AspectJTransform {
+        config.extAndroid.registerTransform(this)
         config.project.afterEvaluate {
             getVariantDataList(config.plugin).forEach {
                 setupVariant(it, config.project)
@@ -88,6 +101,7 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
     lateinit var encoding: String
     lateinit var sourceCompatibility: String
     lateinit var targetCompatibility: String
+    val classpath: MutableSet<File> = LinkedHashSet()
 
     fun <T : BaseVariantData<out BaseVariantOutputData>> setupVariant(variantData: T, project: Project) {
         if (variantData.scope.instantRunBuildContext.isInInstantRunMode) {
@@ -99,6 +113,8 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
         val javaTask = getJavaTask(variantData)
         getAjSourceAndExcludeFromJavac(project, variantData)
         encoding = javaTask!!.options.encoding
+
+        classpath from javaTask.classpath.files
         sourceCompatibility = JavaVersion.VERSION_1_7.toString()
         targetCompatibility = JavaVersion.VERSION_1_7.toString()
     }
@@ -138,7 +154,23 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
     }
 
     override fun transform(transformInvocation: TransformInvocation) {
+        if (!transformInvocation.isIncremental) {
+            transformInvocation.outputProvider.deleteAll()
+        }
+
+        val outputDir = transformInvocation.outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY)
+        if (outputDir.isDirectory) FileUtils.deleteDirectoryContents(outputDir)
+        FileUtils.mkdirs(outputDir)
+
+        val includeJars = config.aspectj().includeJar
+        val includeAspects = config.aspectj().includeAspectsFromJar
+
         val aspectJWeaver: AspectJWeaver = AspectJWeaver(config.project).apply {
+            inPath.clear()
+            aspectPath.clear()
+            classPath = this@AspectJTransform.classpath
+            destinationDir = outputDir.absolutePath
+            bootClasspath = config.getBootClasspath().joinToString(separator = File.pathSeparator)
             weaveInfo = config.aspectj().weaveInfo
             debugInfo = config.aspectj().debugInfo
             addSerialVUID = config.aspectj().addSerialVersionUID
@@ -152,28 +184,6 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
             sourceCompatibility = this@AspectJTransform.sourceCompatibility
             targetCompatibility = this@AspectJTransform.targetCompatibility
         }
-
-        val outputProvider = transformInvocation.outputProvider
-        val includeJars = config.aspectj().includeJar
-        val includeAspects = config.aspectj().includeAspectsFromJar
-
-        if (!transformInvocation.isIncremental) {
-            outputProvider.deleteAll()
-        }
-
-        val outputDir = outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY)
-        if (outputDir.isDirectory) FileUtils.deleteDirectoryContents(outputDir)
-        FileUtils.mkdirs(outputDir)
-
-        aspectJWeaver.destinationDir = outputDir.absolutePath
-        aspectJWeaver.bootClasspath = config.getBootClasspath().joinToString(separator = File.pathSeparator)
-
-        // clear weaver input, so each transformation can have its own configuration
-        // (e.g. different build types / variants)
-        // thanks to @philippkumar
-        aspectJWeaver.inPath.clear()
-        aspectJWeaver.aspectPath.clear()
-
         logAugmentationStart()
 
         // attaching source classes compiled by compile${variantName}AspectJ task
@@ -184,26 +194,27 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
             if (input.directoryInputs.isEmpty() && input.jarInputs.isEmpty())
                 return@proceedInputs //if no inputs so nothing to proceed
 
-            input.directoryInputs.forEach { dir ->
-                aspectJWeaver.inPath shl dir.file
-                aspectJWeaver.classPath shl dir.file
+            input.directoryInputs.map { it.file }.let {
+                aspectJWeaver.classPath from it
+                aspectJWeaver.inPath from it
             }
+
             input.jarInputs.forEach { jar ->
                 aspectJWeaver.classPath shl jar.file
 
                 if (modeComplex()) {
-                    if (config.aspectj().includeAllJars || (includeJars.isNotEmpty() && isIncludeFilterMatched(jar.file, includeJars))) {
-                        logJarInpathAdded(jar)
+                    if (config.aspectj().includeAllJars || isIncludeFilterMatched(jar.file, includeJars)) {
+                        logJarInpathAdded(jar.file)
                         aspectJWeaver.inPath shl jar.file
                     } else {
-                        copyJar(outputProvider, jar)
+                        copyJar(transformInvocation.outputProvider, jar)
                     }
                 } else {
                     if (includeJars.isNotEmpty()) logIgnoreInpathJars()
                 }
 
-                if (includeAspects.isNotEmpty() && isIncludeFilterMatched(jar.file, includeAspects)) {
-                    logJarAspectAdded(jar)
+                if (isIncludeFilterMatched(jar.file, includeAspects)) {
+                    logJarAspectAdded(jar.file)
                     aspectJWeaver.aspectPath shl jar.file
                 }
             }
@@ -246,12 +257,11 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
             return false
         }
 
-        var jarName = jarInput.name
-        if (jarName.endsWith(".jar")) {
-            jarName = jarName.substring(0, jarName.length - 4)
-        }
-
-        val dest: File = outputProvider.getContentLocation(jarName, jarInput.contentTypes, jarInput.scopes, Format.JAR)
+        val dest: File = outputProvider.getContentLocation(
+                jarInput.file.nameWithoutExtension,
+                jarInput.contentTypes,
+                jarInput.scopes,
+                Format.JAR)
 
         FileUtil.copyFile(jarInput.file, dest)
 

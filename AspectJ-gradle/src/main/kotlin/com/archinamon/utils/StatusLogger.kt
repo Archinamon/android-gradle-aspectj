@@ -1,6 +1,5 @@
 package com.archinamon.utils
 
-import com.android.build.api.transform.JarInput
 import com.archinamon.api.BuildPolicy
 import java.io.File
 
@@ -40,12 +39,8 @@ internal fun logIgnoreInpathJars() {
     println("Ignoring additional jars adding to -inpath in simple mode")
 }
 
-internal fun logJarInpathAdded(jar: JarInput) {
-    println("include jar :: ${jar.file.absolutePath}")
-}
-
-internal fun logJarAspectAdded(jar: JarInput) {
-    println("include aspects from :: ${jar.file.absolutePath}")
+internal fun logJarInpathAdded(file: File) {
+    println("include jar :: ${file.absolutePath}")
 }
 
 internal fun logJarAspectAdded(file: File) {

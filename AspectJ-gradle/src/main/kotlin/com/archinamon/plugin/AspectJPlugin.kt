@@ -1,20 +1,20 @@
 package com.archinamon.plugin
 
-import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.MISDEFINITION
 import com.archinamon.RETROLAMBDA
-import com.archinamon.api.*
+import com.archinamon.api.AspectJCompileTask
+import com.archinamon.api.BuildTimeListener
+import com.archinamon.utils.getAjSourceAndExcludeFromJavac
 import com.archinamon.utils.getJavaTask
 import com.archinamon.utils.getVariantDataList
 import org.gradle.api.GradleException
+import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.PluginContainer
 import javax.inject.Inject
 
 internal sealed class AspectJPlugin(private val scope: ConfigScope) : Plugin<Project> {
@@ -26,17 +26,11 @@ internal sealed class AspectJPlugin(private val scope: ConfigScope) : Plugin<Pro
     }
 
     /** implementations */
-    internal class Std @Inject constructor() : AspectJPlugin(ConfigScope.STD) {
-        override fun getTransformer(config: AndroidConfig): AspectJTransform = StdTransformer(config)
-    }
+    internal class Std @Inject constructor() : AspectJPlugin(ConfigScope.STD)
 
-    internal class Ext @Inject constructor() : AspectJPlugin(ConfigScope.EXT) {
-        override fun getTransformer(config: AndroidConfig): AspectJTransform = ExtTransformer(config)
-    }
+    internal class Ext @Inject constructor() : AspectJPlugin(ConfigScope.EXT)
 
     internal class Test @Inject constructor() : AspectJPlugin(ConfigScope.TEST) {
-        override fun getTransformer(config: AndroidConfig): AspectJTransform = TestTransformer(config)
-
         override fun extendClasspath(config: AndroidConfig, settings: AspectJExtension) {
             if (settings.extendClasspath) {
                 config.project.repositories.mavenCentral()
@@ -44,29 +38,30 @@ internal sealed class AspectJPlugin(private val scope: ConfigScope) : Plugin<Pro
             }
         }
 
-        override fun prepareVariants(config: AndroidConfig, transform: AspectJTransform) {
-            getVariantDataList(config.plugin)
-                    .filter { it.type.isForTesting }
-                    .forEach {
-                        applyVariantSourceSet(it, config)
-                        configureCompilerVariant(it, config)
-                        transform.setupVariant(it)
-                    }
+        override fun variantFilter(variant: BaseVariantData<out BaseVariantOutputData>): Boolean {
+            return variant.type.isForTesting
         }
+
     }
 
     /** base */
-    internal fun configurePlugin(config: AndroidConfig, settings: AspectJExtension, transform: AspectJTransform) {
+    internal fun configurePlugin(config: AndroidConfig, settings: AspectJExtension) {
         checkIfPluginAppliedAfterRetrolambda(config)
         extendClasspath(config, settings)
-        transform.registerTransform()
 
         config.project.afterEvaluate {
-            prepareVariants(config, transform)
+            getVariantDataList(config.plugin)
+                    .filter { variantFilter(it) }
+                    .forEach { prepareVariant(it, config) }
+
         }
 
         config.project.gradle.addListener(BuildTimeListener())
 
+    }
+
+    open fun variantFilter(variant: BaseVariantData<out BaseVariantOutputData>): Boolean {
+        return true
     }
 
     open fun extendClasspath(config: AndroidConfig, settings: AspectJExtension) {
@@ -76,15 +71,23 @@ internal sealed class AspectJPlugin(private val scope: ConfigScope) : Plugin<Pro
         }
     }
 
-    open fun prepareVariants(config: AndroidConfig, transform: AspectJTransform) {
-        getVariantDataList(config.plugin).forEach {
-            applyVariantSourceSet(it, config)
-            configureCompilerVariant(it, config)
-            transform.setupVariant(it)
+    internal fun prepareVariant(variant: BaseVariantData<out BaseVariantOutputData>, config: AndroidConfig) {
+        applyVariantSourceSet(variant, config)
+        configureCompilerVariant(variant, config)
+        configureTransformVariant(variant, config)
+    }
+
+    internal fun configureTransformVariant(variant: BaseVariantData<out BaseVariantOutputData>, config: AndroidConfig) {
+        config.transform.checkInstantRun(variant)
+        getAjSourceAndExcludeFromJavac(config.project, variant)
+        config.transform.apply {
+            variantStorage.put(variant.name, variant)
+            sourceCompatibility = JavaVersion.VERSION_1_7.toString()
+            targetCompatibility = JavaVersion.VERSION_1_7.toString()
         }
     }
 
-    fun applyVariantSourceSet(variant: BaseVariantData<out BaseVariantOutputData>, config: AndroidConfig) {
+    internal fun applyVariantSourceSet(variant: BaseVariantData<out BaseVariantOutputData>, config: AndroidConfig) {
         val sets = config.extAndroid.sourceSets
         fun applier(path: String) = sets.getByName(path).java.srcDir("src/$path/aspectj")
 
@@ -97,9 +100,8 @@ internal sealed class AspectJPlugin(private val scope: ConfigScope) : Plugin<Pro
         }
     }
 
-    fun configureCompilerVariant(variant: BaseVariantData<out BaseVariantOutputData>, config: AndroidConfig) {
+    internal fun configureCompilerVariant(variant: BaseVariantData<out BaseVariantOutputData>, config: AndroidConfig) {
         AspectJCompileTask.Builder(config.project)
-                .plugin(config.project.plugins.getPlugin(config))
                 .config(config.project.extensions.getByType(AspectJExtension::class.java))
                 .compiler(getJavaTask(variant)!!)
                 .variant(variant.name)
@@ -119,26 +121,10 @@ internal sealed class AspectJPlugin(private val scope: ConfigScope) : Plugin<Pro
         }
     }
 
-    private inline fun <reified T> PluginContainer.getPlugin(config: AndroidConfig): T where T : Plugin<Project> {
-        @Suppress("UNCHECKED_CAST")
-        val plugin: Class<out T> = (if (config.isLibraryPlugin) LibraryPlugin::class.java else AppPlugin::class.java) as Class<T>
-        return getPlugin(plugin)
-    }
-
     override fun apply(project: Project) {
         val settings = project.extensions.create("aspectj", AspectJExtension::class.java)
         val config = AndroidConfig(project, scope)
-        val transform: AspectJTransform
 
-        if (config.isLibraryPlugin) {
-            transform = LibTransformer(config)
-        } else {
-            transform = getTransformer(config)
-        }
-
-        configurePlugin(config, settings, transform)
-
+        configurePlugin(config, settings)
     }
-
-    internal abstract fun getTransformer(config: AndroidConfig): AspectJTransform
 }

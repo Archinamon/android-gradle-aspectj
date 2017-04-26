@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.1.1'
+    ext.kotlin_version = '1.1.2'
 
     repositories {
         jcenter()
@@ -37,7 +37,7 @@ dependencies {
 }
 
 group = 'com.archinamon'
-version = '3.0.5'
+version = '3.1.0'
 
 // local archive :: debug mode
 uploadArchives {

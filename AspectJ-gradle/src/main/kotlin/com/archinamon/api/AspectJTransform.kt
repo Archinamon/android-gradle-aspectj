@@ -13,7 +13,6 @@ import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
 import org.gradle.api.GradleException
-import org.gradle.api.JavaVersion
 import java.io.File
 
 internal const val TRANSFORM_NAME = "aspectj"
@@ -52,7 +51,9 @@ internal class TestTransformer(config: AndroidConfig) : AspectJTransform(config,
     }
 
     private fun bypass(ctx: Context): Boolean {
-        return !variantStorage[(ctx as TransformTask).variantName]!!.type.isForTesting
+        val variant = variantStorage[(ctx as TransformTask).variantName]
+        if (variant != null) return !variant.type.isForTesting
+        return true
     }
 }
 
@@ -72,24 +73,6 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
     val variantStorage: MutableMap<String, BaseVariantData<out BaseVariantOutputData>> = HashMap()
     lateinit var sourceCompatibility: String
     lateinit var targetCompatibility: String
-
-    fun registerTransform() {
-        config.extAndroid.registerTransform(this)
-    }
-
-    fun setupVariant(variantData: BaseVariantData<out BaseVariantOutputData>) {
-        if (variantData.scope.instantRunBuildContext.isInInstantRunMode) {
-            if (modeComplex()) {
-                throw GradleException(SLICER_DETECTED_ERROR)
-            }
-        }
-
-        getAjSourceAndExcludeFromJavac(config.project, variantData)
-
-        variantStorage.put(variantData.name, variantData)
-        sourceCompatibility = JavaVersion.VERSION_1_7.toString()
-        targetCompatibility = JavaVersion.VERSION_1_7.toString()
-    }
 
     /* External API */
 
@@ -214,6 +197,11 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
     }
 
     /* Internal */
+    fun checkInstantRun(variantData: BaseVariantData<out BaseVariantOutputData>) {
+        if (variantData.scope.instantRunBuildContext.isInInstantRunMode && modeComplex())
+            throw GradleException(SLICER_DETECTED_ERROR)
+    }
+
     private fun includeCompiledAspects(transformInvocation: TransformInvocation, aspectJWeaver: AspectJWeaver, outputDir: File) {
         val compiledAj = config.project.file("${config.project.buildDir}/aspectj/${(transformInvocation.context as TransformTask).variantName}")
         if (compiledAj.exists()) {

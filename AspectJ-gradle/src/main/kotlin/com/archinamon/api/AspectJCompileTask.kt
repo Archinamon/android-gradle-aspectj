@@ -4,7 +4,6 @@ import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.utils.*
 import org.gradle.api.JavaVersion
-import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.collections.SimpleFileCollection
@@ -12,22 +11,14 @@ import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
-import java.util.*
 
 internal open class AspectJCompileTask: AbstractCompile() {
 
     internal class Builder(val project: Project) {
-
-        lateinit var plugin: Plugin<Project>
         lateinit var config: AspectJExtension
         lateinit var javaCompiler: JavaCompile
         lateinit var variantName: String
         lateinit var taskName: String
-
-        fun plugin(plugin: Plugin<Project>): Builder {
-            this.plugin = plugin
-            return this
-        }
 
         fun config(extension: AspectJExtension): Builder {
             this.config = extension
@@ -125,7 +116,7 @@ internal open class AspectJCompileTask: AbstractCompile() {
 
         destinationDir.deleteRecursively()
 
-        aspectJWeaver.classPath = LinkedHashSet(classpath.files)
+        aspectJWeaver.classPath = classpath.files
         aspectJWeaver.doWeave()
 
         logCompilationFinish()

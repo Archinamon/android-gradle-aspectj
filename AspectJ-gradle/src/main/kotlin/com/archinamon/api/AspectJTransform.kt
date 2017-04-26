@@ -14,9 +14,7 @@ import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
-import org.gradle.api.Project
 import java.io.File
-import java.util.*
 
 internal const val TRANSFORM_NAME = "aspectj"
 private const val AJRUNTIME = "aspectjrt"
@@ -54,23 +52,7 @@ internal class TestTransformer(config: AndroidConfig) : AspectJTransform(config,
     }
 
     private fun bypass(ctx: Context): Boolean {
-        val variant = (ctx as TransformTask).variantName
-        return !variant.contains("androidtest", true)
-    }
-
-    override fun prepareProject(): AspectJTransform {
-        config.project.afterEvaluate {
-            getVariantDataList(config.plugin)
-                    .filter { it.type.isForTesting }
-                    .forEach {
-                        val javaTask = getJavaTask(it)
-                        encoding = javaTask!!.options.encoding
-                        classpath from javaTask.classpath.files
-                        sourceCompatibility = JavaVersion.VERSION_1_7.toString()
-                        targetCompatibility = JavaVersion.VERSION_1_7.toString()
-                    }
-        }
-        return this
+        return !variantStorage[(ctx as TransformTask).variantName]!!.type.isForTesting
     }
 }
 
@@ -87,34 +69,24 @@ internal class LibTransformer(config: AndroidConfig) : AspectJTransform(config, 
 
 internal sealed class AspectJTransform(val config: AndroidConfig, private val policy: BuildPolicy) : Transform() {
 
-    open fun prepareProject(): AspectJTransform {
-        config.extAndroid.registerTransform(this)
-        config.project.afterEvaluate {
-            getVariantDataList(config.plugin).forEach {
-                setupVariant(it, config.project)
-            }
-        }
-
-        return this
-    }
-
-    lateinit var encoding: String
+    val variantStorage: MutableMap<String, BaseVariantData<out BaseVariantOutputData>> = HashMap()
     lateinit var sourceCompatibility: String
     lateinit var targetCompatibility: String
-    val classpath: MutableSet<File> = LinkedHashSet()
 
-    fun <T : BaseVariantData<out BaseVariantOutputData>> setupVariant(variantData: T, project: Project) {
+    fun registerTransform() {
+        config.extAndroid.registerTransform(this)
+    }
+
+    fun setupVariant(variantData: BaseVariantData<out BaseVariantOutputData>) {
         if (variantData.scope.instantRunBuildContext.isInInstantRunMode) {
             if (modeComplex()) {
                 throw GradleException(SLICER_DETECTED_ERROR)
             }
         }
 
-        val javaTask = getJavaTask(variantData)
-        getAjSourceAndExcludeFromJavac(project, variantData)
-        encoding = javaTask!!.options.encoding
+        getAjSourceAndExcludeFromJavac(config.project, variantData)
 
-        classpath from javaTask.classpath.files
+        variantStorage.put(variantData.name, variantData)
         sourceCompatibility = JavaVersion.VERSION_1_7.toString()
         targetCompatibility = JavaVersion.VERSION_1_7.toString()
     }
@@ -162,13 +134,11 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
         if (outputDir.isDirectory) FileUtils.deleteDirectoryContents(outputDir)
         FileUtils.mkdirs(outputDir)
 
-        val includeJars = config.aspectj().includeJar
-        val includeAspects = config.aspectj().includeAspectsFromJar
-
         val aspectJWeaver: AspectJWeaver = AspectJWeaver(config.project).apply {
+            val variantData = variantStorage[(transformInvocation.context as TransformTask).variantName]!!
             inPath.clear()
             aspectPath.clear()
-            classPath = this@AspectJTransform.classpath
+            classPath = variantData.scope.javaClasspath.files
             destinationDir = outputDir.absolutePath
             bootClasspath = config.getBootClasspath().joinToString(separator = File.pathSeparator)
             weaveInfo = config.aspectj().weaveInfo
@@ -180,10 +150,12 @@ internal sealed class AspectJTransform(val config: AndroidConfig, private val po
             breakOnError = config.aspectj().breakOnError
             experimental = config.aspectj().experimental
             ajcArgs from config.aspectj().ajcArgs
-            encoding = this@AspectJTransform.encoding
+            encoding = getJavaTask(variantData)!!.options.encoding
             sourceCompatibility = this@AspectJTransform.sourceCompatibility
             targetCompatibility = this@AspectJTransform.targetCompatibility
         }
+        val includeJars = config.aspectj().includeJar
+        val includeAspects = config.aspectj().includeAspectsFromJar
         logAugmentationStart()
 
         // attaching source classes compiled by compile${variantName}AspectJ task

@@ -154,8 +154,7 @@ apply plugin: 'com.archinamon.aspectj-test'
 ```
 
 Test scope configuration inherits `aspectj-ext` behavior with strictly excluding compile and transform tasks from non-test build variant.
-In other words only instrumentation `androidTest` will work with this sub-plugin.
-In case unit tests doesn't really have any specials (excluding source/target code version base) so `aspectj-test` scope won't affect `unitTest` variants.
+In other words only instrumentation `androidTest` and `test` will work with this sub-plugin.
 
 ProGuard
 -------

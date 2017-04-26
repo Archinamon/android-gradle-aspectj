@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.1.1'
+    ext.kotlin_version = '1.1.2'
 
     repositories {
         jcenter()
@@ -30,13 +30,14 @@ dependencies {
     compile "org.aspectj:aspectjrt:$aspectjVersion"
     compile "org.aspectj:aspectjtools:$aspectjVersion"
 
-    testCompile 'junit:junit:4.10'
-    testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testCompile gradleApi()
+    testCompile "junit:junit:4.12"
+    testCompile 'com.android.tools.build:gradle:2.3.0'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
 
 group = 'com.archinamon'
-version = '3.0.3'
+version = '3.1.0'
 
 // local archive :: debug mode
 uploadArchives {

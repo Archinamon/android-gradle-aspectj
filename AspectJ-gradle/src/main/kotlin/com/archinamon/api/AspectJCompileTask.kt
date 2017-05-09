@@ -61,31 +61,35 @@ internal open class AspectJCompileTask: AbstractCompile() {
             val buildDir = project.file("${project.buildDir}/aspectj/$variantName")
             val sources = findAjSourcesForVariant(project, variantName)
 
-            task.destinationDir = buildDir
-            task.aspectJWeaver = AspectJWeaver(project)
+            task.apply {
+                destinationDir = buildDir
+                aspectJWeaver = AspectJWeaver(project)
 
-            task.source(sources)
-            task.classpath = classpath()
-            findCompiledAspectsInClasspath(task, config.includeAspectsFromJar)
+                source(sources)
+                classpath = classpath()
+                findCompiledAspectsInClasspath(this, config.includeAspectsFromJar)
+            }
 
-            task.aspectJWeaver.ajSources = sources
-            task.aspectJWeaver.inPath shl buildDir shl javaCompiler.destinationDir
+            task.aspectJWeaver.apply {
+                ajSources = sources
+                inPath shl buildDir shl javaCompiler.destinationDir
 
-            task.aspectJWeaver.targetCompatibility = JavaVersion.VERSION_1_7.toString()
-            task.aspectJWeaver.sourceCompatibility = JavaVersion.VERSION_1_7.toString()
-            task.aspectJWeaver.destinationDir = buildDir.absolutePath
-            task.aspectJWeaver.bootClasspath = android.getBootClasspath().joinToString(separator = File.pathSeparator)
-            task.aspectJWeaver.encoding = javaCompiler.options.encoding
+                targetCompatibility = JavaVersion.VERSION_1_7.toString()
+                sourceCompatibility = JavaVersion.VERSION_1_7.toString()
+                destinationDir = buildDir.absolutePath
+                bootClasspath = android.getBootClasspath().joinToString(separator = File.pathSeparator)
+                encoding = javaCompiler.options.encoding
 
-            task.aspectJWeaver.compilationLogFile = config.compilationLogFile
-            task.aspectJWeaver.addSerialVUID = config.addSerialVersionUID
-            task.aspectJWeaver.debugInfo = config.debugInfo
-            task.aspectJWeaver.addSerialVUID = config.addSerialVersionUID
-            task.aspectJWeaver.noInlineAround = config.noInlineAround
-            task.aspectJWeaver.ignoreErrors = config.ignoreErrors
-            task.aspectJWeaver.breakOnError = config.breakOnError
-            task.aspectJWeaver.experimental = config.experimental
-            task.aspectJWeaver.ajcArgs from config.ajcArgs
+                compilationLogFile = config.compilationLogFile
+                addSerialVUID = config.addSerialVersionUID
+                debugInfo = config.debugInfo
+                addSerialVUID = config.addSerialVersionUID
+                noInlineAround = config.noInlineAround
+                ignoreErrors = config.ignoreErrors
+                breakOnError = config.breakOnError
+                experimental = config.experimental
+                ajcArgs from config.ajcArgs
+            }
 
             // uPhyca's fix
             // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run

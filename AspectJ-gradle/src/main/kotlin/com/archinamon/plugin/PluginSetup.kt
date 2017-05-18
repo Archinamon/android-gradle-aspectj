@@ -1,69 +1,68 @@
 package com.archinamon.plugin
 
-import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.LibraryPlugin
+import com.android.build.gradle.internal.variant.BaseVariantData
+import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.MISDEFINITION
 import com.archinamon.RETROLAMBDA
 import com.archinamon.api.AspectJCompileTask
 import com.archinamon.api.BuildTimeListener
+import com.archinamon.utils.getAjSourceAndExcludeFromJavac
 import com.archinamon.utils.getJavaTask
 import com.archinamon.utils.getVariantDataList
 import org.gradle.api.GradleException
-import org.gradle.api.Plugin
+import org.gradle.api.JavaVersion
 import org.gradle.api.Project
-import org.gradle.api.plugins.PluginContainer
 
-internal fun configProject(project: Project, config: AndroidConfig, settings: AspectJExtension) {
-    if (settings.extendClasspath) {
-        project.repositories.mavenCentral()
-        project.dependencies.add("compile", "org.aspectj:aspectjrt:${settings.ajc}")
+internal fun configProject(wrapper: AspectJWrapper, config: AndroidConfig) {
+    checkIfPluginAppliedAfterRetrolambda(config.project)
+
+    config.project.afterEvaluate {
+        getVariantDataList(config.plugin)
+                .filter(wrapper::variantFilter)
+                .forEach { prepareVariant(it, wrapper, config) }
+
     }
 
-    project.afterEvaluate {
-        prepareVariant(config)
-        configureCompiler(project, config)
-    }
-
-    project.gradle.addListener(BuildTimeListener())
-
-    checkIfPluginAppliedAfterRetrolambda(project)
+    config.project.gradle.addListener(BuildTimeListener())
 }
 
-private fun prepareVariant(config: AndroidConfig) {
-    val sets = config.extAndroid.sourceSets
+internal fun prepareVariant(variant: BaseVariantData<out BaseVariantOutputData>, wrapper: AspectJWrapper, config: AndroidConfig) {
+    applyVariantSourceSet(variant, config)
+    configureCompilerVariant(variant, config)
+    configureTransformVariant(variant, wrapper, config)
+}
 
+internal fun applyVariantSourceSet(variant: BaseVariantData<out BaseVariantOutputData>, config: AndroidConfig) {
+    val sets = config.extAndroid.sourceSets
     fun applier(path: String) = sets.getByName(path).java.srcDir("src/$path/aspectj")
 
     // general sets
-    arrayOf("main", "test", "androidTest").forEach {
-        sets.getByName(it).java.srcDir("src/$it/aspectj")
-    }
+    arrayOf("main", "test", "androidTest").forEach { it.let(::applier) }
 
-    // applies srcSet 'aspectj' for each build variant
-    getVariantDataList(config.plugin).forEach { variant ->
-        variant.variantConfiguration.productFlavors.forEach { applier(it.name) }
-        applier(variant.variantConfiguration.buildType.name)
+    variant.variantConfiguration.apply {
+        productFlavors.forEach { it.name.let(::applier) }
+        buildType.name.let(::applier)
     }
 }
 
-private fun configureCompiler(project: Project, config: AndroidConfig) {
-    getVariantDataList(config.plugin).forEach variantScanner@ { variant ->
-        val variantName = variant.name.capitalize()
-
-        // do not configure compiler task for non-test variants in ConfigScope.TEST
-        if (config.scope == ConfigScope.TEST && !variantName.contains("androidtest", true))
-            return@variantScanner
-
-        val taskName = "compile${variantName}AspectJ"
-        AspectJCompileTask.Builder(project)
-            .plugin(project.plugins.getPlugin(config))
-            .config(project.extensions.getByType(AspectJExtension::class.java))
+internal fun configureCompilerVariant(variant: BaseVariantData<out BaseVariantOutputData>, config: AndroidConfig) {
+    AspectJCompileTask.Builder(config.project)
+            .config(config.project.extensions.getByType(AspectJExtension::class.java))
             .compiler(getJavaTask(variant)!!)
             .variant(variant.name)
-            .name(taskName)
+            .name("compile${variant.name.capitalize()}AspectJ")
             .buildAndAttach(config)
+}
+
+internal fun configureTransformVariant(variant: BaseVariantData<out BaseVariantOutputData>, wrapper: AspectJWrapper, config: AndroidConfig) {
+    wrapper.transformer.checkInstantRun(variant)
+    getAjSourceAndExcludeFromJavac(config.project, variant)
+    wrapper.transformer.apply {
+        variantStorage.put(variant.name, variant)
+        sourceCompatibility = JavaVersion.VERSION_1_7.toString()
+        targetCompatibility = JavaVersion.VERSION_1_7.toString()
     }
 }
 
@@ -77,10 +76,4 @@ private fun checkIfPluginAppliedAfterRetrolambda(project: Project) {
             }
         }
     }
-}
-
-private inline fun <reified T> PluginContainer.getPlugin(config: AndroidConfig): T where T : Plugin<Project> {
-    @Suppress("UNCHECKED_CAST")
-    val plugin: Class<out T> = (if (config.isLibraryPlugin) LibraryPlugin::class.java else AppPlugin::class.java) as Class<T>
-    return getPlugin(plugin)
 }

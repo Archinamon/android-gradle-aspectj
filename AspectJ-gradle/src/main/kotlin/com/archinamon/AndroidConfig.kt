@@ -1,7 +1,6 @@
 package com.archinamon
 
 import com.android.build.gradle.*
-import com.archinamon.plugin.ConfigScope
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import java.io.File
@@ -12,6 +11,11 @@ const val MISDEFINITION = "Illegal definition: $ASPECTJ_PLUGIN should be defined
 
 const private val TAG = "AJC:"
 const private val PLUGIN_EXCEPTION = "$TAG You must apply the Android plugin or the Android library plugin"
+
+internal enum class ConfigScope {
+
+    STD, EXT, TEST
+}
 
 internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 

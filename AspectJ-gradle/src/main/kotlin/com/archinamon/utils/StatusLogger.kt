@@ -1,7 +1,6 @@
 package com.archinamon.utils
 
 import com.android.build.api.transform.JarInput
-import com.archinamon.api.BuildPolicy
 import java.io.File
 
 internal fun logBypassTransformation() {
@@ -32,8 +31,8 @@ internal fun logEnvInvalid() {
     println("Ajc classpath doesn't has needed runtime environment")
 }
 
-internal fun logWeaverBuildPolicy(policy: BuildPolicy) {
-    println("Weaving in ${policy.name.toLowerCase()} mode")
+internal fun logWeaverBuildPolicy(complex: Boolean) {
+    println("Weaving in ${if (complex) "complex" else "simple"} mode")
 }
 
 internal fun logIgnoreInpathJars() {

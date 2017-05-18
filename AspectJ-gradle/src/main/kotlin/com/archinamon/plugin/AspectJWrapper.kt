@@ -1,47 +1,67 @@
 package com.archinamon.plugin
 
-import com.android.build.gradle.AppExtension
-import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.TestedExtension
+import com.android.build.gradle.internal.variant.BaseVariantData
+import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
-import com.archinamon.api.AspectJTransform
-import com.archinamon.api.ExtTransformer
-import com.archinamon.api.LibTransformer
-import com.archinamon.api.StdTransformer
+import com.archinamon.ConfigScope
+import com.archinamon.api.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import javax.inject.Inject
 
-internal sealed class AspectJWrapper: Plugin<Project> {
+internal sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
 
-    internal class Std @Inject constructor(): AspectJWrapper() {
-        override fun getTransformer(project: Project): AspectJTransform = StdTransformer(project)
-    }
+    internal class Std @Inject constructor(): AspectJWrapper(ConfigScope.STD)
+    internal class Ext @Inject constructor(): AspectJWrapper(ConfigScope.EXT)
+    internal class Test @Inject constructor(): AspectJWrapper(ConfigScope.TEST) {
 
-    internal class Ext @Inject constructor(): AspectJWrapper() {
-        override fun getTransformer(project: Project): AspectJTransform = ExtTransformer(project)
-    }
-
-    override fun apply(project: Project) {
-        val config = AndroidConfig(project)
-        val settings = project.extensions.create("aspectj", AspectJExtension::class.java)
-
-        configProject(project, config, settings)
-
-        val module: TestedExtension
-        val transformer: AspectJTransform
-        if (config.isLibraryPlugin) {
-            transformer = LibTransformer(project)
-            module = project.extensions.getByType(LibraryExtension::class.java)
-        } else {
-            transformer = getTransformer(project)
-            module = project.extensions.getByType(AppExtension::class.java)
+        override fun variantFilter(variant: BaseVariantData<out BaseVariantOutputData>): Boolean {
+            return variant.type.isForTesting
         }
 
-        transformer.withConfig(config).prepareProject()
-        module.registerTransform(transformer)
+        override fun mutateClasspath(config: AndroidConfig) {
+            if (config.aspectj().extendClasspath) {
+                config.project.repositories.mavenCentral()
+                config.project.dependencies.add("androidTestCompile", "org.aspectj:aspectjrt:${config.aspectj().ajc}")
+            }
+        }
     }
 
-    internal abstract fun getTransformer(project: Project): AspectJTransform
+    internal lateinit var transformer: AspectJTransform
+
+    override fun apply(project: Project) {
+        project.extensions.create("aspectj", AspectJExtension::class.java)
+
+        val config = AndroidConfig(project, scope)
+
+        mutateClasspath(config)
+        configProject(this, config)
+
+        if (config.isLibraryPlugin) {
+            transformer = LibTransformer(project)
+        } else {
+            transformer = obtainTransformer(project)
+        }
+
+        transformer.withConfig(config)
+        config.extAndroid.registerTransform(transformer)
+    }
+
+    open fun variantFilter(variant: BaseVariantData<out BaseVariantOutputData>): Boolean {
+        return true
+    }
+
+    protected open fun mutateClasspath(config: AndroidConfig) {
+        if (config.aspectj().extendClasspath) {
+            config.project.repositories.mavenCentral()
+            config.project.dependencies.add("compile", "org.aspectj:aspectjrt:${config.aspectj().ajc}")
+        }
+    }
+
+    private fun obtainTransformer(project: Project) = when (scope) {
+        ConfigScope.STD -> StdTransformer(project)
+        ConfigScope.EXT -> ExtTransformer(project)
+        ConfigScope.TEST -> TestTransformer(project)
+    }
 }

@@ -6,7 +6,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.0.2`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.0.3`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -48,7 +48,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.github.Archinamon:GradleAspectJ-Android:3.0.2'
+classpath 'com.github.Archinamon:GradleAspectJ-Android:3.0.3'
 ```
 
 Apply the `aspectj` plugin:
@@ -149,7 +149,13 @@ Currently it has some limitations:
 
 Working tests
 -------
-Just write a test and run them! If any errors occurrs please write an issue :)
+```groovy
+apply plugin: 'com.archinamon.aspectj-test'
+```
+
+Test scope configuration inherits `aspectj-ext` behavior with strictly excluding compile and transform tasks from non-test build variant.
+In other words only instrumentation `androidTest` will work with this sub-plugin.
+In case unit tests doesn't really have any specials (excluding source/target code version base) so `aspectj-test` scope won't affect `unitTest` variants.
 
 ProGuard
 -------

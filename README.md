@@ -1,13 +1,14 @@
 # GradleAspectJ-Android
-[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.1.1-blue.svg)](http://kotlinlang.org) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android) [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 
 A Gradle plugin which enables AspectJ for Android builds.
 Supports writing code with AspectJ-lang in `.aj` files and in java-annotation style.
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:2.2.2`.
-Re-written with brand new <a href="http://tools.android.com/tech-docs/new-build-system/transform-api" target="_blank">Transform API</a>!
+Actual version: `com.archinamon:android-gradle-aspectj:3.0.3`.
+<br />
+Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
 This plugin is completely friendly with <a href="https://bitbucket.org/hvisser/android-apt" target="_blank">APT</a> (Android Annotation Processing Tools) and <a href="https://github.com/evant/gradle-retrolambda/" target="_blank">Retrolambda</a> project (but Java 8 not supported in .aj files).
 <a href="https://github.com/excilys/androidannotations" target="_blank">AndroidAnnotations</a>, <a href="https://github.com/square/dagger" target="_blank">Dagger</a> are also supported and works fine.
@@ -26,9 +27,7 @@ It is easy to isolate your code with aspect classes, that will be simply injecte
 
 AspectJ-Gradle plugin provides supply of all known JVM-based languages, such as Groovy, Kotlin, etc. That means you can easily write cool stuff which may be inject into any JVM language, not only Java itself! :)
 
-To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>. In case aspectj-native not supported by Android Studio, you may write a java-classes with aspectj annotations.
-
-May not work with InstantRun due to a slicer bug. Please, <a href="http://stackoverflow.com/a/35169716/483603" target="_blank">switch off InstanceRun</a> if you have faced any problems (e.g. class file not found in DexPath in runtime).
+To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>. In case aspectj-native not supported by Android Studio (even with IDE-plugin it's using is complicated), you may write a java-classes with aspectj annotations.
 
 Two simple rules you may consider when writing aspect classes.
 - Do not write aspects outside the `src/$flavor/aspectj` source set! These aj-classes will be excluded from java compiler.
@@ -49,7 +48,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.github.Archinamon:GradleAspectJ-Android:2.2.2'
+classpath 'com.github.Archinamon:GradleAspectJ-Android:3.0.3'
 ```
 
 Apply the `aspectj` plugin:
@@ -73,11 +72,11 @@ aspect AppStartNotifier {
         Application app = (Application) thisJoinPoint.getTarget();
         NotificationManager nmng = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
         nmng.notify(9999, new NotificationCompat.Builder(app)
-                              .setTicker("Hello AspectJ")
-                              .setContentTitle("Notification from aspectJ")
-                              .setContentText("privileged aspect AppAdvice")
-                              .setSmallIcon(R.drawable.ic_launcher)
-                              .build());
+            .setTicker("Hello AspectJ")
+            .setContentTitle("Notification from aspectJ")
+            .setContentText("privileged aspect AppAdvice")
+            .setSmallIcon(R.drawable.ic_launcher)
+            .build());
     }
 }
 ```
@@ -87,11 +86,15 @@ Tune extension
 
 ```groovy
 aspectj {
-    ajc '1.8.9'
+    ajc '1.8.10'
 
+    /* @see Ext plugin config **/
+    includeAllJars false
     includeJar 'design', 'support-v4', 'dagger'
+    extendClasspath true
+
     includeAspectsFromJar 'my-aj-logger-lib', 'any-other-libs-with-aspects'
-    ajcExtraArgs << '-referenceInfo' << '-warn:deprecation'
+    ajcArgs << '-referenceInfo' << '-warn:deprecation'
 
     weaveInfo true
     debugInfo false
@@ -102,12 +105,18 @@ aspectj {
     breakOnError true
     experimental false
 
-    logFileName 'ajc-details.log'
+    transformLogFile 'ajc-transform.log'
+    compilationLogFile 'ajc-compile.log'
 }
 ```
 
-- `ajc` Allows to define the aspectj runtime jar version manually (1.8.9 current)
+All the extension parameters are have default values (all of them are described above, except of includeJar/Aspects/ajcArgs options).
+So no need to define them manually.
 
+- `ajc` Allows to define the aspectj runtime jar version manually (1.8.10 current)
+- `extendClasspath` Explicitly controls whether plugin should mutate the classpath with aspectj-runtime itself
+
+- `includeAllJars` Explicitly include all available jar-files into -inpath to proceed by AJ-compiler
 - `includeJar` Name filter to include any jar/aar which name or path satisfies the filter
 - `includeAspectsFromJar` Name filter to include any jar/aar with compiled binary aspects you wanna affect your project
 - `ajcExtraArgs` Additional parameters for aspectj compiler
@@ -121,11 +130,32 @@ aspectj {
 - `breakOnError` Allows to continue project building when ajc fails or throws any errors
 - `experimental` Enables experimental ajc options: `-XhasMember` and `-Xjoinpoints:synchronization,arrayconstruction`. More details in <a href="https://github.com/Archinamon/GradleAspectJ-Android/issues/18" target="_blank">issue #18</a>
 
-- `logFileName` Defines name for the log file where all Aj compiler info writes to
+- `transformLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for Transformer
+- `compilationLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for CompileTask
+
+Ext plugin config
+-----------------
+```groovy
+apply plugin: 'com.archinamon.aspectj-ext'
+```
+
+Ext config:
+- allows usage of `includeJar` and `includeAllJars` parameters, with workaround to avoid `Multiple dex files exception`
+- supports `multiDex`
+- supports `Instrumented tests`
+
+Currently it has some limitations:
+- `InstantRun` must be switched off (Plugin detects IR status and fails build if IR will be found).
 
 Working tests
 -------
-Just write a test and run them! If any errors occurrs please write an issue :)
+```groovy
+apply plugin: 'com.archinamon.aspectj-test'
+```
+
+Test scope configuration inherits `aspectj-ext` behavior with strictly excluding compile and transform tasks from non-test build variant.
+In other words only instrumentation `androidTest` will work with this sub-plugin.
+In case unit tests doesn't really have any specials (excluding source/target code version base) so `aspectj-test` scope won't affect `unitTest` variants.
 
 ProGuard
 -------
@@ -152,6 +182,37 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.0.0 -- Grand refactoring in Kotlin
+* all groovy classes was obsolete;
+* new code-base in Kotlin 1.1.1 stable;
+
+#### 2.4.3 -- Hot-fixed  two-step compilation
+* compiled in first step aspect classes have not been copied to final output;
+
+#### 2.4.2 -- Hot-fix
+* fixed missed variable;
+* fixed imports;
+
+#### 2.4.0 -- Added aspectj-ext plugin
+* `includeJar` parameter now able to read aar's manifest file to exactly detect required library;
+* `com.archinamon.aspectj-ext` plugin added to properly weave inpath jars, in this mode InstantRun doesn't allowed;
+* small fixes and package/name refactoring;
+
+#### 2.3.1 -- New two-step build mechanic
+* renamed extension parameter: ajcExtraArgs -> ajcArgs;
+* split parameter: logFileName -> [transformLogFile, compilationLogFile];
+* added separate compile task to build all sources under `/aspectj` folder;
+* aj-transformer now looks into `/build/aspectj/$variantName` folder for aspects class';
+* updated ajc-version to 1.8.10;
+* fixed issue with missing error printing to Messages when failing;
+* added inpath/aspectpath clearance before emitting transform inputs (by @philippkumar);
+
+#### 2.3.0 -- Major fixes
+* InstantRun support;
+* fails androidTest hot launch;
+* ZipException within augmenting third party libraries via AspectJ;
+* more clear logging and errors emitting;
+
 #### 2.2.2 -- Improvements
 * fixed build config namings;
 * re-designed work with log file and errors handling;

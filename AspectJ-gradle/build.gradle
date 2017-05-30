@@ -1,4 +1,16 @@
-apply plugin: 'groovy'
+buildscript {
+    ext.kotlin_version = '1.1.1'
+
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'kotlin'
 apply plugin: 'maven'
 apply from: 'https://github.yandex-team.ru/raw/archinamon/android-gradle-maven-deployer/patch-1/yaMavenDeployer.gradle'
 
@@ -6,33 +18,30 @@ yaMavenDeployer {
     artifactId = 'android-gradle-aspectj';
 }
 
-targetCompatibility = JavaVersion.VERSION_1_6
-sourceCompatibility = JavaVersion.VERSION_1_6
-
 project.ext {
-    aspectjVersion = '1.8.9'
+    aspectjVersion = '1.8.10'
 }
 
 dependencies {
     repositories {
         jcenter()
         mavenCentral()
+        maven { url 'http://repository.jetbrains.com/utils' }
     }
 
-    compile gradleApi()
-    compile localGroovy()
-
-    compile 'com.android.tools.build:gradle:2.2.1'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    compileOnly "org.jetbrains.kotlin:gradle-api:2.3"
+    compileOnly 'com.android.tools.build:gradle:2.3.0'
     compile "org.aspectj:aspectjrt:$aspectjVersion"
     compile "org.aspectj:aspectjtools:$aspectjVersion"
-    compile 'com.android.tools.build:transform-api:1.5.0'
 
     testCompile 'junit:junit:4.10'
-    testCompile 'org.easytesting:fest-assert-core:2.0M10'
+    testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 }
 
 group = 'com.archinamon'
-version = '2.3.0'
+version = '3.0.3'
 
 project.afterEvaluate {
     project.artifacts {

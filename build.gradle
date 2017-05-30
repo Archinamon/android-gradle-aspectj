@@ -1,18 +1,20 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
+    ext.kotlin_version = '1.1.1'
+
     repositories {
         jcenter()
-        maven { url 'http://maven.yandex.net/nexus/content/repositories/yandex_mobile/' }
-        maven { url 'http://artifactory.yandex.net/artifactory/public/' }
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.1'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
 allprojects {
     repositories {
         jcenter()
+        mavenCentral()
     }
 }

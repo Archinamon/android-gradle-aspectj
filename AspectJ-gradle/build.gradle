@@ -4,9 +4,9 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
-        maven { url "https://dl.bintray.com/archinamon/maven" }
     }
     dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -24,6 +24,7 @@ dependencies {
         jcenter()
         mavenCentral()
         maven { url 'http://repository.jetbrains.com/utils' }
+        maven { url "https://dl.bintray.com/archinamon/maven" }
     }
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"

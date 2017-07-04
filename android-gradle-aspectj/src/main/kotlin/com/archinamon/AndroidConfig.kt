@@ -1,6 +1,7 @@
 package com.archinamon
 
 import com.android.build.gradle.*
+import com.archinamon.plugin.ConfigScope
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import java.io.File
@@ -12,9 +13,9 @@ const val MISDEFINITION = "Illegal definition: $ASPECTJ_PLUGIN should be defined
 const private val TAG = "AJC:"
 const private val PLUGIN_EXCEPTION = "$TAG You must apply the Android plugin or the Android library plugin"
 
-internal class AndroidConfig(val project: Project) {
+internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
-    val extAndroid: TestedExtension
+    val extAndroid: BaseExtension
     val isLibraryPlugin: Boolean
     val plugin: BasePlugin
 
@@ -27,6 +28,10 @@ internal class AndroidConfig(val project: Project) {
             extAndroid = project.extensions.getByType(LibraryExtension::class.java)
             plugin = project.plugins.getPlugin(LibraryPlugin::class.java)
             isLibraryPlugin = true
+        } else if (project.plugins.hasPlugin(TestPlugin::class.java)) {
+            extAndroid = project.extensions.getByType(TestExtension::class.java)
+            plugin = project.plugins.getPlugin(TestPlugin::class.java)
+            isLibraryPlugin = false
         } else {
             isLibraryPlugin = false
             throw GradleException(PLUGIN_EXCEPTION)

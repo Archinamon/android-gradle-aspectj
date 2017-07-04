@@ -49,9 +49,7 @@ internal open class AspectJCompileTask: AbstractCompile() {
             return this
         }
 
-        fun buildAndAttach() {
-            val android = AndroidConfig(project)
-
+        fun buildAndAttach(android: AndroidConfig) {
             val options = mutableMapOf(
                 Pair("overwrite", true),
                 Pair("group", "build"),

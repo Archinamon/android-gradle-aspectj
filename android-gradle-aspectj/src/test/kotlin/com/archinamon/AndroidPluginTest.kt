@@ -26,6 +26,13 @@ class AndroidPluginTest {
     }
 
     @Test
+    fun detectTestPlugin() {
+        val project = ProjectBuilder.builder().build()
+        project.apply(mapOf(Pair("plugin", "com.android.application")))
+        project.apply(mapOf(Pair("plugin", "com.archinamon.aspectj-test")))
+    }
+
+    @Test
     fun detectLibPlugin() {
         val project = ProjectBuilder.builder().build()
         project.apply(mapOf(Pair("plugin", "com.android.library")))
@@ -39,6 +46,13 @@ class AndroidPluginTest {
         project.apply(mapOf(Pair("plugin", "com.archinamon.aspectj-ext")))
     }
 
+    @Test
+    fun detectLibTestPlugin() {
+        val project = ProjectBuilder.builder().build()
+        project.apply(mapOf(Pair("plugin", "com.android.library")))
+        project.apply(mapOf(Pair("plugin", "com.archinamon.aspectj-test")))
+    }
+
     @Test(expected = GradleException::class)
     fun failsWithoutAndroidPlugin() {
         val project = ProjectBuilder.builder().build()
@@ -49,5 +63,11 @@ class AndroidPluginTest {
     fun failsExtWithoutAndroidPlugin() {
         val project = ProjectBuilder.builder().build()
         project.apply(mapOf(Pair("plugin", "com.archinamon.aspectj-ext")))
+    }
+
+    @Test(expected = GradleException::class)
+    fun failsTestWithoutAndroidPlugin() {
+        val project = ProjectBuilder.builder().build()
+        project.apply(mapOf(Pair("plugin", "com.archinamon.aspectj-test")))
     }
 }

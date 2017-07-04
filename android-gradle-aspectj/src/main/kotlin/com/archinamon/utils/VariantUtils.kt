@@ -40,7 +40,8 @@ fun findAjSourcesForVariant(project: Project, variantName: String): MutableSet<F
     if (project.file("src/main/aspectj").exists()) {
         possibleDirs.add(project.file("src/main/aspectj"))
     }
-    val types = variantName.split("(?=\\p{Upper})")
+
+    val types = variantName.split("(?=\\p{Upper})".toRegex())
     val root = project.file("src").listFiles()
 
     root.forEach { file ->

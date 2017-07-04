@@ -4,6 +4,7 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
+        maven { url "https://dl.bintray.com/archinamon/maven" }
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
@@ -12,6 +13,7 @@ buildscript {
 
 apply plugin: 'kotlin'
 apply plugin: 'maven'
+apply plugin: 'com.jfrog.bintray'
 
 project.ext {
     aspectjVersion = '1.8.10'
@@ -38,11 +40,32 @@ dependencies {
 group = 'com.archinamon'
 version = '3.0.3'
 
-// local archive :: debug mode
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: uri('../'))
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+if (project.hasProperty('bintray_user') && project.hasProperty('bintray_apiKey')) {
+    bintray {
+        user = bintray_user
+        key = bintray_apiKey
+
+        configurations = ['archives']
+        pkg {
+            repo = "maven"
+            name = "android-gradle-aspectj"
+//            websiteUrl = siteUrl
+            vcsUrl = "https://github.com/Archinamon/GradleAspectJ-Android"
+            licenses = ["Apache-2.0"]
+            publish = true
+            version {
+                name = project.version
+                released = new Date()
+            }
         }
     }
 }

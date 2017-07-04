@@ -1,5 +1,6 @@
 # GradleAspectJ-Android
 [![Kotlin](https://img.shields.io/badge/Kotlin-1.1.1-blue.svg)](http://kotlinlang.org) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android) [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
+[ ![Download](https://api.bintray.com/packages/archinamon/maven/android-gradle-aspectj/images/download.svg) ](https://bintray.com/archinamon/maven/android-gradle-aspectj/_latestVersion)
 
 A Gradle plugin which enables AspectJ for Android builds.
 Supports writing code with AspectJ-lang in `.aj` files and in java-annotation style.

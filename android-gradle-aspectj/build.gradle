@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.1.1'
+    ext.kotlin_version = '1.1.51'
 
     repositories {
         jcenter()
@@ -50,7 +50,7 @@ artifacts {
     archives sourcesJar
 }
 
-if (project.hasProperty('bintray_user') && project.hasProperty('bintray_apiKey')) {
+if (project.hasProperty('user') && project.hasProperty('apiKey')) {
     bintray {
         user = bintray_user
         key = bintray_apiKey

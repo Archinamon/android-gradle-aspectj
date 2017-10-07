@@ -6,9 +6,10 @@ package com.archinamon.plugin
  * @author archinamon on 12/04/17.
  */
 
-internal enum class ConfigScope(internal val _name: String) {
+internal enum class ConfigScope {
 
-    STD(AspectJWrapper.CONFIG_STD),
-    EXT(AspectJWrapper.CONFIG_EXT),
-    TEST(AspectJWrapper.CONFIG_TEST);
+    STANDARD,
+    PROVIDE,
+    EXTEND,
+    TEST;
 }

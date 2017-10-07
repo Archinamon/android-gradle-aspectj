@@ -5,29 +5,27 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.TestedExtension
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
-import com.archinamon.api.*
+import com.archinamon.api.transform.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import javax.inject.Inject
 
 internal sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
 
-    internal companion object {
-        const val CONFIG_STD   = "std"
-        const val CONFIG_EXT   = "ext"
-        const val CONFIG_TEST  = "tst"
+    internal class Standard @Inject constructor(): AspectJWrapper(ConfigScope.STANDARD) {
+        override fun getTransformer(project: Project): AspectJTransform = StandardTransformer(project)
     }
 
-    internal class Std @Inject constructor(): AspectJWrapper(ConfigScope.STD) {
-        override fun getTransformer(project: Project): AspectJTransform = StdTransformer(project)
+    internal class Provides @Inject constructor(): AspectJWrapper(ConfigScope.PROVIDE) {
+        override fun getTransformer(project: Project): AspectJTransform = ProvidesTransformer(project)
     }
 
-    internal class Ext @Inject constructor(): AspectJWrapper(ConfigScope.EXT) {
-        override fun getTransformer(project: Project): AspectJTransform = ExtTransformer(project)
+    internal class Extended @Inject constructor(): AspectJWrapper(ConfigScope.EXTEND) {
+        override fun getTransformer(project: Project): AspectJTransform = ExtendedTransformer(project)
     }
 
     internal class Test @Inject constructor(): AspectJWrapper(ConfigScope.TEST) {
-        override fun getTransformer(project: Project): AspectJTransform = TstTransformer(project)
+        override fun getTransformer(project: Project): AspectJTransform = TestsTransformer(project)
     }
 
     override fun apply(project: Project) {
@@ -39,7 +37,7 @@ internal sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Pro
         val module: TestedExtension
         val transformer: AspectJTransform
         if (config.isLibraryPlugin) {
-            transformer = LibTransformer(project)
+            transformer = LibraryTransformer(project)
             module = project.extensions.getByType(LibraryExtension::class.java)
         } else {
             transformer = getTransformer(project)

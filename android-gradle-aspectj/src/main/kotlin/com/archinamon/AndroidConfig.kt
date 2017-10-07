@@ -20,21 +20,29 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
     val plugin: BasePlugin
 
     init {
-        if (project.plugins.hasPlugin(AppPlugin::class.java)) {
-            extAndroid = project.extensions.getByType(AppExtension::class.java)
-            plugin = project.plugins.getPlugin(AppPlugin::class.java)
-            isLibraryPlugin = false
-        } else if (project.plugins.hasPlugin(LibraryPlugin::class.java)) {
-            extAndroid = project.extensions.getByType(LibraryExtension::class.java)
-            plugin = project.plugins.getPlugin(LibraryPlugin::class.java)
-            isLibraryPlugin = true
-        } else if (project.plugins.hasPlugin(TestPlugin::class.java)) {
-            extAndroid = project.extensions.getByType(TestExtension::class.java)
-            plugin = project.plugins.getPlugin(TestPlugin::class.java)
-            isLibraryPlugin = false
-        } else {
-            isLibraryPlugin = false
-            throw GradleException(PLUGIN_EXCEPTION)
+        when {
+            project.plugins.hasPlugin(AppPlugin::class.java) -> {
+                extAndroid = project.extensions.getByType(AppExtension::class.java)
+                plugin = project.plugins.getPlugin(AppPlugin::class.java)
+                isLibraryPlugin = false
+            }
+
+            project.plugins.hasPlugin(LibraryPlugin::class.java) -> {
+                extAndroid = project.extensions.getByType(LibraryExtension::class.java)
+                plugin = project.plugins.getPlugin(LibraryPlugin::class.java)
+                isLibraryPlugin = true
+            }
+
+            project.plugins.hasPlugin(TestPlugin::class.java) -> {
+                extAndroid = project.extensions.getByType(TestExtension::class.java)
+                plugin = project.plugins.getPlugin(TestPlugin::class.java)
+                isLibraryPlugin = false
+            }
+
+            else -> {
+                isLibraryPlugin = false
+                throw GradleException(PLUGIN_EXCEPTION)
+            }
         }
     }
 

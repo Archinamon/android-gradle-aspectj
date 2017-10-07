@@ -2,7 +2,10 @@ package com.archinamon.api
 
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
+import com.archinamon.lang.kotlin.closureOf
+import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
+import jdk.nashorn.internal.objects.NativeRegExp.source
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -57,35 +60,36 @@ internal open class AspectJCompileTask: AbstractCompile() {
                 Pair("type", AspectJCompileTask::class.java)
             )
 
-            val task = project.task(options, taskName) as AspectJCompileTask
-            val buildDir = project.file("${project.buildDir}/aspectj/$variantName")
             val sources = findAjSourcesForVariant(project, variantName)
+            val task = project.task(options, taskName, closureOf<AspectJCompileTask> task@ {
+                destinationDir = obtainBuildDirectory(android)
+                aspectJWeaver = AspectJWeaver(project)
 
-            task.destinationDir = buildDir
-            task.aspectJWeaver = AspectJWeaver(project)
+                source(sources)
+                classpath = classpath()
+                findCompiledAspectsInClasspath(this, config.includeAspectsFromJar)
 
-            task.source(sources)
-            task.classpath = classpath()
-            findCompiledAspectsInClasspath(task, config.includeAspectsFromJar)
+                aspectJWeaver.apply {
+                    ajSources = sources
+                    inPath shl this@task.destinationDir shl javaCompiler.destinationDir
 
-            task.aspectJWeaver.ajSources = sources
-            task.aspectJWeaver.inPath shl buildDir shl javaCompiler.destinationDir
+                    targetCompatibility = JavaVersion.VERSION_1_7.toString()
+                    sourceCompatibility = JavaVersion.VERSION_1_7.toString()
+                    destinationDir = this@task.destinationDir.absolutePath
+                    bootClasspath = android.getBootClasspath().joinToString(separator = File.pathSeparator)
+                    encoding = javaCompiler.options.encoding
 
-            task.aspectJWeaver.targetCompatibility = JavaVersion.VERSION_1_7.toString()
-            task.aspectJWeaver.sourceCompatibility = JavaVersion.VERSION_1_7.toString()
-            task.aspectJWeaver.destinationDir = buildDir.absolutePath
-            task.aspectJWeaver.bootClasspath = android.getBootClasspath().joinToString(separator = File.pathSeparator)
-            task.aspectJWeaver.encoding = javaCompiler.options.encoding
-
-            task.aspectJWeaver.compilationLogFile = config.compilationLogFile
-            task.aspectJWeaver.addSerialVUID = config.addSerialVersionUID
-            task.aspectJWeaver.debugInfo = config.debugInfo
-            task.aspectJWeaver.addSerialVUID = config.addSerialVersionUID
-            task.aspectJWeaver.noInlineAround = config.noInlineAround
-            task.aspectJWeaver.ignoreErrors = config.ignoreErrors
-            task.aspectJWeaver.breakOnError = config.breakOnError
-            task.aspectJWeaver.experimental = config.experimental
-            task.aspectJWeaver.ajcArgs from config.ajcArgs
+                    compilationLogFile = config.compilationLogFile
+                    addSerialVUID = config.addSerialVersionUID
+                    debugInfo = config.debugInfo
+                    addSerialVUID = config.addSerialVersionUID
+                    noInlineAround = config.noInlineAround
+                    ignoreErrors = config.ignoreErrors
+                    breakOnError = config.breakOnError
+                    experimental = config.experimental
+                    ajcArgs from config.ajcArgs
+                }
+            }) as AspectJCompileTask
 
             // uPhyca's fix
             // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run
@@ -96,6 +100,14 @@ internal open class AspectJCompileTask: AbstractCompile() {
 
             //apply behavior
             javaCompiler.finalizedBy(task)
+        }
+
+        private fun obtainBuildDirectory(android: AndroidConfig): File? {
+            return if (android.scope == ConfigScope.PROVIDE) {
+                javaCompiler.destinationDir
+            } else {
+                project.file("${project.buildDir}/aspectj/$variantName")
+            }
         }
 
         private fun classpath(): FileCollection {

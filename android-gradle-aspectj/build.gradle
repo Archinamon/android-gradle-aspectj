@@ -6,7 +6,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -52,8 +52,8 @@ artifacts {
 
 if (project.hasProperty('user') && project.hasProperty('apiKey')) {
     bintray {
-        user = bintray_user
-        key = bintray_apiKey
+        user = project.properties.user
+        key = project.properties.apiKey
 
         configurations = ['archives']
         pkg {

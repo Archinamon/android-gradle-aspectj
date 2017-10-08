@@ -39,7 +39,7 @@ dependencies {
 }
 
 group = 'com.archinamon'
-version = '3.0.3'
+version = '3.1.0'
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'

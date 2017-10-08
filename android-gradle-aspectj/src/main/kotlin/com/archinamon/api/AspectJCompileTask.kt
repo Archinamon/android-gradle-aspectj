@@ -17,7 +17,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 import java.util.*
 
-internal open class AspectJCompileTask: AbstractCompile() {
+internal open class AspectJCompileTask : AbstractCompile() {
 
     internal class Builder(val project: Project) {
 
@@ -54,10 +54,11 @@ internal open class AspectJCompileTask: AbstractCompile() {
 
         fun buildAndAttach(android: AndroidConfig) {
             val options = mutableMapOf(
-                Pair("overwrite", true),
-                Pair("group", "build"),
-                Pair("description", "Compile .aj source files into java .class with meta instructions"),
-                Pair("type", AspectJCompileTask::class.java)
+                    "overwrite" to true,
+                    "dependsOn" to javaCompiler.name,
+                    "group" to "build",
+                    "description" to "Compile .aj source files into java .class with meta instructions",
+                    "type" to AspectJCompileTask::class.java
             )
 
             val sources = findAjSourcesForVariant(project, variantName)

@@ -5,7 +5,6 @@ import com.archinamon.AspectJExtension
 import com.archinamon.lang.kotlin.closureOf
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
-import jdk.nashorn.internal.objects.NativeRegExp.source
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project

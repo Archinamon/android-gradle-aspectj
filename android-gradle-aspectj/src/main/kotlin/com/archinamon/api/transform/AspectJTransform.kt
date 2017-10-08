@@ -12,6 +12,7 @@ import com.archinamon.api.AspectJMergeJars
 import com.archinamon.api.AspectJWeaver
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
+import com.archinamon.utils.DependencyFilter.isExcludeFilterMatched
 import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
@@ -110,6 +111,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
         val outputProvider = transformInvocation.outputProvider
         val includeJars = config.aspectj().includeJar
+        val excludeJars = config.aspectj().excludeJar
         val includeAspects = config.aspectj().includeAspectsFromJar
 
         if (!transformInvocation.isIncremental) {
@@ -147,17 +149,26 @@ internal abstract class AspectJTransform(val project: Project, private val polic
                 aspectJWeaver.classPath shl jar.file
 
                 if (modeComplex()) {
-                    if (config.aspectj().includeAllJars || (includeJars.isNotEmpty() && isIncludeFilterMatched(jar.file, includeJars))) {
+                    val includeAllJars = config.aspectj().includeAllJars
+                    val includeFilterMatched = includeJars.isNotEmpty() && isIncludeFilterMatched(jar.file, includeJars)
+                    val excludeFilterMatched = excludeJars.isNotEmpty() && isExcludeFilterMatched(jar.file, excludeJars)
+
+                    if (excludeFilterMatched) {
+                        logJarInpathRemoved(jar)
+                    }
+
+                    if (!excludeFilterMatched && (includeAllJars || includeFilterMatched)) {
                         logJarInpathAdded(jar)
                         aspectJWeaver.inPath shl jar.file
                     } else {
                         copyJar(outputProvider, jar)
                     }
                 } else {
-                    if (includeJars.isNotEmpty()) logIgnoreInpathJars()
+                    if (includeJars.isNotEmpty() || excludeJars.isNotEmpty()) logIgnoreInpathJars()
                 }
 
-                if (includeAspects.isNotEmpty() && isIncludeFilterMatched(jar.file, includeAspects)) {
+                val includeAspectsFilterMatched = includeAspects.isNotEmpty() && isIncludeFilterMatched(jar.file, includeAspects)
+                if (includeAspectsFilterMatched) {
                     logJarAspectAdded(jar)
                     aspectJWeaver.aspectPath shl jar.file
                 }

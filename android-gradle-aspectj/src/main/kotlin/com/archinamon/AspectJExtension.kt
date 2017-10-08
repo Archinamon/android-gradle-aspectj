@@ -6,6 +6,7 @@ open class AspectJExtension {
 
     open var includeAllJars = false
     open var includeJar = mutableSetOf<String>()
+    open var excludeJar = mutableSetOf<String>()
     open var extendClasspath = true
 
     open var includeAspectsFromJar = mutableSetOf<String>()
@@ -33,6 +34,11 @@ open class AspectJExtension {
 
     fun includeJar(vararg filters: String): AspectJExtension {
         includeJar.addAll(filters)
+        return this
+    }
+
+    fun excludeJar(vararg filters: String): AspectJExtension {
+        excludeJar.addAll(filters)
         return this
     }
 

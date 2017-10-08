@@ -37,11 +37,16 @@ internal fun logWeaverBuildPolicy(policy: BuildPolicy) {
 }
 
 internal fun logIgnoreInpathJars() {
-    println("Ignoring additional jars adding to -inpath in simple mode")
+    println("Ignoring include/exclude option of -inpath parameter in simple mode.\n" +
+            "Switch to `aspectj-ext` plugin to enable this behavior!")
 }
 
 internal fun logJarInpathAdded(jar: JarInput) {
     println("include jar :: ${jar.file.absolutePath}")
+}
+
+internal fun logJarInpathRemoved(jar: JarInput) {
+    println("exclude jar :: ${jar.file.absolutePath}")
 }
 
 internal fun logJarAspectAdded(jar: JarInput) {

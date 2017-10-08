@@ -1,5 +1,5 @@
 # GradleAspectJ-Android
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.1.1-blue.svg)](http://kotlinlang.org) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android) [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.1.51-blue.svg)](http://kotlinlang.org) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android) [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [ ![Download](https://api.bintray.com/packages/archinamon/maven/android-gradle-aspectj/images/download.svg) ](https://bintray.com/archinamon/maven/android-gradle-aspectj/_latestVersion)
 
 A Gradle plugin which enables AspectJ for Android builds.
@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.0.3`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.1.1`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -22,7 +22,8 @@ Key features
 
 Augments Java, Kotlin, Groovy bytecode simultaneously!<br />
 Works with background mechanics of jvm-based languages out-of-box!<br />
-[How to teach Android Studio to understand the AspectJ!](IDE)
+[How to teach Android Studio to understand the AspectJ!](IDE)<br />
+May not work for AS 3.0 :(
 
 It is easy to isolate your code with aspect classes, that will be simply injected via cross-point functions, named `advices`, into your core application. The main idea is — code less, do more!
 
@@ -43,13 +44,12 @@ Usage
 First add a maven repo link into your `repositories` block of module build file:
 ```groovy
 mavenCentral()
-maven { url "https://jitpack.io" }
 ```
 Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gradle module.
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.github.Archinamon:GradleAspectJ-Android:3.0.3'
+classpath 'com.archinamon:android-gradle-aspectj:3.1.1'
 ```
 
 Apply the `aspectj` plugin:
@@ -67,7 +67,7 @@ import android.support.v4.app.NotificationCompat;
 
 aspect AppStartNotifier {
 
-    pointcut postInit(): within(Application) && execution(* Application.onCreate());
+    pointcut postInit(): within(Application+) && execution(* Application+.onCreate());
 
     after() returning: postInit() {
         Application app = (Application) thisJoinPoint.getTarget();
@@ -87,29 +87,32 @@ Tune extension
 
 ```groovy
 aspectj {
-    ajc '1.8.10'
+    ajc '1.8.10' // default value
 
     /* @see Ext plugin config **/
-    includeAllJars false
-    includeJar 'design', 'support-v4', 'dagger'
-    extendClasspath true
+    includeAllJars false // default value
+    includeJar 'design', 'support-v4', 'dagger' // default is empty
+    excludeJar 'support-v7', 'joda' // default is empty
+    extendClasspath true // default value
 
-    includeAspectsFromJar 'my-aj-logger-lib', 'any-other-libs-with-aspects'
+    includeAspectsFromJar 'my-aj-logger-lib', 'any-other-libs-with-aspects'  // default is empty
     ajcArgs << '-referenceInfo' << '-warn:deprecation'
 
-    weaveInfo true
-    debugInfo false
-    addSerialVersionUID false
-    noInlineAround false
-    ignoreErrors false
+    weaveInfo true // default value
+    debugInfo false // default value
+    addSerialVersionUID false // default value
+    noInlineAround false // default value
+    ignoreErrors false // default value
     
-    breakOnError true
-    experimental false
+    breakOnError true // default value
+    experimental false // default value
+    buildTimeLog true // default value
 
-    transformLogFile 'ajc-transform.log'
-    compilationLogFile 'ajc-compile.log'
+    transformLogFile 'ajc-transform.log' // default value
+    compilationLogFile 'ajc-compile.log' // default value
 }
 ```
+Note that you may not include all these options!
 
 All the extension parameters are have default values (all of them are described above, except of includeJar/Aspects/ajcArgs options).
 So no need to define them manually.
@@ -119,6 +122,7 @@ So no need to define them manually.
 
 - `includeAllJars` Explicitly include all available jar-files into -inpath to proceed by AJ-compiler
 - `includeJar` Name filter to include any jar/aar which name or path satisfies the filter
+- `excludeJar` Name filter to exclude any jar/aar which name or path satisfies the filter
 - `includeAspectsFromJar` Name filter to include any jar/aar with compiled binary aspects you wanna affect your project
 - `ajcExtraArgs` Additional parameters for aspectj compiler
 
@@ -131,10 +135,12 @@ So no need to define them manually.
 - `breakOnError` Allows to continue project building when ajc fails or throws any errors
 - `experimental` Enables experimental ajc options: `-XhasMember` and `-Xjoinpoints:synchronization,arrayconstruction`. More details in <a href="https://github.com/Archinamon/GradleAspectJ-Android/issues/18" target="_blank">issue #18</a>
 
+- `buildTimeLog` Appends a BuildTimeListener to current module that prints time spent for every task in build flow, granularity in millis
+
 - `transformLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for Transformer
 - `compilationLogFile` Defines name for the log file where all Aj compiler info writes to, new separated for CompileTask
 
-Ext plugin config
+Extended plugin config
 -----------------
 ```groovy
 apply plugin: 'com.archinamon.aspectj-ext'
@@ -147,6 +153,19 @@ Ext config:
 
 Currently it has some limitations:
 - `InstantRun` must be switched off (Plugin detects IR status and fails build if IR will be found).
+
+Provider plugin config
+-----------------
+```groovy
+apply plugin: 'com.archinamon.aspectj-provides'
+```
+
+Plugin-provider may be useful for that cases when you need to extract aspect-sources into separate module and include it on demand to that modules where you only need it.
+Therefor this behavior will save you build-time due to bypassing aspectj-transformers in provide-only modules.
+
+You ain't limited to describe as much provider-modules as you need and then include them using `includeAspectsFromJar` parameter in the module which code or dependencies you may want to augment.
+
+With <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a> you could learn how to write such provider-module.
 
 Working tests
 -------
@@ -183,6 +202,18 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.1.1 -- Useful improvements
+* added an extension trigger to append BuildTime logger for current module;
+* back from grave — added exclude-filter for `aspectj-ext` plugin;
+
+#### 3.1.0 -- Provider
+* implemented `provides` plugin split to effectively extract aspects to external/sub modules;
+* small code improvements and cleanups;
+
+#### 3.0.3 -- Minor fixes
+* fixed aar detecting mechanism;
+* registered plugin in mavenCentral!
+
 #### 3.0.0 -- Grand refactoring in Kotlin
 * all groovy classes was obsolete;
 * new code-base in Kotlin 1.1.1 stable;

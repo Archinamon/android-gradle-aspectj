@@ -26,7 +26,9 @@ internal fun configProject(project: Project, config: AndroidConfig, settings: As
         configureCompiler(project, config)
     }
 
-    project.gradle.addListener(BuildTimeListener())
+    if (settings.buildTimeLog) {
+        project.gradle.addListener(BuildTimeListener())
+    }
 
     checkIfPluginAppliedAfterRetrolambda(project)
 }

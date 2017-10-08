@@ -1,11 +1,11 @@
 package com.archinamon.utils
 
 import com.android.build.api.transform.JarInput
-import com.archinamon.api.BuildPolicy
+import com.archinamon.api.transform.BuildPolicy
 import java.io.File
 
 internal fun logBypassTransformation() {
-    println("---------- AspectJ tasks bypassed  with no outputs ----------")
+    println("---------- AspectJ tasks bypassed with no outputs ----------")
 }
 
 internal fun logCompilationStart() {
@@ -37,11 +37,16 @@ internal fun logWeaverBuildPolicy(policy: BuildPolicy) {
 }
 
 internal fun logIgnoreInpathJars() {
-    println("Ignoring additional jars adding to -inpath in simple mode")
+    println("Ignoring include/exclude option of -inpath parameter in simple mode.\n" +
+            "Switch to `aspectj-ext` plugin to enable this behavior!")
 }
 
 internal fun logJarInpathAdded(jar: JarInput) {
     println("include jar :: ${jar.file.absolutePath}")
+}
+
+internal fun logJarInpathRemoved(jar: JarInput) {
+    println("exclude jar :: ${jar.file.absolutePath}")
 }
 
 internal fun logJarAspectAdded(jar: JarInput) {
@@ -57,9 +62,20 @@ internal fun logExtraAjcArgumentAlreadyExists(arg: String) {
 }
 
 internal fun logBuildParametersAdapted(args: MutableCollection<String?>, logfile: String) {
-    var params: String = ""
+    fun extractParamsToString(it: String): String {
+        return when {
+            it.startsWith('-') -> "$it :: "
+            else -> when {
+                it.length > 200 -> "[ list files ],\n"
+                else -> "$it, "
+            }
+        }
+    }
 
-    args.forEach { params += if (it?.startsWith('-')!!) "$it :: " else ( if (it.length > 200) "[ list files ],\n" else "$it, ") }
+    val params = args
+            .filterNotNull()
+            .map(::extractParamsToString)
+            .joinToString()
 
     println("Ajc config: $params")
     println("Detailed log in $logfile")

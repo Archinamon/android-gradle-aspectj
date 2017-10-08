@@ -1,12 +1,12 @@
 buildscript {
-    ext.kotlin_version = '1.1.1'
+    ext.kotlin_version = '1.1.51'
 
     repositories {
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -39,7 +39,7 @@ dependencies {
 }
 
 group = 'com.archinamon'
-version = '3.0.3'
+version = '3.1.1'
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -50,10 +50,10 @@ artifacts {
     archives sourcesJar
 }
 
-if (project.hasProperty('bintray_user') && project.hasProperty('bintray_apiKey')) {
+if (project.hasProperty('user') && project.hasProperty('apiKey')) {
     bintray {
-        user = bintray_user
-        key = bintray_apiKey
+        user = project.properties.user
+        key = project.properties.apiKey
 
         configurations = ['archives']
         pkg {

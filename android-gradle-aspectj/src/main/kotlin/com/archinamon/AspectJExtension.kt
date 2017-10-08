@@ -21,6 +21,7 @@ open class AspectJExtension {
     open var breakOnError = true
 
     open var experimental = false
+    open var buildTimeLog = true
 
     open var transformLogFile = "ajc-transform.log"
     open var compilationLogFile = "ajc-compile.log"

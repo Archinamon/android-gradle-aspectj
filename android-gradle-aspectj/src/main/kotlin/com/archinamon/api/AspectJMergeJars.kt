@@ -1,10 +1,10 @@
 package com.archinamon.api
 
-import com.android.SdkConstants
 import com.android.build.api.transform.Format
 import com.android.build.api.transform.TransformException
 import com.android.build.api.transform.TransformInvocation
-import com.android.build.gradle.internal.transforms.JarMerger
+import com.android.builder.packaging.JarMerger
+import com.android.builder.packaging.ZipEntryFilter
 import com.android.utils.FileUtils
 import com.archinamon.api.transform.AspectJTransform
 import java.io.File
@@ -25,10 +25,9 @@ internal class AspectJMergeJars {
             FileUtils.mkdirs(jarFile.parentFile)
             FileUtils.deleteIfExists(jarFile)
 
-            val jarMerger = JarMerger(jarFile)
+            val jarMerger = JarMerger(jarFile.toPath(), ZipEntryFilter.CLASSES_ONLY)
             try {
-                jarMerger.setFilter { archivePath -> archivePath.endsWith(SdkConstants.DOT_CLASS) }
-                jarMerger.addFolder(resultDir)
+                jarMerger.addDirectory(resultDir.toPath())
             } catch (e: Exception) {
                 throw TransformException(e)
             } finally {

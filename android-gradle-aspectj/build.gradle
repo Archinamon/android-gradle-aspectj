@@ -23,13 +23,14 @@ dependencies {
     repositories {
         jcenter()
         mavenCentral()
+        maven { url 'https://maven.google.com' }
         maven { url 'http://repository.jetbrains.com/utils' }
         maven { url "https://dl.bintray.com/archinamon/maven" }
     }
 
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
-    compileOnly "org.jetbrains.kotlin:gradle-api:2.3"
-    compileOnly 'com.android.tools.build:gradle:2.3.0'
+    compileOnly gradleApi()
+    compileOnly 'com.android.tools.build:gradle:3.0.0-beta7'
     compile "org.aspectj:aspectjrt:$aspectjVersion"
     compile "org.aspectj:aspectjtools:$aspectjVersion"
 
@@ -39,7 +40,7 @@ dependencies {
 }
 
 group = 'com.archinamon'
-version = '3.1.1'
+version = '3.1.1-gradleApiBeta'
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'

@@ -5,7 +5,6 @@ import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
-import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
 import com.archinamon.api.AspectJMergeJars
@@ -53,7 +52,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         return this
     }
 
-    private fun <T: BaseVariantData<out BaseVariantOutputData>> setupVariant(variantData: T) {
+    private fun <T: BaseVariantData> setupVariant(variantData: T) {
         if (variantData.scope.instantRunBuildContext.isInInstantRunMode) {
             if (modeComplex()) {
                 throw GradleException(SLICER_DETECTED_ERROR)

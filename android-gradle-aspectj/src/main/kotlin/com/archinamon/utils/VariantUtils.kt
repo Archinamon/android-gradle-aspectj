@@ -1,15 +1,15 @@
 package com.archinamon.utils
 
 import com.android.build.gradle.BasePlugin
+import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.variant.BaseVariantData
-import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
-fun getJavaTask(baseVariantData: BaseVariantData<out BaseVariantOutputData>): JavaCompile? {
+fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile? {
     if (baseVariantData.javacTask != null) {
         return baseVariantData.javacTask
     } else if (baseVariantData.javaCompilerTask != null) {
@@ -18,10 +18,10 @@ fun getJavaTask(baseVariantData: BaseVariantData<out BaseVariantOutputData>): Ja
     return null
 }
 
-fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantData<out BaseVariantOutputData>): FileCollection {
+fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantData): FileCollection {
     val javaTask = getJavaTask(variantData)
 
-    val flavors: List<String>? = variantData.variantConfiguration?.productFlavors?.map { flavor -> flavor.name }
+    val flavors: List<String>? = variantData.variantConfiguration.productFlavors.map { flavor -> flavor.name }
     val srcSet = mutableListOf("main", variantData.variantConfiguration!!.buildType!!.name)
     flavors?.let { srcSet.addAll(it) }
 
@@ -56,8 +56,8 @@ fun findAjSourcesForVariant(project: Project, variantName: String): MutableSet<F
     return LinkedHashSet(possibleDirs)
 }
 
-fun getVariantDataList(plugin: BasePlugin): List<BaseVariantData<out BaseVariantOutputData>> {
-    return plugin.variantManager.variantDataList
+fun getVariantDataList(plugin: BasePlugin): List<BaseVariantData> {
+    return plugin.variantManager.variantScopes.map(VariantScope::getVariantData)
 }
 
 internal infix fun <E> MutableCollection<in E>.shl(elem: E): MutableCollection<in E> {

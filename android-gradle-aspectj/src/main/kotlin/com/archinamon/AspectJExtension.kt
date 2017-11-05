@@ -2,10 +2,11 @@ package com.archinamon
 
 open class AspectJExtension {
 
-    open var ajc = "1.8.10"
+    open var ajc = "1.8.12"
 
     open var includeAllJars = false
     open var includeJar = mutableSetOf<String>()
+    open var excludeJar = mutableSetOf<String>()
     open var extendClasspath = true
 
     open var includeAspectsFromJar = mutableSetOf<String>()
@@ -21,6 +22,7 @@ open class AspectJExtension {
     open var breakOnError = true
 
     open var experimental = false
+    open var buildTimeLog = true
 
     open var transformLogFile = "ajc-transform.log"
     open var compilationLogFile = "ajc-compile.log"
@@ -32,6 +34,11 @@ open class AspectJExtension {
 
     fun includeJar(vararg filters: String): AspectJExtension {
         includeJar.addAll(filters)
+        return this
+    }
+
+    fun excludeJar(vararg filters: String): AspectJExtension {
+        excludeJar.addAll(filters)
         return this
     }
 

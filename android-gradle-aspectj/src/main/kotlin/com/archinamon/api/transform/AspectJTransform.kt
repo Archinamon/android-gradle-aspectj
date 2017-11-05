@@ -1,15 +1,17 @@
-package com.archinamon.api
+package com.archinamon.api.transform
 
 import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
-import com.android.build.gradle.internal.variant.BaseVariantOutputData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
+import com.archinamon.api.AspectJMergeJars
+import com.archinamon.api.AspectJWeaver
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
+import com.archinamon.utils.DependencyFilter.isExcludeFilterMatched
 import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
@@ -18,62 +20,39 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import java.io.File
 
-internal const val TRANSFORM_NAME = "aspectj"
-private const val AJRUNTIME = "aspectjrt"
-private const val SLICER_DETECTED_ERROR = "Running with InstantRun slicer when weaver extended not allowed!"
+internal abstract class AspectJTransform(val project: Project, private val policy: BuildPolicy): Transform() {
 
-enum class BuildPolicy {
+    private lateinit var config: AndroidConfig
 
-    SIMPLE,
-    COMPLEX,
-    LIBRARY
-}
-
-internal class StdTransformer(project: Project): AspectJTransform(project, BuildPolicy.SIMPLE)
-internal class ExtTransformer(project: Project): AspectJTransform(project, BuildPolicy.COMPLEX)
-internal class TstTransformer(project: Project): AspectJTransform(project, BuildPolicy.COMPLEX)
-internal class LibTransformer(project: Project): AspectJTransform(project, BuildPolicy.LIBRARY) {
-
-    override fun getScopes(): MutableSet<QualifiedContent.Scope> {
-        return Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT)
-    }
-
-    override fun getReferencedScopes(): MutableSet<QualifiedContent.Scope> {
-        return TransformManager.SCOPE_FULL_PROJECT
-    }
-}
-
-internal sealed class AspectJTransform(val project: Project, private val policy: BuildPolicy): Transform() {
-
-    lateinit var config: AndroidConfig
-
-    val aspectJWeaver: AspectJWeaver = AspectJWeaver(project)
-    val aspectJMerger: AspectJMergeJars = AspectJMergeJars()
+    private val aspectJWeaver: AspectJWeaver = AspectJWeaver(project)
+    private val aspectJMerger: AspectJMergeJars = AspectJMergeJars()
 
     fun withConfig(config: AndroidConfig): AspectJTransform {
         this.config = config
         return this
     }
 
-    fun prepareProject(): AspectJTransform {
+    open fun prepareProject(): AspectJTransform {
         project.afterEvaluate {
             getVariantDataList(config.plugin).forEach(this::setupVariant)
 
-            aspectJWeaver.weaveInfo = config.aspectj().weaveInfo
-            aspectJWeaver.debugInfo = config.aspectj().debugInfo
-            aspectJWeaver.addSerialVUID = config.aspectj().addSerialVersionUID
-            aspectJWeaver.noInlineAround = config.aspectj().noInlineAround
-            aspectJWeaver.ignoreErrors = config.aspectj().ignoreErrors
-            aspectJWeaver.transformLogFile = config.aspectj().transformLogFile
-            aspectJWeaver.breakOnError = config.aspectj().breakOnError
-            aspectJWeaver.experimental = config.aspectj().experimental
-            aspectJWeaver.ajcArgs from config.aspectj().ajcArgs
+            with(config.aspectj()) {
+                aspectJWeaver.weaveInfo = weaveInfo
+                aspectJWeaver.debugInfo = debugInfo
+                aspectJWeaver.addSerialVUID = addSerialVersionUID
+                aspectJWeaver.noInlineAround = noInlineAround
+                aspectJWeaver.ignoreErrors = ignoreErrors
+                aspectJWeaver.transformLogFile = transformLogFile
+                aspectJWeaver.breakOnError = breakOnError
+                aspectJWeaver.experimental = experimental
+                aspectJWeaver.ajcArgs from ajcArgs
+            }
         }
 
         return this
     }
 
-    fun <T: BaseVariantData<out BaseVariantOutputData>> setupVariant(variantData: T) {
+    private fun <T: BaseVariantData> setupVariant(variantData: T) {
         if (variantData.scope.instantRunBuildContext.isInInstantRunMode) {
             if (modeComplex()) {
                 throw GradleException(SLICER_DETECTED_ERROR)
@@ -113,6 +92,7 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
         return false
     }
 
+    @Suppress("OverridingDeprecatedMember")
     override fun transform(context: Context, inputs: Collection<TransformInput>, referencedInputs: Collection<TransformInput>, outputProvider: TransformOutputProvider, isIncremental: Boolean) {
         this.transform(TransformInvocationBuilder(context)
             .addInputs(inputs)
@@ -130,6 +110,7 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
 
         val outputProvider = transformInvocation.outputProvider
         val includeJars = config.aspectj().includeJar
+        val excludeJars = config.aspectj().excludeJar
         val includeAspects = config.aspectj().includeAspectsFromJar
 
         if (!transformInvocation.isIncremental) {
@@ -167,17 +148,26 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
                 aspectJWeaver.classPath shl jar.file
 
                 if (modeComplex()) {
-                    if (config.aspectj().includeAllJars || (includeJars.isNotEmpty() && isIncludeFilterMatched(jar.file, includeJars))) {
+                    val includeAllJars = config.aspectj().includeAllJars
+                    val includeFilterMatched = includeJars.isNotEmpty() && isIncludeFilterMatched(jar.file, includeJars)
+                    val excludeFilterMatched = excludeJars.isNotEmpty() && isExcludeFilterMatched(jar.file, excludeJars)
+
+                    if (excludeFilterMatched) {
+                        logJarInpathRemoved(jar)
+                    }
+
+                    if (!excludeFilterMatched && (includeAllJars || includeFilterMatched)) {
                         logJarInpathAdded(jar)
                         aspectJWeaver.inPath shl jar.file
                     } else {
                         copyJar(outputProvider, jar)
                     }
                 } else {
-                    if (includeJars.isNotEmpty()) logIgnoreInpathJars()
+                    if (includeJars.isNotEmpty() || excludeJars.isNotEmpty()) logIgnoreInpathJars()
                 }
 
-                if (includeAspects.isNotEmpty() && isIncludeFilterMatched(jar.file, includeAspects)) {
+                val includeAspectsFilterMatched = includeAspects.isNotEmpty() && isIncludeFilterMatched(jar.file, includeAspects)
+                if (includeAspectsFilterMatched) {
                     logJarAspectAdded(jar)
                     aspectJWeaver.aspectPath shl jar.file
                 }
@@ -201,7 +191,7 @@ internal sealed class AspectJTransform(val project: Project, private val policy:
         }
     }
 
-    fun modeComplex(): Boolean {
+    private fun modeComplex(): Boolean {
         return policy == BuildPolicy.COMPLEX
     }
 

@@ -3,7 +3,7 @@ package com.archinamon.utils
 import java.io.File
 
 /**
- * TODO: Add description
+ * Jar/aar filter that able to search within gradle cache for asked package name in aar's manifests
  *
  * @author archinamon on 18/03/17.
  */
@@ -41,11 +41,10 @@ internal object DependencyFilter {
             return false
         }
 
-        val filterTmp = filter
         return when {
-            str.contains(filterTmp) -> true
-            filterTmp.contains("/") -> str.contains(filterTmp.replace("/", File.separator))
-            filterTmp.contains("\\") -> str.contains(filterTmp.replace("\\", File.separator))
+            str.contains(filter) -> true
+            filter.contains("/") -> str.contains(filter.replace("/", File.separator))
+            filter.contains("\\") -> str.contains(filter.replace("\\", File.separator))
             else -> false
         }
     }

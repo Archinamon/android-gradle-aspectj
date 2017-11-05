@@ -7,11 +7,10 @@ import org.gradle.api.execution.TaskExecutionListener
 import org.gradle.api.initialization.Settings
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.TaskState
-import org.gradle.util.Clock
 
 class BuildTimeListener: TaskExecutionListener, BuildListener {
 
-    private lateinit var clock: Clock
+    private var startTime: Long = 0L
     private var times = mutableListOf<Pair<Long, String>>()
 
     override fun buildStarted(gradle: Gradle) {}
@@ -26,11 +25,11 @@ class BuildTimeListener: TaskExecutionListener, BuildListener {
     }
 
     override fun beforeExecute(task: Task) {
-        clock = Clock()
+        startTime = System.currentTimeMillis()
     }
 
     override fun afterExecute(task: Task, state: TaskState) {
-        val ms = clock.timeInMs
+        val ms = System.currentTimeMillis() - startTime
         times.add(Pair(ms, task.path))
         task.project.logger.warn("${task.path} spend ${ms}ms")
     }

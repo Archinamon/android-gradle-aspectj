@@ -2,7 +2,7 @@ package com.archinamon
 
 open class AspectJExtension {
 
-    open var ajc = "1.8.10"
+    open var ajc = "1.8.12"
 
     open var includeAllJars = false
     open var includeJar = mutableSetOf<String>()

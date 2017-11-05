@@ -16,7 +16,7 @@ apply plugin: 'maven'
 apply plugin: 'com.jfrog.bintray'
 
 project.ext {
-    aspectjVersion = '1.8.10'
+    aspectjVersion = '1.8.12'
 }
 
 dependencies {

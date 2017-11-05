@@ -18,7 +18,7 @@ import org.gradle.api.plugins.PluginContainer
 internal fun configProject(project: Project, config: AndroidConfig, settings: AspectJExtension) {
     if (settings.extendClasspath) {
         project.repositories.mavenCentral()
-        project.dependencies.add("compile", "org.aspectj:aspectjrt:${settings.ajc}")
+        project.dependencies.add("implementation", "org.aspectj:aspectjrt:${settings.ajc}")
     }
 
     project.afterEvaluate {

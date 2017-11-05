@@ -20,11 +20,11 @@ internal open class AspectJCompileTask : AbstractCompile() {
 
     internal class Builder(val project: Project) {
 
-        lateinit var plugin: Plugin<Project>
-        lateinit var config: AspectJExtension
-        lateinit var javaCompiler: JavaCompile
-        lateinit var variantName: String
-        lateinit var taskName: String
+        private lateinit var plugin: Plugin<Project>
+        private lateinit var config: AspectJExtension
+        private lateinit var javaCompiler: JavaCompile
+        private lateinit var variantName: String
+        private lateinit var taskName: String
 
         fun plugin(plugin: Plugin<Project>): Builder {
             this.plugin = plugin

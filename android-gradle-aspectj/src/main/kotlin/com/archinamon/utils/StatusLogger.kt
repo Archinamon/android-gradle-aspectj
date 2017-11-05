@@ -74,8 +74,7 @@ internal fun logBuildParametersAdapted(args: MutableCollection<String?>, logfile
 
     val params = args
             .filterNotNull()
-            .map(::extractParamsToString)
-            .joinToString()
+            .joinToString(transform = ::extractParamsToString)
 
     println("Ajc config: $params")
     println("Detailed log in $logfile")

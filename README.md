@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.1.1`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.2.0`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -23,7 +23,7 @@ Key features
 Augments Java, Kotlin, Groovy bytecode simultaneously!<br />
 Works with background mechanics of jvm-based languages out-of-box!<br />
 [How to teach Android Studio to understand the AspectJ!](IDE)<br />
-May not work for AS 3.0 :(
+May not work properly for AS 3.0 :(
 
 It is easy to isolate your code with aspect classes, that will be simply injected via cross-point functions, named `advices`, into your core application. The main idea is — code less, do more!
 
@@ -49,7 +49,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.1.1'
+classpath 'com.archinamon:android-gradle-aspectj:3.2.0'
 ```
 
 Apply the `aspectj` plugin:
@@ -87,7 +87,7 @@ Tune extension
 
 ```groovy
 aspectj {
-    ajc '1.8.10' // default value
+    ajc '1.8.12' // default value
 
     /* @see Ext plugin config **/
     includeAllJars false // default value
@@ -117,7 +117,7 @@ Note that you may not include all these options!
 All the extension parameters are have default values (all of them are described above, except of includeJar/Aspects/ajcArgs options).
 So no need to define them manually.
 
-- `ajc` Allows to define the aspectj runtime jar version manually (1.8.10 current)
+- `ajc` Allows to define the aspectj runtime jar version manually (1.8.12 current)
 - `extendClasspath` Explicitly controls whether plugin should mutate the classpath with aspectj-runtime itself
 
 - `includeAllJars` Explicitly include all available jar-files into -inpath to proceed by AJ-compiler
@@ -202,6 +202,10 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.2.0 -- Gradle 3.0.0 support
+* added support of stable gradle plugin 3.0.0;
+* updated internal ajc and provided aj runtime library versions to the latest 1.8.12;
+
 #### 3.1.1 -- Useful improvements
 * added an extension trigger to append BuildTime logger for current module;
 * back from grave — added exclude-filter for `aspectj-ext` plugin;

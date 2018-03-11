@@ -34,7 +34,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
     open fun prepareProject(): AspectJTransform {
         project.afterEvaluate {
-            getVariantDataList(config.plugin).forEach(this::setupVariant)
+            getVariantDataList(config.plugin).forEach(::setupVariant)
 
             with(config.aspectj()) {
                 aspectJWeaver.weaveInfo = weaveInfo
@@ -172,6 +172,13 @@ internal abstract class AspectJTransform(val project: Project, private val polic
                     aspectJWeaver.aspectPath shl jar.file
                 }
             }
+        }
+
+        val classpathFiles = aspectJWeaver.classPath.filter { it.isDirectory && it.list().isNotEmpty() }
+        val inpathFiles = aspectJWeaver.inPath.filter { it.isDirectory && it.list().isNotEmpty() }
+        if (inpathFiles.isEmpty() || classpathFiles.isEmpty()) {
+            logNoAugmentation()
+            return
         }
 
         val hasAjRt = aspectJWeaver.classPath.any { it.name.contains(AJRUNTIME); }

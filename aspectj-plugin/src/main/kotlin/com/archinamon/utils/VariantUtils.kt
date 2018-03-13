@@ -60,6 +60,10 @@ fun getVariantDataList(plugin: BasePlugin): List<BaseVariantData> {
     return plugin.variantManager.variantScopes.map(VariantScope::getVariantData)
 }
 
+fun getVariantScopes(plugin: BasePlugin): List<VariantScope> {
+    return plugin.variantManager.variantScopes
+}
+
 internal infix fun <E> MutableCollection<in E>.shl(elem: E): MutableCollection<in E> {
     this.add(elem)
     return this

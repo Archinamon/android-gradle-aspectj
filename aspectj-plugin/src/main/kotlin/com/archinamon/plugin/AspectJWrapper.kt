@@ -10,21 +10,21 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import javax.inject.Inject
 
-internal sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
+sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
 
-    internal class Standard @Inject constructor(): AspectJWrapper(ConfigScope.STANDARD) {
+    class Standard @Inject constructor(): AspectJWrapper(ConfigScope.STANDARD) {
         override fun getTransformer(project: Project): AspectJTransform = StandardTransformer(project)
     }
 
-    internal class Provides @Inject constructor(): AspectJWrapper(ConfigScope.PROVIDE) {
+    class Provides @Inject constructor(): AspectJWrapper(ConfigScope.PROVIDE) {
         override fun getTransformer(project: Project): AspectJTransform = ProvidesTransformer(project)
     }
 
-    internal class Extended @Inject constructor(): AspectJWrapper(ConfigScope.EXTEND) {
+    class Extended @Inject constructor(): AspectJWrapper(ConfigScope.EXTEND) {
         override fun getTransformer(project: Project): AspectJTransform = ExtendedTransformer(project)
     }
 
-    internal class Test @Inject constructor(): AspectJWrapper(ConfigScope.TEST) {
+    class Test @Inject constructor(): AspectJWrapper(ConfigScope.TEST) {
         override fun getTransformer(project: Project): AspectJTransform = TestsTransformer(project)
     }
 

@@ -163,7 +163,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
                         copyJar(outputProvider, jar)
                     }
                 } else {
-                    if (includeJars.isNotEmpty() || excludeJars.isNotEmpty()) logIgnoreInpathJars()
+                    if (includeJars.isNotEmpty() || excludeJars.isNotEmpty())
+                        logIgnoreInpathJars()
                 }
 
                 val includeAspectsFilterMatched = includeAspects.isNotEmpty() && isIncludeFilterMatched(jar.file, includeAspects)

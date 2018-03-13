@@ -52,14 +52,10 @@ class AndroidPluginTest {
 
         buildFile.writeText("""
             buildscript {
-                repositories {
-                    google()
-                    jcenter()
-                    mavenCentral()
-                }
+                $REPOSITORIES
 
                 dependencies {
-                    // hack to avoid pom-generation
+                    // hack to avoid local pom-generation
                     classpath 'org.aspectj:aspectjrt:$aspectjVersion'
                     classpath 'org.aspectj:aspectjtools:$aspectjVersion'
 
@@ -69,25 +65,7 @@ class AndroidPluginTest {
                 }
             }
 
-            apply plugin: 'com.android.application'
-            apply plugin: 'com.archinamon.aspectj'
-
-            android {
-                compileSdkVersion 27
-
-                defaultConfig {
-                    applicationId 'com.example.test'
-                    minSdkVersion 21
-                    targetSdkVersion 27
-                    versionCode 1
-                    versionName "1.0"
-                }
-            }
-
-            repositories {
-                jcenter()
-                mavenCentral()
-            }
+            $SIMPLE_PLUGIN_IMPLYING
         """.trimIndent())
 
         val result = GradleRunner.create()
@@ -96,5 +74,47 @@ class AndroidPluginTest {
                 .build()
 
         Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":build")!!.outcome)
+    }
+
+    @Test
+    fun runningTestsWithAjAugmenting() {
+        val aspectjVersion = AspectJExtension().ajc
+        val jarFile = File("build/libs/").listFiles().first()
+
+        buildFile.writeText("""
+            buildscript {
+                $REPOSITORIES
+
+                dependencies {
+                    // hack to avoid local pom-generation
+                    classpath 'org.aspectj:aspectjrt:$aspectjVersion'
+                    classpath 'org.aspectj:aspectjtools:$aspectjVersion'
+
+                    // main dependencies
+                    classpath 'com.android.tools.build:gradle:3.0.1'
+                    classpath files('${jarFile.absolutePath}')
+                }
+            }
+
+            $SIMPLE_PLUGIN_IMPLYING
+            $DEPENDENCIES_WITH_TESTS
+        """.trimIndent())
+
+        // simple unit test
+        File(rootTestDir.listFiles().first(), "src/main/test/java/com/example/test").mkdirs()
+        testProjectDir.newFile("./src/main/test/java/com/example/test/SimpleTest.java")
+                .writeText(SIMPLE_TEST_BODY_JAVA.trimIndent())
+
+        // simple test augmenting
+        File(rootTestDir.listFiles().first(), "src/main/aspectj/java/com/example/xpoint").mkdirs()
+        testProjectDir.newFile("./src/main/aspectj/java/com/example/xpoint/TestMutator.java")
+                .writeText(SIMPLE_ASPECT_FOR_TEST_AUGMENTING.trimIndent())
+
+        val result = GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments("test",  "--info", "--stacktrace")
+                .build()
+
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":test")!!.outcome)
     }
 }

@@ -8,7 +8,7 @@ buildscript {
         }
     }
 
-    val kotlinVersion: String by extra
+    val kotlinVersion: String by properties
     dependencies {
         classpath(kotlin("gradle-plugin", kotlinVersion))
         classpath("com.archinamon.gradle:yandex-maven:1.1")

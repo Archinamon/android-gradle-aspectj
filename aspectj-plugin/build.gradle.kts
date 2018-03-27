@@ -40,8 +40,8 @@ gradlePlugin {
     }
 }
 
-val kotlinVersion: String by extra
-val aspectjVersion: String by extra
+val kotlinVersion: String by properties
+val aspectjVersion: String by properties
 
 dependencies {
     compile(kotlin("stdlib-jdk8", kotlinVersion))

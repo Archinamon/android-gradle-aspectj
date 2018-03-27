@@ -5,7 +5,6 @@ import com.archinamon.AspectJExtension
 import com.archinamon.lang.kotlin.closureOf
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -25,6 +24,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
         private lateinit var javaCompiler: JavaCompile
         private lateinit var variantName: String
         private lateinit var taskName: String
+        private var overwrite: Boolean = false
 
         fun plugin(plugin: Plugin<Project>): Builder {
             this.plugin = plugin
@@ -51,6 +51,11 @@ internal open class AspectJCompileTask : AbstractCompile() {
             return this
         }
 
+        fun overwriteJavac(overwrite: Boolean): Builder {
+            this.overwrite = overwrite
+            return this
+        }
+
         fun buildAndAttach(android: AndroidConfig) {
             val options = mutableMapOf(
                     "overwrite" to true,
@@ -73,8 +78,8 @@ internal open class AspectJCompileTask : AbstractCompile() {
                     ajSources = sources
                     inPath shl this@task.destinationDir shl javaCompiler.destinationDir
 
-                    targetCompatibility = JavaVersion.VERSION_1_7.toString()
-                    sourceCompatibility = JavaVersion.VERSION_1_7.toString()
+                    targetCompatibility = config.java.toString()
+                    sourceCompatibility = config.java.toString()
                     destinationDir = this@task.destinationDir.absolutePath
                     bootClasspath = android.getBootClasspath().joinToString(separator = File.pathSeparator)
                     encoding = javaCompiler.options.encoding
@@ -90,6 +95,11 @@ internal open class AspectJCompileTask : AbstractCompile() {
                     ajcArgs from config.ajcArgs
                 }
             }) as AspectJCompileTask
+
+//            if (overwrite) {
+//                javaCompiler.enabled = false
+//                task.aspectJWeaver.ajSources
+//            }
 
             // uPhyca's fix
             // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run

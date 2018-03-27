@@ -40,6 +40,25 @@ gradlePlugin {
     }
 }
 
+tasks {
+    val sourcesJar by creating(Jar::class) {
+        dependsOn(JavaPlugin.CLASSES_TASK_NAME)
+        classifier = "sources"
+        from(java.sourceSets["main"].allSource)
+    }
+
+    val javadocJar by creating(Jar::class) {
+        dependsOn(JavaPlugin.JAVADOC_TASK_NAME)
+        classifier = "javadoc"
+        from(java.docsDir)
+    }
+
+    artifacts {
+        add("default", sourcesJar)
+        add("default", javadocJar)
+    }
+}
+
 val kotlinVersion: String by properties
 val aspectjVersion: String by properties
 
@@ -57,10 +76,10 @@ dependencies {
     testCompile(kotlin("test-junit", kotlinVersion))
 }
 
-configure<DeployerExtension> {
-    localDeploy = true
-    localRepoPath = "$buildDir/m2"
-}
+//configure<DeployerExtension> {
+//    localDeploy = true
+//    localRepoPath = "$buildDir/m2"
+//}
 
 if (project.hasProperty("user") && project.hasProperty("apiKey")) {
     configure<BintrayExtension> {

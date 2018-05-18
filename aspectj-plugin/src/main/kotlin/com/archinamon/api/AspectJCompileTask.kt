@@ -71,7 +71,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
                 aspectJWeaver = AspectJWeaver(project)
 
                 source(sources)
-                classpath = classpath()
+                classpath = SimpleFileCollection()
                 findCompiledAspectsInClasspath(this, config.includeAspectsFromJar)
 
                 aspectJWeaver.apply {

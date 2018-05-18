@@ -136,6 +136,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         includeCompiledAspects(transformInvocation, outputDir)
         val inputs = if (modeComplex()) transformInvocation.inputs else transformInvocation.referencedInputs
 
+        var hasAjRt = false
         inputs.forEach proceedInputs@ { input ->
             if (input.directoryInputs.isEmpty() && input.jarInputs.isEmpty())
                 return@proceedInputs //if no inputs so nothing to proceed
@@ -146,11 +147,12 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             }
             input.jarInputs.forEach { jar ->
                 aspectJWeaver.classPath shl jar.file
+                hasAjRt = hasAjRt || jar.name.contains(AJRUNTIME)
 
                 if (modeComplex()) {
                     val includeAllJars = config.aspectj().includeAllJars
-                    val includeFilterMatched = includeJars.isNotEmpty() && isIncludeFilterMatched(jar.file, includeJars)
-                    val excludeFilterMatched = excludeJars.isNotEmpty() && isExcludeFilterMatched(jar.file, excludeJars)
+                    val includeFilterMatched = includeJars.isNotEmpty() && isIncludeFilterMatched(jar, includeJars)
+                    val excludeFilterMatched = excludeJars.isNotEmpty() && isExcludeFilterMatched(jar, excludeJars)
 
                     if (excludeFilterMatched) {
                         logJarInpathRemoved(jar)
@@ -167,7 +169,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
                         logIgnoreInpathJars()
                 }
 
-                val includeAspectsFilterMatched = includeAspects.isNotEmpty() && isIncludeFilterMatched(jar.file, includeAspects)
+                val includeAspectsFilterMatched = includeAspects.isNotEmpty() && isIncludeFilterMatched(jar, includeAspects)
                 if (includeAspectsFilterMatched) {
                     logJarAspectAdded(jar)
                     aspectJWeaver.aspectPath shl jar.file
@@ -181,8 +183,6 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             logNoAugmentation()
             return
         }
-
-        val hasAjRt = aspectJWeaver.classPath.any { it.name.contains(AJRUNTIME); }
 
         if (hasAjRt) {
             logWeaverBuildPolicy(policy)

@@ -1,5 +1,6 @@
 package com.archinamon.utils
 
+import com.android.build.api.transform.JarInput
 import java.io.File
 
 /**
@@ -13,6 +14,14 @@ internal object DependencyFilter {
     private enum class Policy {
         INCLUDE,
         EXCLUDE
+    }
+
+    internal fun isExcludeFilterMatched(jar: JarInput, filters: Collection<String>?): Boolean {
+        return isExcludeFilterMatched(jar.file, filters) || filters?.any { isContained(jar.name, it) } == true
+    }
+
+    internal fun isIncludeFilterMatched(jar: JarInput, filters: Collection<String>?): Boolean {
+        return isIncludeFilterMatched(jar.file, filters) || filters?.any { isContained(jar.name, it) } == true
     }
 
     internal fun isExcludeFilterMatched(file: File?, filters: Collection<String>?): Boolean {

@@ -40,7 +40,7 @@ fun <T : Any> Any.closureOf(action: T.() -> Unit): Closure<Any?> = KotlinClosure
  */
 fun <T> Any.delegateClosureOf(action: T.() -> Unit) = object : Closure<Unit>(this, this) {
     @Suppress("unused") // to be called dynamically by Groovy
-    fun doCall() = uncheckedCast<T>(delegate).action()
+    fun doCall() = uncheckedCast<T>(delegate)?.action()
 }
 
 /**

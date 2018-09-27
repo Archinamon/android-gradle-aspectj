@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.1.51'
+    ext.kotlin_version = '1.2.71'
 
     repositories {
         jcenter()
@@ -16,7 +16,7 @@ apply plugin: 'maven'
 apply plugin: 'com.jfrog.bintray'
 
 project.ext {
-    aspectjVersion = '1.8.12'
+    aspectjVersion = '1.9.1'
 }
 
 dependencies {
@@ -28,19 +28,21 @@ dependencies {
         maven { url "https://dl.bintray.com/archinamon/maven" }
     }
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compileOnly gradleApi()
-    compileOnly 'com.android.tools.build:gradle:3.0.0'
-    compile "org.aspectj:aspectjrt:$aspectjVersion"
-    compile "org.aspectj:aspectjtools:$aspectjVersion"
+    compileOnly 'com.android.tools.build:gradle:3.2.0'
+    implementation "org.aspectj:aspectjrt:$aspectjVersion"
+    implementation "org.aspectj:aspectjtools:$aspectjVersion"
 
-    testCompile 'junit:junit:4.10'
-    testCompile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation 'junit:junit:4.10'
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation gradleApi()
+    testImplementation 'com.android.tools.build:gradle:3.2.0'
 }
 
 group = 'com.archinamon'
-version = '3.2.0'
+version = '3.3.0'
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'

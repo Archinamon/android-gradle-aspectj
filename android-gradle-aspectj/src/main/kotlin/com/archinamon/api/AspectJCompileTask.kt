@@ -9,7 +9,6 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
@@ -111,7 +110,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
         }
 
         private fun classpath(): FileCollection {
-            return SimpleFileCollection(javaCompiler.classpath.files + javaCompiler.destinationDir)
+            return project.layout.files(javaCompiler.classpath.files + javaCompiler.destinationDir)
         }
 
         private fun findCompiledAspectsInClasspath(task: AspectJCompileTask, aspectsFromJar: Collection<String>) {

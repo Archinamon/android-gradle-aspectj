@@ -6,15 +6,11 @@ import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.variant.BaseVariantData
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
 fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile? {
-    if (baseVariantData.taskContainer.javacTask != null) {
-        return baseVariantData.taskContainer.javacTask
-    }
-    return null
+    return baseVariantData.taskContainer.javacTask
 }
 
 fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantData): FileCollection {
@@ -25,7 +21,7 @@ fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantDat
     flavors?.let { srcSet.addAll(it) }
 
     val srcDirs = srcSet.map { "src/$it/aspectj" }
-    val aspects: FileCollection = SimpleFileCollection(srcDirs.map { project.file(it) })
+    val aspects: FileCollection = project.layout.files(srcDirs.map { project.file(it) })
 
     javaTask!!.exclude { treeElem ->
         treeElem.file in aspects.files

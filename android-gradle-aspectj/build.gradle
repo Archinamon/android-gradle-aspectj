@@ -17,6 +17,7 @@ apply plugin: 'com.jfrog.bintray'
 
 project.ext {
     aspectjVersion = '1.9.1'
+    agpVersion = '3.2.0'
 }
 
 dependencies {
@@ -30,19 +31,19 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     compileOnly gradleApi()
-    compileOnly 'com.android.tools.build:gradle:3.2.0'
+    compileOnly "com.android.tools.build:gradle:$agpVersion"
     implementation "org.aspectj:aspectjrt:$aspectjVersion"
     implementation "org.aspectj:aspectjtools:$aspectjVersion"
 
     testImplementation 'junit:junit:4.10'
-    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testImplementation gradleApi()
-    testImplementation 'com.android.tools.build:gradle:3.2.0'
+    testImplementation "com.android.tools.build:gradle:$agpVersion"
 }
 
 group = 'com.archinamon'
-version = '3.3.0'
+version = '3.2.0'
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'

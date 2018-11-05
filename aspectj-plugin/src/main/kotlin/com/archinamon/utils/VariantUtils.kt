@@ -9,6 +9,9 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
+const val LANG_AJ = "aspectj"
+const val LANG_JAVA = "java"
+
 fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile {
     return baseVariantData.taskContainer.javacTask
 }
@@ -31,9 +34,17 @@ fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantDat
 }
 
 fun findAjSourcesForVariant(project: Project, variantName: String): MutableSet<File> {
+    return findSourcesForVariant(project, variantName, LANG_AJ)
+}
+
+fun findJavaSourcesForVariant(project: Project, variantName: String): MutableSet<File> {
+    return findSourcesForVariant(project, variantName, LANG_JAVA)
+}
+
+fun findSourcesForVariant(project: Project, variantName: String, language: String): MutableSet<File> {
     val possibleDirs: MutableSet<File> = mutableSetOf()
-    if (project.file("src/main/aspectj").exists()) {
-        possibleDirs.add(project.file("src/main/aspectj"))
+    if (project.file("src/main/$language").exists()) {
+        possibleDirs.add(project.file("src/main/$language"))
     }
 
     val types = variantName.split("(?=\\p{Upper})".toRegex())
@@ -42,8 +53,8 @@ fun findAjSourcesForVariant(project: Project, variantName: String): MutableSet<F
     root.forEach { file ->
         types.forEach { type ->
             if (file.name.contains(type.toLowerCase()) &&
-                    file.list().any { it.contains("aspectj") }) {
-                possibleDirs.add(File(file, "aspectj"))
+                    file.list().any { it.contains(language) }) {
+                possibleDirs.add(File(file, language))
             }
         }
     }

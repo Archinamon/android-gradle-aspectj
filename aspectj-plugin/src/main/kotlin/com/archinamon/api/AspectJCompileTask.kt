@@ -79,7 +79,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
 
                     targetCompatibility = config.java.toString()
                     sourceCompatibility = config.java.toString()
-                    destinationDir = this@task.destinationDir.absolutePath
+                    destinationDir = resolveDestinationDir(this@task)
                     bootClasspath = android.getBootClasspath().joinToString(separator = File.pathSeparator)
                     encoding = javaCompiler.options.encoding
 
@@ -95,10 +95,11 @@ internal open class AspectJCompileTask : AbstractCompile() {
                 }
             }) as AspectJCompileTask
 
-//            if (overwrite) {
-//                javaCompiler.enabled = false
-//                task.aspectJWeaver.ajSources
-//            }
+            if (overwrite) {
+                javaCompiler.enabled = false
+                task.aspectJWeaver.ajSources
+                        .addAll(findJavaSourcesForVariant(project, variantName))
+            }
 
             // uPhyca's fix
             // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run
@@ -111,11 +112,15 @@ internal open class AspectJCompileTask : AbstractCompile() {
             javaCompiler.finalizedBy(task)
         }
 
+        private fun resolveDestinationDir(task: AspectJCompileTask) =
+                (if (overwrite) javaCompiler.destinationDir else task.destinationDir)
+                        .absolutePath
+
         private fun obtainBuildDirectory(android: AndroidConfig): File? {
             return if (android.scope == ConfigScope.PROVIDE) {
                 javaCompiler.destinationDir
             } else {
-                project.file("${project.buildDir}/aspectj/$variantName")
+                project.file("${project.buildDir}/$LANG_AJ/$variantName")
             }
         }
 

@@ -6,6 +6,7 @@ import com.android.build.gradle.TestedExtension
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.api.transform.*
+import com.archinamon.utils.LANG_AJ
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import javax.inject.Inject
@@ -24,13 +25,13 @@ sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
         override fun getTransformer(project: Project): AspectJTransform = ExtendedTransformer(project)
     }
 
-    class Test @Inject constructor(): AspectJWrapper(ConfigScope.TEST) {
+    class Test @Inject constructor(): AspectJWrapper(ConfigScope.JUNIT) {
         override fun getTransformer(project: Project): AspectJTransform = TestsTransformer(project)
     }
 
     override fun apply(project: Project) {
         val config = AndroidConfig(project, scope)
-        val settings = project.extensions.create("aspectj", AspectJExtension::class.java)
+        val settings = project.extensions.create(LANG_AJ, AspectJExtension::class.java)
 
         configProject(project, config, settings)
 
@@ -42,6 +43,10 @@ sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
         } else {
             transformer = getTransformer(project)
             module = project.extensions.getByType(AppExtension::class.java)
+        }
+
+        if (scope == ConfigScope.JUNIT) {
+            return
         }
 
         transformer.withConfig(config).prepareProject()

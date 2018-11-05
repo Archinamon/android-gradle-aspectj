@@ -33,8 +33,8 @@ gradlePlugin {
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Provides"
         }
 
-        register("com.archinamon.aspectj-test") {
-            id = "com.archinamon.aspectj-test"
+        register("com.archinamon.aspectj-junit") {
+            id = "com.archinamon.aspectj-junit"
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Test"
         }
     }

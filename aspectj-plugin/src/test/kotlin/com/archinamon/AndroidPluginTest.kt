@@ -109,19 +109,21 @@ class AndroidPluginTest {
         testProjectDir.newFile("./src/test/java/com/example/test/SimpleTest.java")
                 .writeText(SIMPLE_TEST_BODY_JAVA.trimIndent())
 
+        // data provider to inject aspect in
+        testProjectDir.newFile("./src/test/java/com/example/test/DataProvider.java")
+                .writeText(SIMPLE_TEST_PROVIDER_BODY_JAVA.trimIndent())
+
         // simple test augmenting
         File(rootTestDir.listFiles().first(), "src/test/aspectj/com/example/xpoint").mkdirs()
         testProjectDir.newFile("./src/test/aspectj/com/example/xpoint/TestMutator.aj")
                 .writeText(SIMPLE_ASPECT_FOR_TEST_AUGMENTING.trimIndent())
 
-        try {
-            val result = GradleRunner.create()
-                    .withDebug(true)
-                    .withProjectDir(testProjectDir.root)
-                    .withArguments("test", "--info", "--stacktrace")
-                    .build()
+        val result = GradleRunner.create()
+                .withDebug(true)
+                .withProjectDir(testProjectDir.root)
+                .withArguments("test", "--info", "--stacktrace")
+                .build()
 
-            Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":test")!!.outcome)
-        } catch (e: Exception) {}
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":test")!!.outcome)
     }
 }

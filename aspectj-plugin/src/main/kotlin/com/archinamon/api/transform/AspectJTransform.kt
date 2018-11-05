@@ -16,7 +16,6 @@ import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
 import org.gradle.api.GradleException
-import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import java.io.File
 
@@ -102,7 +101,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     override fun transform(transformInvocation: TransformInvocation) {
-        // bypassing transformer for non-test variant data in ConfigScope.TEST
+        // bypassing transformer for non-test variant data in ConfigScope.JUNIT
         if (!verifyBypassInTestScope(transformInvocation.context)) {
             logBypassTransformation()
             return
@@ -209,13 +208,13 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         val variant = (ctx as TransformTask).variantName
 
         return when (config.scope) {
-            ConfigScope.TEST -> variant.contains("androidtest", true)
+            ConfigScope.JUNIT -> variant.contains("androidtest", true)
             else -> true
         }
     }
 
     private fun includeCompiledAspects(transformInvocation: TransformInvocation, outputDir: File) {
-        val compiledAj = project.file("${project.buildDir}/aspectj/${(transformInvocation.context as TransformTask).variantName}")
+        val compiledAj = project.file("${project.buildDir}/$LANG_AJ/${(transformInvocation.context as TransformTask).variantName}")
         if (compiledAj.exists()) {
             aspectJWeaver.aspectPath shl compiledAj
 

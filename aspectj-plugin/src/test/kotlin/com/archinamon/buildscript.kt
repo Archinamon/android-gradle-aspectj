@@ -10,7 +10,7 @@ const val REPOSITORIES = """
 
 const val SIMPLE_PLUGIN_IMPLYING = """
     apply plugin: 'com.android.application'
-    apply plugin: 'com.archinamon.aspectj'
+    apply plugin: 'com.archinamon.aspectj-junit'
 
     android {
         compileSdkVersion 27

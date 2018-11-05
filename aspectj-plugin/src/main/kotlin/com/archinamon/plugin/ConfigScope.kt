@@ -11,5 +11,5 @@ internal enum class ConfigScope {
     STANDARD,
     PROVIDE,
     EXTEND,
-    TEST;
+    JUNIT;
 }

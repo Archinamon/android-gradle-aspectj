@@ -9,6 +9,7 @@ import com.archinamon.MISDEFINITION
 import com.archinamon.RETROLAMBDA
 import com.archinamon.api.AspectJCompileTask
 import com.archinamon.api.BuildTimeListener
+import com.archinamon.utils.LANG_AJ
 import com.archinamon.utils.getJavaTask
 import com.archinamon.utils.getVariantDataList
 import org.gradle.api.GradleException
@@ -25,10 +26,10 @@ internal fun configProject(project: Project, config: AndroidConfig, settings: As
     project.afterEvaluate {
         prepareVariant(config)
         configureCompiler(project, config)
-    }
 
-    if (settings.buildTimeLog) {
-        project.gradle.addListener(BuildTimeListener())
+        if (settings.buildTimeLog) {
+            project.gradle.addListener(BuildTimeListener())
+        }
     }
 
     checkIfPluginAppliedAfterRetrolambda(project)
@@ -37,11 +38,11 @@ internal fun configProject(project: Project, config: AndroidConfig, settings: As
 private fun prepareVariant(config: AndroidConfig) {
     val sets = config.extAndroid.sourceSets
 
-    fun applier(path: String) = sets.getByName(path).java.srcDir("src/$path/aspectj")
+    fun applier(path: String) = sets.getByName(path).java.srcDir("src/$path/$LANG_AJ")
 
     // general sets
     arrayOf("main", "test", "androidTest").forEach {
-        sets.getByName(it).java.srcDir("src/$it/aspectj")
+        sets.getByName(it).java.srcDir("src/$it/$LANG_AJ")
     }
 
     // applies srcSet 'aspectj' for each build variant
@@ -55,11 +56,11 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
     getVariantDataList(config.plugin).forEach variantScanner@ { variant ->
         val variantName = variant.name.capitalize()
 
-        // do not configure compiler task for non-test variants in ConfigScope.TEST
-        if (config.scope == ConfigScope.TEST && !variantName.contains("androidtest", true))
+        // do not configure compiler task for non-test variants in ConfigScope.JUNIT
+        if (config.scope == ConfigScope.JUNIT && variantName.contains("androidtest", true))
             return@variantScanner
 
-        val taskName = "compile${variantName}AspectJ"
+        val taskName = "compile${variantName}${LANG_AJ.capitalize()}"
         val ajc = AspectJCompileTask.Builder(project)
                 .plugin(project.plugins.getPlugin(config))
                 .config(project.extensions.getByType(AspectJExtension::class.java))
@@ -68,9 +69,10 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
                 .name(taskName)
 
         when (variant.type) {
-            VariantTypeImpl.UNIT_TEST -> ajc.overwriteJavac(true).buildAndAttach(config)
-            else -> ajc.buildAndAttach(config)
+            VariantTypeImpl.UNIT_TEST -> ajc.overwriteJavac(true)
         }
+
+        ajc.buildAndAttach(config)
     }
 }
 

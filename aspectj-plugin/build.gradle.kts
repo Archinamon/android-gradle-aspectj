@@ -1,4 +1,3 @@
-import com.archinamon.gradle.DeployerExtension
 import com.jfrog.bintray.gradle.BintrayExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
@@ -75,11 +74,6 @@ dependencies {
     testCompile("org.junit.jupiter:junit-jupiter-api:5.0.0-M3")
     testRuntime("org.junit.vintage:junit-vintage-engine:4.12.0-M1")
     testCompile(kotlin("test-junit", kotlinVersion))
-}
-
-configure<DeployerExtension> {
-    localDeploy = true
-    localRepoPath = "$buildDir/m2"
 }
 
 if (project.hasProperty("user") && project.hasProperty("apiKey")) {

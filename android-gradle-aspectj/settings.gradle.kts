@@ -1,2 +1,2 @@
-rootProject.name = "aspectj-plugin"
+rootProject.name = "android-gradle-aspectj"
 rootProject.buildFileName = "build.gradle.kts"

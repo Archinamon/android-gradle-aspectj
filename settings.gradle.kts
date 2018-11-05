@@ -1,1 +1,1 @@
-include(":aspectj-plugin")
+include(":android-gradle-aspectj")

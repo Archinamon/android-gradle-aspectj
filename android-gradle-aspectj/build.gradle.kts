@@ -82,7 +82,7 @@ if (project.hasProperty("user") && project.hasProperty("apiKey")) {
         setConfigurations("archives")
         pkg.apply {
             repo = "maven"
-            name = "aspectj-plugin"
+            name = "android-gradle-aspectj"
             vcsUrl = "https://github.com/Archinamon/GradleAspectJ-Android"
             setLicenses("Apache-2.0")
             publish = true

@@ -1,1 +1,1 @@
-script: ./gradlew jar
+script: ./gradlew test

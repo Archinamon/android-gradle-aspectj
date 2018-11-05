@@ -18,22 +18,22 @@ version = "3.2.2"
 
 gradlePlugin {
     (plugins) {
-        "com.archinamon.aspectj" {
+        register("com.archinamon.aspectj") {
             id = "com.archinamon.aspectj"
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Standard"
         }
 
-        "com.archinamon.aspectj-ext" {
+        register("com.archinamon.aspectj-ext") {
             id = "com.archinamon.aspectj-ext"
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Extended"
         }
 
-        "com.archinamon.aspectj-provides" {
+        register("com.archinamon.aspectj-provides") {
             id = "com.archinamon.aspectj-provides"
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Provides"
         }
 
-        "com.archinamon.aspectj-test" {
+        register("com.archinamon.aspectj-test") {
             id = "com.archinamon.aspectj-test"
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Test"
         }
@@ -44,13 +44,13 @@ tasks {
     val sourcesJar by creating(Jar::class) {
         dependsOn(JavaPlugin.CLASSES_TASK_NAME)
         classifier = "sources"
-        from(java.sourceSets["main"].allSource)
+        from(sourceSets["main"].allSource)
     }
 
     val javadocJar by creating(Jar::class) {
         dependsOn(JavaPlugin.JAVADOC_TASK_NAME)
         classifier = "javadoc"
-        from(java.docsDir)
+        from("$buildDir/docs")
     }
 
     artifacts {
@@ -59,8 +59,8 @@ tasks {
     }
 }
 
-val kotlinVersion: String by properties
-val aspectjVersion: String by properties
+val kotlinVersion: String by extra
+val aspectjVersion: String by extra
 
 dependencies {
     compile(kotlin("stdlib-jdk8", kotlinVersion))

@@ -12,7 +12,7 @@ apply {
 }
 
 group = "com.archinamon"
-version = "3.2.2"
+version = "3.3.0"
 
 gradlePlugin {
     (plugins) {

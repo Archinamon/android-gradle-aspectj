@@ -61,7 +61,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
         val javaTask = getJavaTask(variantData)
         getAjSourceAndExcludeFromJavac(project, variantData)
-        aspectJWeaver.encoding = javaTask!!.options.encoding
+        aspectJWeaver.encoding = javaTask.options.encoding
         aspectJWeaver.sourceCompatibility = config.aspectj().java.toString()
         aspectJWeaver.targetCompatibility = config.aspectj().java.toString()
     }

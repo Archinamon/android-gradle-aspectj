@@ -25,6 +25,7 @@ const val SIMPLE_PLUGIN_IMPLYING = """
     }
 
     repositories {
+        google()
         jcenter()
         mavenCentral()
     }
@@ -36,13 +37,24 @@ const val DEPENDENCIES_WITH_TESTS = """
     }
 """
 
+const val SIMPLE_TEST_PROVIDER_BODY_JAVA = """
+    package com.example.test;
+
+    public class DataProvider {
+
+        public String getInfo() {
+            return "immutable";
+        }
+    }
+"""
+
 const val SIMPLE_TEST_BODY_JAVA = """
     package com.example.test;
 
     import org.junit.Test;
     import static junit.framework.Assert.assertEquals;
 
-    public class ExperimentalTest {
+    public class SimpleTest {
 
         @Test
         public void testAspectJ() {
@@ -51,7 +63,7 @@ const val SIMPLE_TEST_BODY_JAVA = """
         }
 
         private String getImmutable() {
-            return "immutable";
+            return new DataProvider().getInfo();
         }
     }
 """
@@ -62,8 +74,8 @@ const val SIMPLE_ASPECT_FOR_TEST_AUGMENTING = """
     privileged aspect TestMutator {
 
         pointcut mutate():
-            within(com.example.test.*) &&
-            call(String *(..));
+            within(com.example.test.DataProvider) &&
+            execution(String getInfo(..));
 
         String around(): mutate() {
             return "mutable";

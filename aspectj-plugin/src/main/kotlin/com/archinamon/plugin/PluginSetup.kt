@@ -2,7 +2,7 @@ package com.archinamon.plugin
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
-import com.android.builder.core.VariantType.*
+import com.android.builder.core.VariantTypeImpl
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.MISDEFINITION
@@ -63,12 +63,12 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
         val ajc = AspectJCompileTask.Builder(project)
                 .plugin(project.plugins.getPlugin(config))
                 .config(project.extensions.getByType(AspectJExtension::class.java))
-                .compiler(getJavaTask(variant)!!)
+                .compiler(getJavaTask(variant))
                 .variant(variant.name)
                 .name(taskName)
 
         when (variant.type) {
-            UNIT_TEST -> ajc.overwriteJavac(true).buildAndAttach(config)
+            VariantTypeImpl.UNIT_TEST -> ajc.overwriteJavac(true).buildAndAttach(config)
             else -> ajc.buildAndAttach(config)
         }
     }

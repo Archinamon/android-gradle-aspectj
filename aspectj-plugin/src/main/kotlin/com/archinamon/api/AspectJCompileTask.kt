@@ -2,7 +2,6 @@ package com.archinamon.api
 
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
-import com.archinamon.lang.kotlin.closureOf
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
 import org.gradle.api.Plugin
@@ -11,6 +10,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.kotlin.dsl.closureOf
 import java.io.File
 import java.util.*
 
@@ -70,7 +70,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
                 aspectJWeaver = AspectJWeaver(project)
 
                 source(sources)
-                classpath = SimpleFileCollection()
+                classpath = classpath()
                 findCompiledAspectsInClasspath(this, config.includeAspectsFromJar)
 
                 aspectJWeaver.apply {
@@ -120,7 +120,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
         }
 
         private fun classpath(): FileCollection {
-            return project.layout.files(javaCompiler.classpath.files + javaCompiler.destinationDir)
+            return project.files(javaCompiler.classpath.files + javaCompiler.destinationDir)
         }
 
         private fun findCompiledAspectsInClasspath(task: AspectJCompileTask, aspectsFromJar: Collection<String>) {

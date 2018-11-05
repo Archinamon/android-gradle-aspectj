@@ -9,7 +9,7 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
-fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile? {
+fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile {
     return baseVariantData.taskContainer.javacTask
 }
 
@@ -23,7 +23,7 @@ fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantDat
     val srcDirs = srcSet.map { "src/$it/aspectj" }
     val aspects: FileCollection = project.layout.files(srcDirs.map { project.file(it) })
 
-    javaTask!!.exclude { treeElem ->
+    javaTask.exclude { treeElem ->
         treeElem.file in aspects.files
     }
 
@@ -52,10 +52,10 @@ fun findAjSourcesForVariant(project: Project, variantName: String): MutableSet<F
 }
 
 fun getVariantDataList(plugin: BasePlugin<out BaseExtension2>): List<BaseVariantData> {
-    return plugin.variantManager.variantScopes.map(VariantScope::getVariantData)
+    return getVariantScopes(plugin).map(VariantScope::getVariantData)
 }
 
-fun getVariantScopes(plugin: BasePlugin): List<VariantScope> {
+fun getVariantScopes(plugin: BasePlugin<out BaseExtension2>): List<VariantScope> {
     return plugin.variantManager.variantScopes
 }
 

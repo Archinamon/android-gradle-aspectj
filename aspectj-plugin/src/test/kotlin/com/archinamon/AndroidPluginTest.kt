@@ -31,24 +31,25 @@ class AndroidPluginTest {
 
     @Before
     fun setup() {
+        testProjectDir.newFile("settings.gradle")
         buildFile = testProjectDir.newFile("build.gradle")
 
         //local.properties with android-sdk path
-        testProjectDir.newFile("./local.properties").writeText("""
-            sdk.dir=${System.getenv("ANDROID_HOME")}
-        """.trimIndent())
+        testProjectDir.newFile("./local.properties")
+                .writeText("sdk.dir=${System.getenv("ANDROID_HOME")}")
 
         //AndroidManifest.xml
         File(rootTestDir.listFiles().first(), "src/main").mkdirs()
-        testProjectDir.newFile("./src/main/AndroidManifest.xml").writeText("""
-            <manifest package="com.example.test"/>
-        """.trimIndent())
+        testProjectDir.newFile("./src/main/AndroidManifest.xml")
+                .writeText("<manifest package=\"com.example.test\"/>")
     }
 
     @Test
     fun applyingAspectJPlugin() {
         val aspectjVersion = AspectJExtension().ajc
-        val jarFile = File("build/libs/").listFiles().first()
+        val jarFile = File("build/libs/").listFiles { file ->
+            "javadoc" !in file.name && "sources" !in file.name
+        }.firstOrNull() ?: throw Error()
 
         buildFile.writeText("""
             buildscript {
@@ -60,7 +61,7 @@ class AndroidPluginTest {
                     classpath 'org.aspectj:aspectjtools:$aspectjVersion'
 
                     // main dependencies
-                    classpath 'com.android.tools.build:gradle:3.0.1'
+                    classpath 'com.android.tools.build:gradle:3.2.0'
                     classpath files('${jarFile.absolutePath}')
                 }
             }
@@ -69,17 +70,20 @@ class AndroidPluginTest {
         """.trimIndent())
 
         val result = GradleRunner.create()
+                .withDebug(true)
                 .withProjectDir(testProjectDir.root)
-                .withArguments("build",  "--info", "--stacktrace")
+                .withArguments("bundle",  "--info", "--stacktrace")
                 .build()
 
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":build")!!.outcome)
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":bundle")!!.outcome)
     }
 
     @Test
     fun runningTestsWithAjAugmenting() {
         val aspectjVersion = AspectJExtension().ajc
-        val jarFile = File("build/libs/").listFiles().first()
+        val jarFile = File("build/libs/").listFiles { file ->
+            "javadoc" !in file.name && "sources" !in file.name
+        }.firstOrNull() ?: throw Error()
 
         buildFile.writeText("""
             buildscript {
@@ -91,7 +95,7 @@ class AndroidPluginTest {
                     classpath 'org.aspectj:aspectjtools:$aspectjVersion'
 
                     // main dependencies
-                    classpath 'com.android.tools.build:gradle:3.0.1'
+                    classpath 'com.android.tools.build:gradle:3.2.0'
                     classpath files('${jarFile.absolutePath}')
                 }
             }
@@ -101,20 +105,23 @@ class AndroidPluginTest {
         """.trimIndent())
 
         // simple unit test
-        File(rootTestDir.listFiles().first(), "src/main/test/java/com/example/test").mkdirs()
-        testProjectDir.newFile("./src/main/test/java/com/example/test/SimpleTest.java")
+        File(rootTestDir.listFiles().first(), "src/test/java/com/example/test").mkdirs()
+        testProjectDir.newFile("./src/test/java/com/example/test/SimpleTest.java")
                 .writeText(SIMPLE_TEST_BODY_JAVA.trimIndent())
 
         // simple test augmenting
-        File(rootTestDir.listFiles().first(), "src/main/aspectj/java/com/example/xpoint").mkdirs()
-        testProjectDir.newFile("./src/main/aspectj/java/com/example/xpoint/TestMutator.java")
+        File(rootTestDir.listFiles().first(), "src/test/aspectj/com/example/xpoint").mkdirs()
+        testProjectDir.newFile("./src/test/aspectj/com/example/xpoint/TestMutator.aj")
                 .writeText(SIMPLE_ASPECT_FOR_TEST_AUGMENTING.trimIndent())
 
-        val result = GradleRunner.create()
-                .withProjectDir(testProjectDir.root)
-                .withArguments("test",  "--info", "--stacktrace")
-                .build()
+        try {
+            val result = GradleRunner.create()
+                    .withDebug(true)
+                    .withProjectDir(testProjectDir.root)
+                    .withArguments("test", "--info", "--stacktrace")
+                    .build()
 
-        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":test")!!.outcome)
+            Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":test")!!.outcome)
+        } catch (e: Exception) {}
     }
 }

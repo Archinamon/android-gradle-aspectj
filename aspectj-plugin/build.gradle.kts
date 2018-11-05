@@ -59,13 +59,14 @@ tasks {
     }
 }
 
+val androidGradleVersion: String by extra
 val kotlinVersion: String by extra
 val aspectjVersion: String by extra
 
 dependencies {
     compile(kotlin("stdlib-jdk8", kotlinVersion))
     compileOnly(gradleApi())
-    compileOnly("com.android.tools.build:gradle:3.0.1")
+    compileOnly("com.android.tools.build:gradle:$androidGradleVersion")
     compile("org.aspectj:aspectjrt:$aspectjVersion")
     compile("org.aspectj:aspectjtools:$aspectjVersion")
 
@@ -76,10 +77,10 @@ dependencies {
     testCompile(kotlin("test-junit", kotlinVersion))
 }
 
-//configure<DeployerExtension> {
-//    localDeploy = true
-//    localRepoPath = "$buildDir/m2"
-//}
+configure<DeployerExtension> {
+    localDeploy = true
+    localRepoPath = "$buildDir/m2"
+}
 
 if (project.hasProperty("user") && project.hasProperty("apiKey")) {
     configure<BintrayExtension> {

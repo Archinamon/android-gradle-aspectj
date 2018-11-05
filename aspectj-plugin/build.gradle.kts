@@ -8,7 +8,6 @@ plugins {
 }
 
 apply {
-    plugin("com.archinamon.gradle.yandex-maven")
     plugin("com.jfrog.bintray")
 }
 

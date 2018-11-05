@@ -1,5 +1,5 @@
 # GradleAspectJ-Android
-[![Kotlin](https://img.shields.io/badge/Kotlin-1.1.51-blue.svg)](http://kotlinlang.org) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android) [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
+[![AspectJ](https://img.shields.io/badge/AspectJ-1.9.1-brightgreen.svg)](http://www.eclipse.org/aspectj/)[![Kotlin](https://img.shields.io/badge/Kotlin-1.3.0-blue.svg)](http://kotlinlang.org) [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android) [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 [ ![Download](https://api.bintray.com/packages/archinamon/maven/android-gradle-aspectj/images/download.svg) ](https://bintray.com/archinamon/maven/android-gradle-aspectj/_latestVersion)
 
 A Gradle plugin which enables AspectJ for Android builds.
@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.2.0`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.3.0`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -49,7 +49,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.2.0'
+classpath 'com.archinamon:android-gradle-aspectj:3.3.0'
 ```
 
 Apply the `aspectj` plugin:
@@ -87,7 +87,7 @@ Tune extension
 
 ```groovy
 aspectj {
-    ajc '1.8.12' // default value
+    ajc '1.9.1' // default value
 
     /* @see Ext plugin config **/
     includeAllJars false // default value
@@ -170,12 +170,10 @@ With <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blan
 Working tests
 -------
 ```groovy
-apply plugin: 'com.archinamon.aspectj-test'
+apply plugin: 'com.archinamon.aspectj-junit'
 ```
 
-Test scope configuration inherits `aspectj-ext` behavior with strictly excluding compile and transform tasks from non-test build variant.
-In other words only instrumentation `androidTest` will work with this sub-plugin.
-In case unit tests doesn't really have any specials (excluding source/target code version base) so `aspectj-test` scope won't affect `unitTest` variants.
+Test scope overloads JUnit compilation flow with AJC instead of JavaC. So any aspects has been written within `test` directory will be compiled with all java sources and aspects will weave them if need. 
 
 ProGuard
 -------
@@ -202,6 +200,13 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.3.0 -- JUnit tests support
+* implementing `com.archinamon.aspectj-junit` plugin supporting weaving unit tests;
+* `com.archinamon.aspectj-test` has been removed as not working legacy sh$t;
+* updated android-gradle-plugin to 3.2.0 inside (mey be a breakable change);
+* migration to Kotlin-DSL;
+* new plugin tests allows to check does it weaves android's junit source code;
+
 #### 3.2.0 -- Gradle 3.0.0 support
 * added support of stable gradle plugin 3.0.0;
 * updated internal ajc and provided aj runtime library versions to the latest 1.8.12;

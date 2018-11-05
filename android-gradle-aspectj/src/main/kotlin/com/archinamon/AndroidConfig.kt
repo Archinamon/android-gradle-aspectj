@@ -1,6 +1,7 @@
 package com.archinamon
 
 import com.android.build.gradle.*
+import com.android.build.gradle.internal.api.dsl.extensions.BaseExtension2
 import com.archinamon.plugin.ConfigScope
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -17,7 +18,7 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     val extAndroid: BaseExtension
     val isLibraryPlugin: Boolean
-    val plugin: BasePlugin
+    val plugin: BasePlugin<out BaseExtension2>
 
     init {
         when {

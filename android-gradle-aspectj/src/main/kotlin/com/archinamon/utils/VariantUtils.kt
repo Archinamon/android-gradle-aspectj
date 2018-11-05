@@ -1,21 +1,16 @@
 package com.archinamon.utils
 
 import com.android.build.gradle.BasePlugin
+import com.android.build.gradle.internal.api.dsl.extensions.BaseExtension2
 import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.variant.BaseVariantData
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.file.collections.SimpleFileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
 fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile? {
-    if (baseVariantData.javacTask != null) {
-        return baseVariantData.javacTask
-    } else if (baseVariantData.javaCompilerTask != null) {
-        return baseVariantData.javaCompilerTask as JavaCompile
-    }
-    return null
+    return baseVariantData.taskContainer.javacTask
 }
 
 fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantData): FileCollection {
@@ -26,7 +21,7 @@ fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantDat
     flavors?.let { srcSet.addAll(it) }
 
     val srcDirs = srcSet.map { "src/$it/aspectj" }
-    val aspects: FileCollection = SimpleFileCollection(srcDirs.map { project.file(it) })
+    val aspects: FileCollection = project.layout.files(srcDirs.map { project.file(it) })
 
     javaTask!!.exclude { treeElem ->
         treeElem.file in aspects.files
@@ -56,7 +51,7 @@ fun findAjSourcesForVariant(project: Project, variantName: String): MutableSet<F
     return LinkedHashSet(possibleDirs)
 }
 
-fun getVariantDataList(plugin: BasePlugin): List<BaseVariantData> {
+fun getVariantDataList(plugin: BasePlugin<out BaseExtension2>): List<BaseVariantData> {
     return plugin.variantManager.variantScopes.map(VariantScope::getVariantData)
 }
 

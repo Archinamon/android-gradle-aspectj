@@ -15,7 +15,7 @@ This plugin is completely friendly with <a href="https://bitbucket.org/hvisser/a
 <a href="https://github.com/excilys/androidannotations" target="_blank">AndroidAnnotations</a>, <a href="https://github.com/square/dagger" target="_blank">Dagger</a> are also supported and works fine.
 
 This plugin has many ideas from the others similar projects, but no one of them grants full pack of features like this one.
-Nowdays it has been completely re-written using Transform API.
+Nowadays it has been completely re-written using Transform API.
 
 Key features
 -----
@@ -29,7 +29,7 @@ It is easy to isolate your code with aspect classes, that will be simply injecte
 
 AspectJ-Gradle plugin provides supply of all known JVM-based languages, such as Groovy, Kotlin, etc. That means you can easily write cool stuff which may be inject into any JVM language, not only Java itself! :)
 
-To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snipets</a>. In case aspectj-native not supported by Android Studio (even with IDE-plugin it's using is complicated), you may write a java-classes with aspectj annotations.
+To start from you may look at my <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a>. And also you may find useful to look at <a href="https://eclipse.org/aspectj/doc/next/quick5.pdf" target="_blank">reference manual</a> of AspectJ language and simple <a href="https://eclipse.org/aspectj/sample-code.html" target="_blank">code snippets</a>. In case aspectj-native not supported by Android Studio (even with IDE-plugin it's using is complicated), you may write a java-classes with aspectj annotations.
 
 Two simple rules you may consider when writing aspect classes.
 - Do not write aspects outside the `src/$flavor/aspectj` source set! These aj-classes will be excluded from java compiler.
@@ -130,7 +130,7 @@ So no need to define them manually.
 - `debugInfo` Adds special debug info in aspect's bytecode
 - `addSerialVersionUID` Adds serialVersionUID field for Serializable-implemented aspect classes
 - `noInlineAround` Strict ajc to inline around advice's body into the target methods
-- `ignoreErrors` Prevent compiler from aborting if errors occurrs during processing the sources
+- `ignoreErrors` Prevent compiler from aborting if errors occurs during processing the sources
 
 - `breakOnError` Allows to continue project building when ajc fails or throws any errors
 - `experimental` Enables experimental ajc options: `-XhasMember` and `-Xjoinpoints:synchronization,arrayconstruction`. More details in <a href="https://github.com/Archinamon/GradleAspectJ-Android/issues/18" target="_blank">issue #18</a>
@@ -189,7 +189,7 @@ Basic rules you'll need to declare for your project:
 }
 ```
 
-If you will face problems with lambda factories, you may need to explicitely suppress them. That could happen not in aspect classes but in any arbitrary java-class if you're using Retrolambda.
+If you will face problems with lambda factories, you may need to explicitly suppress them. That could happen not in aspect classes but in any arbitrary java-class if you're using Retrolambda.
 So concrete rule is:
 ```
 -keep class *$Lambda* { <methods>; }
@@ -203,7 +203,7 @@ Changelog
 #### 3.3.0 -- JUnit tests support
 * implementing `com.archinamon.aspectj-junit` plugin supporting weaving unit tests;
 * `com.archinamon.aspectj-test` has been removed as not working legacy sh$t;
-* updated android-gradle-plugin to 3.2.0 inside (mey be a breakable change);
+* updated android-gradle-plugin to 3.2.0 inside (might be a breaking change);
 * migration to Kotlin-DSL;
 * new plugin tests allows to check does it weaves android's junit source code;
 
@@ -351,7 +351,7 @@ Changelog
 * more complex and correct way to detect and inject source sets for flavors, buildTypes, etc;
 
 #### 1.0.17 -- Cleanup
-* !!IMPORTANT!! now corectly supports automatically indexing and attaching aspectj sources within any buildTypes and flavors;
+* !!IMPORTANT!! now correctly supports automatically indexing and attaching aspectj sources within any buildTypes and flavors;
 * workspace code refactored;
 * removed unnecessary logging calls;
 * optimized ajc logging to provide more info about ongoing compilation;
@@ -360,11 +360,11 @@ Changelog
 * migrating from corp to personal routes within plugin name, classpath;
 
 #### 1.0.15 -- Full flavor support
-* added full support of buld variants within flavors and dimensions;
+* added full support of build variants within flavors and dimensions;
 * added custom source root folder -- e.g. `src/main/aspectj/path.to.package.Aspect.aj`;
 
 #### 1.0.9 -- Basic flavors support
-* added basic support of additional build varians and flavors;
+* added basic support of additional build variants and flavors;
 * trying to add incremental build //was removed due to current implementation of ajc-task;
 
 #### 1.0 -- Initial release

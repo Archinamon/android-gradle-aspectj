@@ -18,6 +18,8 @@ import org.aspectj.util.FileUtil
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
 internal abstract class AspectJTransform(val project: Project, private val policy: BuildPolicy): Transform() {
 
@@ -191,10 +193,35 @@ internal abstract class AspectJTransform(val project: Project, private val polic
                 aspectJMerger.doMerge(this, transformInvocation, outputDir)
             }
 
+            copyUnprocessedFiles(inputs, outputDir)
+
             logAugmentationFinish()
         } else {
             logEnvInvalid()
             logNoAugmentation()
+        }
+    }
+
+    private fun copyUnprocessedFiles(inputs: Collection<TransformInput>, outputDir: File) {
+        inputs.forEach { input ->
+            input.directoryInputs.forEach { dir ->
+                copyUnprocessedFiles(dir.file.toPath(), outputDir.toPath())
+            }
+        }
+    }
+
+    private fun copyUnprocessedFiles(inDir: Path, outDir: Path) {
+        Files.walk(inDir).forEach traverse@ { inFile ->
+            val outFile = outDir.resolve(inDir.relativize(inFile))
+
+            if (Files.exists(outFile))
+                return@traverse
+
+            if (Files.isDirectory(outFile)) {
+                Files.createDirectory(outFile)
+            } else {
+                Files.copy(inFile, outFile)
+            }
         }
     }
 

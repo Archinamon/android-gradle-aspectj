@@ -2,16 +2,11 @@ buildscript {
     repositories {
         jcenter()
         mavenCentral()
-        maven {
-            name = "Yandex"
-            url = uri("http://artifactory.yandex.net/artifactory/public/")
-        }
     }
 
     val kotlinVersion: String by extra
     dependencies {
         classpath(kotlin("gradle-plugin", kotlinVersion))
-        classpath("com.archinamon.gradle:yandex-maven:1.1")
         classpath("com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3")
     }
 }

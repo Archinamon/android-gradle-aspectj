@@ -13,7 +13,7 @@ const val LANG_AJ = "aspectj"
 const val LANG_JAVA = "java"
 
 fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile {
-    return baseVariantData.taskContainer.javacTask
+    return baseVariantData.taskContainer.javacTask.get()
 }
 
 fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantData): FileCollection {

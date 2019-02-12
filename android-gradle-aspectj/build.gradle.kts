@@ -12,7 +12,7 @@ apply {
 }
 
 group = "com.archinamon"
-version = "3.3.0"
+version = "3.3.3"
 
 gradlePlugin {
     (plugins) {
@@ -62,7 +62,7 @@ val kotlinVersion: String by extra
 val aspectjVersion: String by extra
 
 dependencies {
-    compile(kotlin("stdlib-jdk8", kotlinVersion))
+    compileOnly(kotlin("stdlib-jdk8", kotlinVersion))
     compileOnly(gradleApi())
     compileOnly("com.android.tools.build:gradle:$androidGradleVersion")
     compile("org.aspectj:aspectjrt:$aspectjVersion")
@@ -79,6 +79,7 @@ if (project.hasProperty("user") && project.hasProperty("apiKey")) {
     configure<BintrayExtension> {
         user = project.properties["user"].toString()
         key = project.properties["apiKey"].toString()
+
         setConfigurations("archives")
         pkg.apply {
             repo = "maven"

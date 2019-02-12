@@ -60,7 +60,7 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
         if (config.scope == ConfigScope.JUNIT && variantName.contains("androidtest", true))
             return@variantScanner
 
-        val taskName = "compile${variantName}${LANG_AJ.capitalize()}"
+        val taskName = "compile$variantName${LANG_AJ.capitalize()}"
         val ajc = AspectJCompileTask.Builder(project)
                 .plugin(project.plugins.getPlugin(config))
                 .config(project.extensions.getByType(AspectJExtension::class.java))

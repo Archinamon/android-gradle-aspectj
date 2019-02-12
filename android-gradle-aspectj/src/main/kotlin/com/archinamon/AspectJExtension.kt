@@ -4,7 +4,7 @@ import org.gradle.api.JavaVersion
 
 open class AspectJExtension {
 
-    open var ajc = "1.8.13"
+    open var ajc = "1.9.2"
     open var java = JavaVersion.VERSION_1_7
 
     open var includeAllJars = false

@@ -2,17 +2,52 @@ package com.archinamon.utils
 
 import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.internal.api.dsl.extensions.BaseExtension2
+import com.android.build.gradle.internal.scope.TaskContainer
 import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.variant.BaseVariantData
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
+import kotlin.reflect.full.functions
+import kotlin.reflect.full.memberProperties
 
 const val LANG_AJ = "aspectj"
 const val LANG_JAVA = "java"
 
 fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile {
+
+    /**
+     *  Supporting gradle api 3.1.+
+     */
+    val variantJavacTaskProp = baseVariantData::class.memberProperties.find { prop ->
+        prop.name == "javacTask" && prop.returnType.classifier == JavaCompile::class
+    }
+
+    variantJavacTaskProp?.let {
+        return variantJavacTaskProp.call(baseVariantData) as JavaCompile
+    }
+
+    /**
+     *  Supporting gradle api 3.2.+
+     */
+    val taskContainerFunc = baseVariantData::class.functions.find { func ->
+        func.name == "getTaskContainer"
+    }
+    taskContainerFunc?.let {
+        val containerResult = taskContainerFunc.call(baseVariantData) as TaskContainer
+        val javacTaskProp = containerResult::class.memberProperties.find { prop ->
+            prop.name == "javacTask"
+        }
+
+        if (javacTaskProp?.returnType?.classifier == JavaCompile::class) {
+            return javacTaskProp.call(containerResult) as JavaCompile
+        }
+    }
+
+    /**
+     *  Supporting gradle api 3.3.+ by default
+     */
     return baseVariantData.taskContainer.javacTask.get()
 }
 
@@ -24,7 +59,7 @@ fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantDat
     flavors?.let { srcSet.addAll(it) }
 
     val srcDirs = srcSet.map { "src/$it/aspectj" }
-    val aspects: FileCollection = project.layout.files(srcDirs.map { project.file(it) })
+    val aspects: FileCollection = project.files(srcDirs.map(project::file))
 
     javaTask.exclude { treeElem ->
         treeElem.file in aspects.files

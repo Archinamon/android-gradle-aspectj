@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.3.0`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.3.3`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -49,7 +49,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.3.0'
+classpath 'com.archinamon:android-gradle-aspectj:3.3.3'
 ```
 
 Apply the `aspectj` plugin:
@@ -87,7 +87,8 @@ Tune extension
 
 ```groovy
 aspectj {
-    ajc '1.9.1' // default value
+    ajc '1.9.2' // default value
+    java = JavaVersion.VERSION_1_7 // default value
 
     /* @see Ext plugin config **/
     includeAllJars false // default value
@@ -118,6 +119,7 @@ All the extension parameters are have default values (all of them are described 
 So no need to define them manually.
 
 - `ajc` Allows to define the aspectj runtime jar version manually (1.8.12 current)
+- `java` What jvmTarget will ajc use to compile bytecode into
 - `extendClasspath` Explicitly controls whether plugin should mutate the classpath with aspectj-runtime itself
 
 - `includeAllJars` Explicitly include all available jar-files into -inpath to proceed by AJ-compiler
@@ -200,6 +202,13 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.3.3 -- Support AGP 3.3.+
+* fixed support AGP 3.3.+ api;
+* added legacy compatibility fallbacks;
+* added java bytecode target version for ajc;
+* upgrade bundled ajc runtime and tools jars to 1.9.2;
+* upgrade default aspectj runtime library to 1.9.2;
+
 #### 3.3.0 -- JUnit tests support
 * implementing `com.archinamon.aspectj-junit` plugin supporting weaving unit tests;
 * `com.archinamon.aspectj-test` has been removed as not working legacy sh$t;

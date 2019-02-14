@@ -1,10 +1,12 @@
 import com.jfrog.bintray.gradle.BintrayExtension
+import com.jfrog.bintray.gradle.BintrayUploadTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.Date
 
 plugins {
     `java-gradle-plugin`
     `kotlin-dsl`
+    `maven-publish`
 }
 
 apply {
@@ -51,9 +53,15 @@ tasks {
         from("$buildDir/docs")
     }
 
+    val pomFileDestPath = File("$buildDir/libs/${project.name}-${project.version}.pom")
+    withType<GenerateMavenPom> {
+        destination = pomFileDestPath
+    }
+
     artifacts {
-        add("default", sourcesJar)
-        add("default", javadocJar)
+        add("archives", sourcesJar)
+        add("archives", javadocJar)
+        add("archives", pomFileDestPath)
     }
 }
 
@@ -86,7 +94,6 @@ if (project.hasProperty("user") && project.hasProperty("apiKey")) {
             name = "android-gradle-aspectj"
             vcsUrl = "https://github.com/Archinamon/GradleAspectJ-Android"
             setLicenses("Apache-2.0")
-            publish = true
             version.apply {
                 name = project.version.toString()
                 released = Date().toString()
@@ -103,6 +110,11 @@ tasks.withType<Test> {
     dependsOn(tasks.withType<Jar>())
 }
 
-tasks.withType<Upload> {
+tasks.withType<GenerateMavenPom> {
+    dependsOn(tasks.withType<Jar>())
+}
+
+tasks.withType<BintrayUploadTask> {
+    dependsOn(tasks.withType<GenerateMavenPom>())
     dependsOn(tasks.withType<Test>())
 }

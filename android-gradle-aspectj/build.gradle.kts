@@ -14,7 +14,7 @@ apply {
 }
 
 group = "com.archinamon"
-version = "3.3.3"
+version = "3.3.4"
 
 gradlePlugin {
     (plugins) {
@@ -87,6 +87,8 @@ if (project.hasProperty("user") && project.hasProperty("apiKey")) {
     configure<BintrayExtension> {
         user = project.properties["user"].toString()
         key = project.properties["apiKey"].toString()
+
+        publish = true
 
         setConfigurations("archives")
         pkg.apply {

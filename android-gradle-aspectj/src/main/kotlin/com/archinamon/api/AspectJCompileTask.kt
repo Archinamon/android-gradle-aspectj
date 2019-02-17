@@ -70,8 +70,6 @@ internal open class AspectJCompileTask : AbstractCompile() {
                 aspectJWeaver = AspectJWeaver(project)
 
                 source(sources)
-                classpath = classpath()
-                findCompiledAspectsInClasspath(this, config.includeAspectsFromJar)
 
                 aspectJWeaver.apply {
                     ajSources = sources
@@ -101,7 +99,6 @@ internal open class AspectJCompileTask : AbstractCompile() {
                         .addAll(findJavaSourcesForVariant(project, variantName))
             }
 
-            // uPhyca's fix
             // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run
             javaCompiler.doLast {
                 task.classpath = classpath()

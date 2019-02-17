@@ -69,6 +69,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
                 destinationDir = obtainBuildDirectory(android)
                 aspectJWeaver = AspectJWeaver(project)
 
+                classpath = javaCompiler.classpath
                 source(sources)
 
                 aspectJWeaver.apply {

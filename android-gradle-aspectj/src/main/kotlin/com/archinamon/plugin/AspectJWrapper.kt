@@ -45,6 +45,10 @@ sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
             module = project.extensions.getByType(AppExtension::class.java)
         }
 
+        if (settings.dryRun) {
+            return
+        }
+
         if (scope == ConfigScope.JUNIT) {
             return
         }

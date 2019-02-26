@@ -7,7 +7,10 @@ import com.archinamon.utils.*
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
+import org.gradle.api.internal.file.AbstractFileCollection
+import org.gradle.api.internal.tasks.TaskDependencyInternal
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.closureOf
@@ -64,12 +67,14 @@ internal open class AspectJCompileTask : AbstractCompile() {
                     "type" to AspectJCompileTask::class.java
             )
 
+            val classpathFiles = classpath()
             val sources = findAjSourcesForVariant(project, variantName)
             val task = project.task(options, taskName, closureOf<AspectJCompileTask> task@ {
                 destinationDir = obtainBuildDirectory(android)
                 aspectJWeaver = AspectJWeaver(project)
 
-                classpath = javaCompiler.classpath
+                classpath = classpathFiles
+                findCompiledAspectsInClasspath(this, config.includeAspectsFromJar)
                 source(sources)
 
                 aspectJWeaver.apply {
@@ -122,8 +127,10 @@ internal open class AspectJCompileTask : AbstractCompile() {
             }
         }
 
-        private fun classpath(): FileCollection {
-            return project.files(javaCompiler.classpath.files + javaCompiler.destinationDir)
+        private fun classpath(): FileCollection = try {
+            project.files(javaCompiler.classpath.files + javaCompiler.destinationDir)
+        } catch (e: Throwable) {
+            ClasspathFileCollection(setOf(javaCompiler.destinationDir))
         }
 
         private fun findCompiledAspectsInClasspath(task: AspectJCompileTask, aspectsFromJar: Collection<String>) {

@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.3.3`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.3.5`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -49,7 +49,7 @@ Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gra
 
 Add the plugin to your `buildscript`'s `dependencies` section:
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.3.3'
+classpath 'com.archinamon:android-gradle-aspectj:3.3.5'
 ```
 
 Apply the `aspectj` plugin:
@@ -87,6 +87,8 @@ Tune extension
 
 ```groovy
 aspectj {
+    dryRun false // default value
+
     ajc '1.9.2' // default value
     java = JavaVersion.VERSION_1_7 // default value
 
@@ -117,6 +119,8 @@ Note that you may not include all these options!
 
 All the extension parameters are have default values (all of them are described above, except of includeJar/Aspects/ajcArgs options).
 So no need to define them manually.
+
+- `dryRun` Disables aj-compiler and aj-transform if set to `true`
 
 - `ajc` Allows to define the aspectj runtime jar version manually (1.8.12 current)
 - `java` What jvmTarget will ajc use to compile bytecode into
@@ -202,6 +206,10 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.3.5 -- Dry run
+* fix classpath resolving;
+* implement dry run to disable compiler/transformation in gradle;
+
 #### 3.3.3 -- Support AGP 3.3.+
 * fixed support AGP 3.3.+ api;
 * added legacy compatibility fallbacks;

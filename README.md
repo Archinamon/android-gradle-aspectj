@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.3.5`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.3.6`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -42,20 +42,50 @@ Usage
 -----
 
 First add a maven repo link into your `repositories` block of module build file:
-```groovy
+```kotlin
 mavenCentral()
 ```
 Don't forget to add `mavenCentral()` due to some dependencies inside AspectJ-gradle module.
 
 Add the plugin to your `buildscript`'s `dependencies` section:
-```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.3.5'
+<details open><summary>Kotlin</summary>
+
+```kotlin
+classpath("com.archinamon:android-gradle-aspectj:3.3.6")
 ```
 
-Apply the `aspectj` plugin:
+</details>
+<details><summary>Groovy</summary>
+
 ```groovy
-apply plugin: 'com.archinamon.aspectj'
+classpath 'com.archinamon:android-gradle-aspectj:3.3.6'
 ```
+
+</details>
+
+Apply the `aspectj` plugin:
+
+<details open><summary>Kotlin</summary>
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("com.archinamon.aspectj")
+}
+```
+
+</details>
+
+<details><summary>Groovy</summary>
+
+```groovy
+plugins {
+    id 'com.android.application'
+    id 'com.archinamon.aspectj'
+}
+```
+
+</details>
 
 Now you can write aspects using annotation style or native (even without IntelliJ IDEA Ultimate edition).
 Let's write simple Application advice:
@@ -84,6 +114,44 @@ aspect AppStartNotifier {
 
 Tune extension
 -------
+<details open><summary>Kotlin</summary>
+
+```kotlin
+aspectj {
+    dryRun = false // default value
+
+    ajc = "1.9.2" // default value
+    java = JavaVersion.VERSION_1_7 // default value
+
+    /* @see Ext plugin config **/
+    includeAllJars = false // default value
+    includeJar.addAll(arrayOf("design", "support-v4", "dagger")) // default is empty
+    excludeJar.addAll(arrayOf("support-v7", "joda")) // default is empty
+    extendClasspath = true // default value
+
+    includeAspectsFromJar.addAll(arrayOf("my-aj-logger-lib", "any-other-libs-with-aspects")) // default is empty
+    ajcArgs.apply {
+        add("-warn:deprecation")
+        add("-referenceInfo")
+    }
+
+    weaveInfo = true // default value
+    debugInfo = false // default value
+    addSerialVersionUID = false // default value
+    noInlineAround = false // default value
+    ignoreErrors = false // default value
+    
+    breakOnError = true // default value
+    experimental = false // default value
+    buildTimeLog = true // default value
+
+    transformLogFile = "ajc-transform.log" // default value
+    compilationLogFile = "ajc-compile.log" // default value
+}
+```
+
+</details>
+<details><summary>Groovy</summary>
 
 ```groovy
 aspectj {
@@ -115,6 +183,8 @@ aspectj {
     compilationLogFile 'ajc-compile.log' // default value
 }
 ```
+
+</details>
 Note that you may not include all these options!
 
 All the extension parameters are have default values (all of them are described above, except of includeJar/Aspects/ajcArgs options).
@@ -148,9 +218,26 @@ So no need to define them manually.
 
 Extended plugin config
 -----------------
-```groovy
-apply plugin: 'com.archinamon.aspectj-ext'
+<details open><summary>Kotlin</summary>
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("com.archinamon.aspectj-ext")
+}
 ```
+
+</details>
+<details><summary>Groovy</summary>
+
+```groovy
+plugins {
+    id 'com.android.application'
+    id 'com.archinamon.aspectj-ext'
+}
+```
+
+</details>
 
 Ext config:
 - allows usage of `includeJar` and `includeAllJars` parameters, with workaround to avoid `Multiple dex files exception`
@@ -162,9 +249,26 @@ Currently it has some limitations:
 
 Provider plugin config
 -----------------
-```groovy
-apply plugin: 'com.archinamon.aspectj-provides'
+<details open><summary>Kotlin</summary>
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("com.archinamon.aspectj-provides")
+}
 ```
+
+</details>
+<details><summary>Groovy</summary>
+
+```groovy
+plugins {
+    id 'com.android.application'
+    id 'com.archinamon.aspectj-provides'
+}
+```
+
+</details>
 
 Plugin-provider may be useful for that cases when you need to extract aspect-sources into separate module and include it on demand to that modules where you only need it.
 Therefor this behavior will save you build-time due to bypassing aspectj-transformers in provide-only modules.
@@ -175,9 +279,26 @@ With <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blan
 
 Working tests
 -------
-```groovy
-apply plugin: 'com.archinamon.aspectj-junit'
+<details open><summary>Kotlin</summary>
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("com.archinamon.aspectj-junit")
+}
 ```
+
+</details>
+<details><summary>Groovy</summary>
+
+```groovy
+plugins {
+    id 'com.android.application'
+    id 'com.archinamon.aspectj-junit'
+}
+```
+
+</details>
 
 Test scope overloads JUnit compilation flow with AJC instead of JavaC. So any aspects has been written within `test` directory will be compiled with all java sources and aspects will weave them if need. 
 
@@ -206,6 +327,10 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.3.6 -- Fixes
+* fix dryRun option for transformer;
+* better readme;
+
 #### 3.3.5 -- Dry run
 * fix classpath resolving;
 * implement dry run to disable compiler/transformation in gradle;

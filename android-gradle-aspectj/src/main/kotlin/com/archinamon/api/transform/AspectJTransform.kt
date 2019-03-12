@@ -103,6 +103,10 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     override fun transform(transformInvocation: TransformInvocation) {
+        if (config.aspectj().dryRun) {
+            return
+        }
+
         // bypassing transformer for non-test variant data in ConfigScope.JUNIT
         if (!verifyBypassInTestScope(transformInvocation.context)) {
             logBypassTransformation()

@@ -41,9 +41,10 @@ internal class AspectJWeaver(val project: Project) {
 
     var ajcArgs = LinkedHashSet<String>()
 
+    @Suppress("SetterBackingFieldAssignment")
     var ajSources: MutableSet<File> = LinkedHashSet()
         internal set(ajSources) {
-            ajSources.forEach { this.ajSources.add(it) }
+            ajSources.forEach { field.add(it) }
         }
 
     var aspectPath: MutableSet<File> = LinkedHashSet()

@@ -26,10 +26,6 @@ internal fun configProject(project: Project, config: AndroidConfig, settings: As
     project.afterEvaluate {
         prepareVariant(config)
 
-        if (settings.dryRun) {
-            return@afterEvaluate
-        }
-
         configureCompiler(project, config)
 
         if (settings.buildTimeLog) {

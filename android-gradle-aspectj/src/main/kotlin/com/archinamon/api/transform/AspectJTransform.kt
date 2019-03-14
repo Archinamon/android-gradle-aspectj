@@ -189,6 +189,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             return
         }
 
+        aspectJWeaver.inPath shl outputDir
+
         if (hasAjRt) {
             logWeaverBuildPolicy(policy)
             aspectJWeaver.doWeave()
@@ -215,6 +217,10 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     private fun copyUnprocessedFiles(inDir: Path, outDir: Path) {
+        if (modeComplex()) {
+            return
+        }
+
         Files.walk(inDir).forEach traverse@ { inFile ->
             val outFile = outDir.resolve(inDir.relativize(inFile))
 

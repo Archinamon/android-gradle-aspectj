@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.3.6`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.3.7`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -51,14 +51,14 @@ Add the plugin to your `buildscript`'s `dependencies` section:
 <details open><summary>Kotlin</summary>
 
 ```kotlin
-classpath("com.archinamon:android-gradle-aspectj:3.3.6")
+classpath("com.archinamon:android-gradle-aspectj:3.3.7")
 ```
 
 </details>
 <details><summary>Groovy</summary>
 
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.3.6'
+classpath 'com.archinamon:android-gradle-aspectj:3.3.7'
 ```
 
 </details>
@@ -327,6 +327,11 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.3.7 -- Fixes ext plugin
+* fixed `aspectj-ext` plugin to work properly with transform api;
+* added transform output dir to inPath;
+* fix ajc inPath for compilation step;
+
 #### 3.3.6 -- Fixes
 * fix dryRun option for transformer;
 * better readme;

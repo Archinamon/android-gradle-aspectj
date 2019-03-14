@@ -79,7 +79,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
 
                 aspectJWeaver.apply {
                     ajSources = sources
-                    inPath shl this@task.destinationDir shl javaCompiler.destinationDir
+                    inPath shl this@task.destinationDir
 
                     targetCompatibility = config.java.toString()
                     sourceCompatibility = config.java.toString()

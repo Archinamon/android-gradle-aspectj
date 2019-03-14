@@ -63,6 +63,7 @@ classpath 'com.archinamon:android-gradle-aspectj:3.3.7'
 
 </details>
 
+<br />
 Apply the `aspectj` plugin:
 
 <details open><summary>Kotlin</summary>
@@ -75,7 +76,6 @@ plugins {
 ```
 
 </details>
-
 <details><summary>Groovy</summary>
 
 ```groovy
@@ -87,8 +87,10 @@ plugins {
 
 </details>
 
+<br />
 Now you can write aspects using annotation style or native (even without IntelliJ IDEA Ultimate edition).
 Let's write simple Application advice:
+
 ```java
 import android.app.Application;
 import android.app.NotificationManager;
@@ -185,6 +187,8 @@ aspectj {
 ```
 
 </details>
+
+<br />
 Note that you may not include all these options!
 
 All the extension parameters are have default values (all of them are described above, except of includeJar/Aspects/ajcArgs options).
@@ -239,6 +243,7 @@ plugins {
 
 </details>
 
+<br />
 Ext config:
 - allows usage of `includeJar` and `includeAllJars` parameters, with workaround to avoid `Multiple dex files exception`
 - supports `multiDex`
@@ -270,6 +275,7 @@ plugins {
 
 </details>
 
+<br />
 Plugin-provider may be useful for that cases when you need to extract aspect-sources into separate module and include it on demand to that modules where you only need it.
 Therefor this behavior will save you build-time due to bypassing aspectj-transformers in provide-only modules.
 
@@ -300,6 +306,7 @@ plugins {
 
 </details>
 
+<br />
 Test scope overloads JUnit compilation flow with AJC instead of JavaC. So any aspects has been written within `test` directory will be compiled with all java sources and aspects will weave them if need. 
 
 ProGuard

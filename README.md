@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.3.7`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.3.8`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -51,14 +51,14 @@ Add the plugin to your `buildscript`'s `dependencies` section:
 <details open><summary>Kotlin</summary>
 
 ```kotlin
-classpath("com.archinamon:android-gradle-aspectj:3.3.7")
+classpath("com.archinamon:android-gradle-aspectj:3.3.8")
 ```
 
 </details>
 <details><summary>Groovy</summary>
 
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.3.7'
+classpath 'com.archinamon:android-gradle-aspectj:3.3.8'
 ```
 
 </details>
@@ -121,6 +121,7 @@ Tune extension
 ```kotlin
 aspectj {
     dryRun = false // default value
+    compileTests = true // default value
 
     ajc = "1.9.2" // default value
     java = JavaVersion.VERSION_1_7 // default value
@@ -158,6 +159,7 @@ aspectj {
 ```groovy
 aspectj {
     dryRun false // default value
+    compileTests true // default value
 
     ajc '1.9.2' // default value
     java = JavaVersion.VERSION_1_7 // default value
@@ -195,6 +197,7 @@ All the extension parameters are have default values (all of them are described 
 So no need to define them manually.
 
 - `dryRun` Disables aj-compiler and aj-transform if set to `true`
+- `compileTests` Workaround to disable `compileDebugUnitTestAspectJ` for unitTest variant
 
 - `ajc` Allows to define the aspectj runtime jar version manually (1.8.12 current)
 - `java` What jvmTarget will ajc use to compile bytecode into
@@ -334,6 +337,9 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.3.8 -- Fix unitTest variant
+* added workaround to disable unitTest aj compile step if classpath is broken;
+
 #### 3.3.7 -- Fixes ext plugin
 * fixed `aspectj-ext` plugin to work properly with transform api;
 * added transform output dir to inPath;

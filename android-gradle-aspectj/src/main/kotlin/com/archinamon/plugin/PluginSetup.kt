@@ -70,10 +70,14 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
                 .name(taskName)
 
         when (variant.type) {
-            VariantTypeImpl.UNIT_TEST -> ajc.overwriteJavac(true)
+            VariantTypeImpl.UNIT_TEST -> {
+                if (config.aspectj().compileTests) {
+                    ajc.overwriteJavac(true)
+                            .buildAndAttach(config)
+                }
+            }
+            else -> ajc.buildAndAttach(config)
         }
-
-        ajc.buildAndAttach(config)
     }
 }
 

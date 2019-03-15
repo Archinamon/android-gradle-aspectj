@@ -16,6 +16,7 @@ open class AspectJExtension {
     open var ajcArgs = mutableSetOf<String>()
 
     open var dryRun = false
+    open var compileTests = true
 
     open var weaveInfo = true
     open var debugInfo = false

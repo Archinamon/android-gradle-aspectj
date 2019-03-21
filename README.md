@@ -51,14 +51,14 @@ Add the plugin to your `buildscript`'s `dependencies` section:
 <details open><summary>Kotlin</summary>
 
 ```kotlin
-classpath("com.archinamon:android-gradle-aspectj:3.3.8")
+classpath("com.archinamon:android-gradle-aspectj:3.3.9")
 ```
 
 </details>
 <details><summary>Groovy</summary>
 
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.3.8'
+classpath 'com.archinamon:android-gradle-aspectj:3.3.9'
 ```
 
 </details>
@@ -337,6 +337,9 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.3.9 -- Small fix dryRun
+* to prevent aj transformation with empty outputs — use `-PdryRunAjc=true`;
+
 #### 3.3.8 -- Fix unitTest variant
 * added workaround to disable unitTest aj compile step if classpath is broken;
 

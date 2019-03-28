@@ -7,7 +7,7 @@ import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
-import com.archinamon.api.AspectJMergeJars
+import com.archinamon.api.jars.AspectJMergeJars
 import com.archinamon.api.AspectJWeaver
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*

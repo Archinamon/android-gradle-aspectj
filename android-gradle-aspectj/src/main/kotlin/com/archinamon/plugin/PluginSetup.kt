@@ -2,6 +2,7 @@ package com.archinamon.plugin
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
+import com.android.builder.core.VariantType
 import com.android.builder.core.VariantTypeImpl
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
@@ -12,10 +13,14 @@ import com.archinamon.api.BuildTimeListener
 import com.archinamon.utils.LANG_AJ
 import com.archinamon.utils.getJavaTask
 import com.archinamon.utils.getVariantDataList
+import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginContainer
+import kotlin.reflect.full.isSubclassOf
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.javaField
 
 internal fun configProject(project: Project, config: AndroidConfig, settings: AspectJExtension) {
     if (settings.extendClasspath) {
@@ -71,14 +76,30 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
                 .variant(variant.name)
                 .name(taskName)
 
-        when (variant.type) {
-            VariantTypeImpl.UNIT_TEST -> {
-                if (config.aspectj().compileTests) {
-                    ajc.overwriteJavac(true)
-                            .buildAndAttach(config)
-                }
+        val variantTypeClass: Class<*> = variant.type::class.java
+        val variantAnalyticsType: Any? = when {
+            variantTypeClass.fields.any { it.name == "mAnalyticsVariantType" } ->
+                variantTypeClass.getField("mAnalyticsVariantType")
+                    ?.get(variant.type)
+            variantTypeClass.fields.any { it.name == "analyticsVariantType" } ->
+                variantTypeClass.getField("analyticsVariantType")
+                    ?.get(variant.type)
+            variantTypeClass.enumConstants?.isNotEmpty() == true ->
+                variantTypeClass.enumConstants[5] // suspect to find UNIT_TEST
+                        ?.javaClass
+                        ?.getMethod("getAnalyticsVariantType")
+                        ?.invoke(variant.type)
+            else -> null
+        }
+
+        if (variantAnalyticsType is GradleBuildVariant.VariantType
+                && variantAnalyticsType == GradleBuildVariant.VariantType.UNIT_TEST) {
+            if (config.aspectj().compileTests) {
+                ajc.overwriteJavac(true)
+                        .buildAndAttach(config)
             }
-            else -> ajc.buildAndAttach(config)
+        } else {
+            ajc.buildAndAttach(config)
         }
     }
 }

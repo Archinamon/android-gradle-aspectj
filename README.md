@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.3.10`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.3.11`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -51,14 +51,14 @@ Add the plugin to your `buildscript`'s `dependencies` section:
 <details open><summary>Kotlin</summary>
 
 ```kotlin
-classpath("com.archinamon:android-gradle-aspectj:3.3.10")
+classpath("com.archinamon:android-gradle-aspectj:3.3.11")
 ```
 
 </details>
 <details><summary>Groovy</summary>
 
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.3.10'
+classpath 'com.archinamon:android-gradle-aspectj:3.3.11'
 ```
 
 </details>
@@ -337,6 +337,9 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.3.11 -- Fix legacy AGP support
+* better legacy support — fixed AGP 3.1.4 compatibility;
+
 #### 3.3.10 -- Update AJC
 * bump aspectj compiler version;
 

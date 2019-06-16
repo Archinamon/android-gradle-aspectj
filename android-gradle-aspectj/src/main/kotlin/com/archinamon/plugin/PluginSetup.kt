@@ -2,8 +2,6 @@ package com.archinamon.plugin
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
-import com.android.builder.core.VariantType
-import com.android.builder.core.VariantTypeImpl
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.MISDEFINITION
@@ -18,9 +16,6 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.PluginContainer
-import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.javaField
 
 internal fun configProject(project: Project, config: AndroidConfig, settings: AspectJExtension) {
     if (settings.extendClasspath) {
@@ -28,7 +23,7 @@ internal fun configProject(project: Project, config: AndroidConfig, settings: As
         project.dependencies.add("implementation", "org.aspectj:aspectjrt:${settings.ajc}")
     }
 
-    project.afterEvaluate {
+    project.whenEvaluated {
         prepareVariant(config)
 
         configureCompiler(project, config)
@@ -129,4 +124,8 @@ private inline fun <reified T> PluginContainer.getPlugin(config: AndroidConfig):
     @Suppress("UNCHECKED_CAST")
     val plugin: Class<out T> = (if (config.isLibraryPlugin) LibraryPlugin::class.java else AppPlugin::class.java) as Class<T>
     return getPlugin(plugin)
+}
+
+private inline fun <reified T> Project.whenEvaluated(noinline fn: Project.() -> T) {
+    if (state.executed) fn() else afterEvaluate(fn::invoke)
 }

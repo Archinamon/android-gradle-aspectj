@@ -13,8 +13,8 @@ apply {
     plugin("com.jfrog.bintray")
 }
 
-group = "com.archinamon"
-version = "3.3.11"
+group = "aspectjPluginGroup"<String>(extra)
+version = "aspectjPluginVersion"<String>(extra)
 
 gradlePlugin {
     (plugins) {
@@ -85,8 +85,8 @@ dependencies {
 
 if (project.hasProperty("user") && project.hasProperty("apiKey")) {
     configure<BintrayExtension> {
-        user = project.properties["user"].toString()
-        key = project.properties["apiKey"].toString()
+        user = "user"<String>(project.properties)
+        key = "apiKey"<String>(project.properties)
 
         publish = true
 
@@ -120,3 +120,9 @@ tasks.withType<BintrayUploadTask> {
     dependsOn(tasks.withType<GenerateMavenPom>())
     dependsOn(tasks.withType<Test>())
 }
+
+inline operator fun <reified T> String.invoke(extra: ExtraPropertiesExtension): T =
+        extra[this] as T
+
+inline operator fun <reified T> String.invoke(properties: Map<String, *>): T =
+        extra[this] as T

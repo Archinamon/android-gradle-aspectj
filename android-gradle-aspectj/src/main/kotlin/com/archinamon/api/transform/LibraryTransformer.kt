@@ -11,7 +11,7 @@ internal class LibraryTransformer(project: Project): AspectJTransform(project, B
         return Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT)
     }
 
-    override fun getReferencedScopes(): MutableSet<QualifiedContent.Scope> {
+    override fun getReferencedScopes(): MutableSet<in QualifiedContent.Scope> {
         return TransformManager.SCOPE_FULL_PROJECT
     }
 }

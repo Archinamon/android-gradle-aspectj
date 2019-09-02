@@ -15,7 +15,6 @@ import com.archinamon.utils.DependencyFilter.isExcludeFilterMatched
 import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import java.io.File
 import java.nio.file.Files
@@ -54,12 +53,6 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     private fun <T: BaseVariantData> setupVariant(variantData: T) {
-        if (variantData.scope.instantRunBuildContext.isInInstantRunMode) {
-            if (modeComplex()) {
-                throw GradleException(SLICER_DETECTED_ERROR)
-            }
-        }
-
         val javaTask = getJavaTask(variantData)
         getAjSourceAndExcludeFromJavac(project, variantData)
         aspectJWeaver.encoding = javaTask.options.encoding

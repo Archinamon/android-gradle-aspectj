@@ -137,7 +137,6 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         includeCompiledAspects(transformInvocation, outputDir)
         val inputs = if (modeComplex()) transformInvocation.inputs else transformInvocation.referencedInputs
 
-        var hasAjRt = false
         inputs.forEach proceedInputs@ { input ->
             if (input.directoryInputs.isEmpty() && input.jarInputs.isEmpty())
                 return@proceedInputs //if no inputs so nothing to proceed
@@ -148,7 +147,6 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             }
             input.jarInputs.forEach { jar ->
                 aspectJWeaver.classPath shl jar.file
-                hasAjRt = hasAjRt || jar.name.contains(AJRUNTIME)
 
                 if (modeComplex()) {
                     val includeAllJars = config.aspectj().includeAllJars
@@ -187,21 +185,16 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
         aspectJWeaver.inPath shl outputDir
 
-        if (hasAjRt) {
-            logWeaverBuildPolicy(policy)
-            aspectJWeaver.doWeave()
+        logWeaverBuildPolicy(policy)
+        aspectJWeaver.doWeave()
 
-            if (modeComplex()) {
-                aspectJMerger.doMerge(this, transformInvocation, outputDir)
-            }
-
-            copyUnprocessedFiles(inputs, outputDir)
-
-            logAugmentationFinish()
-        } else {
-            logEnvInvalid()
-            logNoAugmentation()
+        if (modeComplex()) {
+            aspectJMerger.doMerge(this, transformInvocation, outputDir)
         }
+
+        copyUnprocessedFiles(inputs, outputDir)
+
+        logAugmentationFinish()
     }
 
     private fun copyUnprocessedFiles(inputs: Collection<TransformInput>, outputDir: File) {

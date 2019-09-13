@@ -15,7 +15,7 @@ open class AspectJExtension {
     open var includeAspectsFromJar = mutableSetOf<String>()
     open var ajcArgs = mutableSetOf<String>()
 
-    open var dryRun = false
+    internal open var dryRun = false
     open var compileTests = true
 
     open var weaveInfo = true

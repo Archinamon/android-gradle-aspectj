@@ -26,7 +26,9 @@ internal fun configProject(project: Project, config: AndroidConfig, settings: As
     project.whenEvaluated {
         prepareVariant(config)
 
-        configureCompiler(project, config)
+        if (!settings.dryRun) {
+            configureCompiler(project, config)
+        }
 
         if (settings.buildTimeLog) {
             project.gradle.addListener(BuildTimeListener())
@@ -34,8 +36,6 @@ internal fun configProject(project: Project, config: AndroidConfig, settings: As
     }
 
     checkIfPluginAppliedAfterRetrolambda(project)
-
-    initPreEvaluationProperties(project, settings)
 }
 
 private fun prepareVariant(config: AndroidConfig) {
@@ -113,11 +113,6 @@ private fun checkIfPluginAppliedAfterRetrolambda(project: Project) {
             }
         }
     }
-}
-
-private fun initPreEvaluationProperties(project: Project, settings: AspectJExtension) {
-    val dryRun = project.properties["dryRunAjc"] as? String?
-    dryRun?.let { settings.dryRun = it.toBoolean() }
 }
 
 private inline fun <reified T> PluginContainer.getPlugin(config: AndroidConfig): T where T : Plugin<Project> {

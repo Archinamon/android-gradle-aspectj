@@ -23,6 +23,11 @@ gradlePlugin {
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Standard"
         }
 
+        register("com.archinamon.aspectj-dryRun") {
+            id = "com.archinamon.aspectj-dryRun"
+            implementationClass = "com.archinamon.plugin.AspectJWrapper\$DryRun"
+        }
+
         register("com.archinamon.aspectj-ext") {
             id = "com.archinamon.aspectj-ext"
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Extended"

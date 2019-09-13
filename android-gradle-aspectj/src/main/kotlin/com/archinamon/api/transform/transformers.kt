@@ -9,8 +9,6 @@ import org.gradle.api.Project
  */
 
 internal const val TRANSFORM_NAME = "aspectj"
-const val AJRUNTIME = "aspectjrt"
-const val SLICER_DETECTED_ERROR = "Running with InstantRun slicer when weaver extended not allowed!"
 
 enum class BuildPolicy {
 

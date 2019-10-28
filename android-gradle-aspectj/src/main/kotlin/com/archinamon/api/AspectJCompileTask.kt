@@ -69,6 +69,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
 
             val sources = findAjSourcesForVariant(project, variantName)
             val task = project.task(options, taskName, closureOf<AspectJCompileTask> task@ {
+                compileMode = android.scope
                 destinationDir = obtainBuildDirectory(android)
                 aspectJWeaver = AspectJWeaver(project)
 
@@ -148,13 +149,16 @@ internal open class AspectJCompileTask : AbstractCompile() {
         }
     }
 
+    lateinit var compileMode: ConfigScope
     lateinit var aspectJWeaver: AspectJWeaver
 
     @TaskAction
     override fun compile() {
         logCompilationStart()
 
-        destinationDir.deleteRecursively()
+        if (compileMode != ConfigScope.PROVIDE) {
+            destinationDir.deleteRecursively()
+        }
 
         aspectJWeaver.classPath = LinkedHashSet(classpath.files)
         aspectJWeaver.doWeave()

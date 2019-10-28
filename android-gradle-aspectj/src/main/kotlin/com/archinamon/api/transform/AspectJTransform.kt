@@ -88,7 +88,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
     @Suppress("OverridingDeprecatedMember")
     override fun transform(context: Context, inputs: Collection<TransformInput>, referencedInputs: Collection<TransformInput>, outputProvider: TransformOutputProvider, isIncremental: Boolean) {
-        this.transform(TransformInvocationBuilder(context)
+        transform(TransformInvocationBuilder(context)
             .addInputs(inputs)
             .addReferencedInputs(referencedInputs)
             .addOutputProvider(outputProvider)

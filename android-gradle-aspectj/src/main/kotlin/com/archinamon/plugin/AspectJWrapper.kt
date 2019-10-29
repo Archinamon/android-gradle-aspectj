@@ -33,6 +33,11 @@ sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
         override fun getTransformer(project: Project): AspectJTransform = TestsTransformer(project)
     }
 
+    private val noTransformsScopes = arrayOf(
+            ConfigScope.PROVIDE,
+            ConfigScope.JUNIT
+    )
+
     override fun apply(project: Project) {
         val config = AndroidConfig(project, scope)
         val settings = project.extensions.create(LANG_AJ, AspectJExtension::class.java).apply {
@@ -55,7 +60,7 @@ sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
             return
         }
 
-        if (scope == ConfigScope.JUNIT) {
+        if (scope in noTransformsScopes) {
             return
         }
 

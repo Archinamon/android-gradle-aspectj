@@ -1,5 +1,5 @@
 # GradleAspectJ-Android
-[![AspectJ](https://img.shields.io/badge/AspectJ-3.4.3-brightgreen.svg)](http://www.eclipse.org/aspectj/) [![Kotlin](https://img.shields.io/badge/Kotlin-1.3.50-blue.svg)](http://kotlinlang.org) [ ![Download](https://api.bintray.com/packages/archinamon/maven/android-gradle-aspectj/images/download.svg) ](https://bintray.com/archinamon/maven/android-gradle-aspectj/_latestVersion)<br />
+[![AspectJ](https://img.shields.io/badge/AspectJ-3.4.5-brightgreen.svg)](http://www.eclipse.org/aspectj/) [![Kotlin](https://img.shields.io/badge/Kotlin-1.3.50-blue.svg)](http://kotlinlang.org) [ ![Download](https://api.bintray.com/packages/archinamon/maven/android-gradle-aspectj/images/download.svg) ](https://bintray.com/archinamon/maven/android-gradle-aspectj/_latestVersion)<br />
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android) [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 
 A Gradle plugin which enables AspectJ for Android builds.
@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.4.3`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.4.5`.
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -51,14 +51,14 @@ Add the plugin to your `buildscript`'s `dependencies` section:
 <details open><summary>Kotlin</summary>
 
 ```kotlin
-classpath("com.archinamon:android-gradle-aspectj:3.4.3")
+classpath("com.archinamon:android-gradle-aspectj:3.4.5")
 ```
 
 </details>
 <details><summary>Groovy</summary>
 
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.4.3'
+classpath 'com.archinamon:android-gradle-aspectj:3.4.5'
 ```
 
 </details>
@@ -361,6 +361,9 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 3.4.5 -- Fix for Gradle 6.0
+* create task explicitly instead of `project.task()`;
+
 #### 3.4.3 -- Once more fix :(
 * hotfixed provides plugin mode — transformation should not starts;
 

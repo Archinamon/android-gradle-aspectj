@@ -14,6 +14,7 @@ import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.closureOf
+import org.gradle.kotlin.dsl.create
 import java.io.File
 import java.util.*
 
@@ -60,6 +61,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
 
         fun buildAndAttach(android: AndroidConfig) {
             val options = mutableMapOf(
+                    "name" to taskName,
                     "overwrite" to true,
                     "dependsOn" to javaCompiler.name,
                     "group" to "build",
@@ -68,7 +70,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
             )
 
             val sources = findAjSourcesForVariant(project, variantName)
-            val task = project.task(options, taskName, closureOf<AspectJCompileTask> task@ {
+            val task = project.tasks.create(options, closureOf<AspectJCompileTask> task@ {
                 compileMode = android.scope
                 destinationDir = obtainBuildDirectory(android)
                 aspectJWeaver = AspectJWeaver(project)

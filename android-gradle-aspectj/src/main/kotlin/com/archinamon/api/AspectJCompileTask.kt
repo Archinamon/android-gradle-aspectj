@@ -62,7 +62,6 @@ internal open class AspectJCompileTask : AbstractCompile() {
         fun buildAndAttach(android: AndroidConfig) {
             val options = mutableMapOf(
                     "name" to taskName,
-                    "overwrite" to true,
                     "dependsOn" to javaCompiler.name,
                     "group" to "build",
                     "description" to "Compile .aj source files into java .class with meta instructions",

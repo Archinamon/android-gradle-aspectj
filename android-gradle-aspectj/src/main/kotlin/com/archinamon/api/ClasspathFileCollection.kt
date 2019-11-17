@@ -11,8 +11,6 @@ class ClasspathFileCollection(
 
     override fun getFiles() = files.toMutableSet()
 
-    override fun getBuildDependencies(): TaskDependency = TaskDependencyInternal.EMPTY
-
     override fun getDisplayName() = DISPLAY_NAME
 
     private companion object {

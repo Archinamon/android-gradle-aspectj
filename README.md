@@ -8,6 +8,7 @@ Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
 Actual version: `com.archinamon:android-gradle-aspectj:3.4.5`.
+With support of AGP 3.5.+: `com.archinamon:android-gradle-aspectj:4.0.0` 
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -361,6 +362,9 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 4.0.0 -- Support AGP 3.5.+
+* this release supports agp 3.5.+ but earlier versions not;
+
 #### 3.4.5 -- Fix for Gradle 6.0
 * create task explicitly instead of `project.task()`;
 

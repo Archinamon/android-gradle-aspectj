@@ -154,7 +154,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
     lateinit var aspectJWeaver: AspectJWeaver
 
     @TaskAction
-    override fun compile() {
+    fun compile() {
         logCompilationStart()
 
         if (compileMode != ConfigScope.PROVIDE) {

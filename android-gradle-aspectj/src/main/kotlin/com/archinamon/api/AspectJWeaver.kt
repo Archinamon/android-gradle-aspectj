@@ -9,6 +9,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import java.io.File
 import java.util.*
+import java.util.concurrent.CyclicBarrier
 
 internal class AspectJWeaver(val project: Project) {
 
@@ -122,26 +123,29 @@ internal class AspectJWeaver(val project: Project) {
         log.writeText("Full ajc build args: ${args.joinToString()}\n\n")
         logBuildParametersAdapted(args, log.name)
 
-        val handler = MessageHandler(true)
-        Main().run(args.toTypedArray(), handler)
-        for (message in handler.getMessages(null, true)) {
-            when (message.kind) {
-                IMessage.ERROR -> {
-                    log.writeText("[error]" + message?.message + "${message?.thrown}\n\n")
-                    if (breakOnError) throw GradleException (errorReminder.format(getLogFile()))
-                }
-                IMessage.FAIL, IMessage.ABORT -> {
-                    log.writeText("[error]" + message?.message + "${message?.thrown}\n\n")
-                    throw GradleException (message.message)
-                }
-                IMessage.INFO, IMessage.DEBUG, IMessage.WARNING -> {
-                    log.writeText("[warning]" + message?.message + "${message?.thrown}\n\n")
-                    if (getLogFile().isNotBlank()) log.writeText("${errorReminder.format(getLogFile())}\n\n")
+        runBlocking {
+            val handler = MessageHandler(true)
+            Main().run(args.toTypedArray(), handler)
+
+            for (message in handler.getMessages(null, true)) {
+                when (message.kind) {
+                    IMessage.ERROR -> {
+                        log.writeText("[error]" + message?.message + "${message?.thrown}\n\n")
+                        if (breakOnError) throw GradleException (errorReminder.format(getLogFile()))
+                    }
+                    IMessage.FAIL, IMessage.ABORT -> {
+                        log.writeText("[error]" + message?.message + "${message?.thrown}\n\n")
+                        throw GradleException (message.message)
+                    }
+                    IMessage.INFO, IMessage.DEBUG, IMessage.WARNING -> {
+                        log.writeText("[warning]" + message?.message + "${message?.thrown}\n\n")
+                        if (getLogFile().isNotBlank()) log.writeText("${errorReminder.format(getLogFile())}\n\n")
+                    }
                 }
             }
-        }
 
-        detectErrors()
+            detectErrors()
+        }
     }
 
     private fun getLogFile(): String {
@@ -171,5 +175,10 @@ internal class AspectJWeaver(val project: Project) {
     private inline operator fun <reified E> MutableCollection<in E>.plus(elem: E): MutableCollection<in E> {
         this.add(elem)
         return this
+    }
+
+    private companion object {
+
+        fun runBlocking(action: () -> Unit) = synchronized(Companion::class, action)
     }
 }

@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.4.5`.
+Actual version: `com.archinamon:android-gradle-aspectj:3.4.5`.<br />
 With support of AGP 3.5.+: `com.archinamon:android-gradle-aspectj:4.0.0` 
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!

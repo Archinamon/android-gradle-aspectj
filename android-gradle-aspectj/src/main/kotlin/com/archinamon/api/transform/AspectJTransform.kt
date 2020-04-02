@@ -224,7 +224,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     /* Internal */
 
     private fun verifyBypassInTestScope(ctx: Context): Boolean {
-        val variant = (ctx as TransformTask).variantName
+        val variant = ctx.variantName
 
         return when (config.scope) {
             ConfigScope.JUNIT -> variant.contains("androidtest", true)
@@ -233,7 +233,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     private fun includeCompiledAspects(transformInvocation: TransformInvocation, outputDir: File) {
-        val compiledAj = project.file("${project.buildDir}/$LANG_AJ/${(transformInvocation.context as TransformTask).variantName}")
+        val compiledAj = project.file("${project.buildDir}/$LANG_AJ/${transformInvocation.context.variantName}")
         if (compiledAj.exists()) {
             aspectJWeaver.aspectPath shl compiledAj
 

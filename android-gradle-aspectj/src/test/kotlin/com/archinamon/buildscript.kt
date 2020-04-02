@@ -22,6 +22,11 @@ const val SIMPLE_PLUGIN_IMPLYING = """
             versionCode 1
             versionName "1.0"
         }
+        
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
     }
 
     repositories {

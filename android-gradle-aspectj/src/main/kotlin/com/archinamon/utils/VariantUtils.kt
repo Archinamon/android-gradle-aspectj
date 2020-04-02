@@ -1,7 +1,6 @@
 package com.archinamon.utils
 
-import com.android.build.gradle.BasePlugin
-import com.android.build.gradle.internal.api.dsl.extensions.BaseExtension2
+import com.android.build.gradle.internal.plugins.BasePlugin
 import com.android.build.gradle.internal.scope.TaskContainer
 import com.android.build.gradle.internal.scope.VariantScope
 import com.android.build.gradle.internal.variant.BaseVariantData
@@ -97,11 +96,11 @@ fun findSourcesForVariant(project: Project, variantName: String, language: Strin
     return LinkedHashSet(possibleDirs)
 }
 
-fun getVariantDataList(plugin: BasePlugin<out BaseExtension2>): List<BaseVariantData> {
+fun getVariantDataList(plugin: BasePlugin): List<BaseVariantData> {
     return getVariantScopes(plugin).map(VariantScope::getVariantData)
 }
 
-fun getVariantScopes(plugin: BasePlugin<out BaseExtension2>): List<VariantScope> {
+fun getVariantScopes(plugin: BasePlugin): List<VariantScope> {
     return plugin.variantManager.variantScopes
 }
 

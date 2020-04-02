@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.AbstractFileCollection
 import org.gradle.api.internal.tasks.TaskDependencyInternal
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.compile.AbstractCompile
@@ -150,8 +151,8 @@ internal open class AspectJCompileTask : AbstractCompile() {
         }
     }
 
-    lateinit var compileMode: ConfigScope
-    lateinit var aspectJWeaver: AspectJWeaver
+    @Internal lateinit var compileMode: ConfigScope
+    @Internal lateinit var aspectJWeaver: AspectJWeaver
 
     @TaskAction
     fun compile() {

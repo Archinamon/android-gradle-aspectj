@@ -240,6 +240,16 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             //copy compiled .class files to output directory
             FileUtil.copyDir(compiledAj, outputDir)
         }
+
+        transformInvocation.inputs.forEach { transformInput ->
+            // Ensure JARs are copied as well:
+            transformInput.jarInputs.forEach {
+                it.file.copyTo(
+                    transformInvocation.outputProvider.getContentLocation(it.name, inputTypes, scopes, Format.JAR),
+                    overwrite = true
+                )
+            }
+        }
     }
 
     private fun copyJar(outputProvider: TransformOutputProvider, jarInput: JarInput?): Boolean {

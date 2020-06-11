@@ -50,8 +50,9 @@ private fun prepareVariant(config: AndroidConfig) {
 
     // applies srcSet 'aspectj' for each build variant
     getVariantDataList(config.plugin).forEach { variant ->
-        variant.variantConfiguration.productFlavors.forEach { applier(it.name) }
-        applier(variant.variantConfiguration.buildType.name)
+        val props = variant.publicVariantPropertiesApi
+        props.productFlavors.forEach { applier(it.second) }
+        applier(props.buildType ?: props.flavorName)
     }
 }
 
@@ -74,11 +75,9 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
         val variantTypeClass: Class<*> = variant.type::class.java
         val variantAnalyticsType: Any? = when {
             variantTypeClass.fields.any { it.name == "mAnalyticsVariantType" } ->
-                variantTypeClass.getField("mAnalyticsVariantType")
-                    ?.get(variant.type)
+                variantTypeClass.getField("mAnalyticsVariantType").get(variant.type)
             variantTypeClass.fields.any { it.name == "analyticsVariantType" } ->
-                variantTypeClass.getField("analyticsVariantType")
-                    ?.get(variant.type)
+                variantTypeClass.getField("analyticsVariantType").get(variant.type)
             variantTypeClass.enumConstants?.isNotEmpty() == true ->
                 variantTypeClass.enumConstants[5] // suspect to find UNIT_TEST
                         ?.javaClass

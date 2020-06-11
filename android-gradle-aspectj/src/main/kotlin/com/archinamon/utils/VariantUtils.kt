@@ -52,9 +52,10 @@ fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile {
 
 fun getAjSourceAndExcludeFromJavac(project: Project, variantData: BaseVariantData): FileCollection {
     val javaTask = getJavaTask(variantData)
+    val props = variantData.publicVariantPropertiesApi
 
-    val flavors: List<String>? = variantData.variantConfiguration.productFlavors.map { flavor -> flavor.name }
-    val srcSet = mutableListOf("main", variantData.variantConfiguration!!.buildType!!.name)
+    val flavors: List<String>? = props.productFlavors.map { flavor -> flavor.second }
+    val srcSet = mutableListOf("main", props.buildType ?: props.flavorName)
     flavors?.let { srcSet.addAll(it) }
 
     val srcDirs = srcSet.map { "src/$it/aspectj" }

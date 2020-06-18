@@ -361,6 +361,10 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 4.2.1 -- Improve jar archives
+* better api for AGP 4.0.+;
+* fix java.lang.NoClassDefFoundError: Failed resolution of: Landroidx/appcompat/R$drawable;
+
 #### 4.2.0 -- Support AGP 4.0.+
 * this release supports agp 4.0.+ but earlier versions not;
 

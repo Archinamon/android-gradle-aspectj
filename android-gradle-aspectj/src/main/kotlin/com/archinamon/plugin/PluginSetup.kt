@@ -2,6 +2,7 @@ package com.archinamon.plugin
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
+import com.android.build.gradle.internal.core.VariantDslInfoImpl
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.MISDEFINITION
@@ -50,8 +51,8 @@ private fun prepareVariant(config: AndroidConfig) {
 
     // applies srcSet 'aspectj' for each build variant
     getVariantDataList(config.plugin).forEach { variant ->
-        variant.variantConfiguration.productFlavors.forEach { applier(it.name) }
-        applier(variant.variantConfiguration.buildType.name)
+        variant.variantDslInfo.productFlavorList.forEach { applier(it.name) }
+        applier((variant.variantDslInfo as VariantDslInfoImpl).buildTypeObj.name)
     }
 }
 

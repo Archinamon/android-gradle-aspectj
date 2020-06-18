@@ -61,7 +61,7 @@ class AndroidPluginTest {
                     classpath 'org.aspectj:aspectjtools:$aspectjVersion'
 
                     // main dependencies
-                    classpath 'com.android.tools.build:gradle:3.6.0'
+                    classpath 'com.android.tools.build:gradle:4.0.0'
                     classpath files('${jarFile.absolutePath}')
                 }
             }
@@ -95,7 +95,7 @@ class AndroidPluginTest {
                     classpath 'org.aspectj:aspectjtools:$aspectjVersion'
 
                     // main dependencies
-                    classpath 'com.android.tools.build:gradle:3.6.0'
+                    classpath 'com.android.tools.build:gradle:4.0.0'
                     classpath files('${jarFile.absolutePath}')
                 }
             }

@@ -55,7 +55,8 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     @Suppress("UNCHECKED_CAST")
     fun getBootClasspath(): List<File> {
-        return extAndroid.bootClasspath ?: plugin::class.java.getMethod("getRuntimeJarList").invoke(plugin) as List<File>
+        return extAndroid.bootClasspath.takeIf { it.isNotEmpty() }
+            ?: plugin::class.java.getMethod("getRuntimeJarList").invoke(plugin) as List<File>
     }
 
     fun aspectj(): AspectJExtension {

@@ -1,5 +1,6 @@
 package com.archinamon.utils
 
+import com.android.build.gradle.internal.core.VariantDslInfoImpl
 import com.android.build.gradle.internal.plugins.BasePlugin
 import com.android.build.gradle.internal.scope.TaskContainer
 import com.android.build.gradle.internal.scope.VariantScope

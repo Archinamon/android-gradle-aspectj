@@ -9,11 +9,13 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.file.AbstractFileCollection
 import org.gradle.api.internal.tasks.TaskDependencyInternal
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.kotlin.dsl.closureOf
+import org.gradle.kotlin.dsl.create
 import java.io.File
 import java.util.*
 
@@ -60,7 +62,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
 
         fun buildAndAttach(android: AndroidConfig) {
             val options = mutableMapOf(
-                    "overwrite" to true,
+                    "name" to taskName,
                     "dependsOn" to javaCompiler.name,
                     "group" to "build",
                     "description" to "Compile .aj source files into java .class with meta instructions",
@@ -68,7 +70,8 @@ internal open class AspectJCompileTask : AbstractCompile() {
             )
 
             val sources = findAjSourcesForVariant(project, variantName)
-            val task = project.task(options, taskName, closureOf<AspectJCompileTask> task@ {
+            val task = project.tasks.create(options, closureOf<AspectJCompileTask> task@ {
+                compileMode = android.scope
                 destinationDir = obtainBuildDirectory(android)
                 aspectJWeaver = AspectJWeaver(project)
 
@@ -148,13 +151,16 @@ internal open class AspectJCompileTask : AbstractCompile() {
         }
     }
 
-    lateinit var aspectJWeaver: AspectJWeaver
+    @Internal lateinit var compileMode: ConfigScope
+    @Internal lateinit var aspectJWeaver: AspectJWeaver
 
     @TaskAction
-    override fun compile() {
+    fun compile() {
         logCompilationStart()
 
-        destinationDir.deleteRecursively()
+        if (compileMode != ConfigScope.PROVIDE) {
+            destinationDir.deleteRecursively()
+        }
 
         aspectJWeaver.classPath = LinkedHashSet(classpath.files)
         aspectJWeaver.doWeave()

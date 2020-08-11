@@ -23,6 +23,11 @@ gradlePlugin {
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Standard"
         }
 
+        register("com.archinamon.aspectj-dryRun") {
+            id = "com.archinamon.aspectj-dryRun"
+            implementationClass = "com.archinamon.plugin.AspectJWrapper\$DryRun"
+        }
+
         register("com.archinamon.aspectj-ext") {
             id = "com.archinamon.aspectj-ext"
             implementationClass = "com.archinamon.plugin.AspectJWrapper\$Extended"
@@ -73,14 +78,14 @@ dependencies {
     compileOnly(kotlin("stdlib-jdk8", kotlinVersion))
     compileOnly(gradleApi())
     compileOnly("com.android.tools.build:gradle:$androidGradleVersion")
-    compile("org.aspectj:aspectjrt:$aspectjVersion")
-    compile("org.aspectj:aspectjtools:$aspectjVersion")
+    implementation("org.aspectj:aspectjrt:$aspectjVersion")
+    implementation("org.aspectj:aspectjtools:$aspectjVersion")
 
-    testCompile(gradleTestKit())
-    testCompile("junit:junit:4.12")
-    testCompile("org.junit.jupiter:junit-jupiter-api:5.0.0-M3")
-    testRuntime("org.junit.vintage:junit-vintage-engine:4.12.0-M1")
-    testCompile(kotlin("test-junit", kotlinVersion))
+    testImplementation(gradleTestKit())
+    testImplementation("junit:junit:4.12")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.0.0-M3")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:4.12.0-M1")
+    testImplementation(kotlin("test-junit", kotlinVersion))
 }
 
 if (project.hasProperty("user") && project.hasProperty("apiKey")) {

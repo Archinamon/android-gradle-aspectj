@@ -1,7 +1,13 @@
 package com.archinamon
 
-import com.android.build.gradle.*
-import com.android.build.gradle.internal.api.dsl.extensions.BaseExtension2
+import com.android.build.gradle.AppExtension
+import com.android.build.gradle.BaseExtension
+import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.TestExtension
+import com.android.build.gradle.internal.plugins.AppPlugin
+import com.android.build.gradle.internal.plugins.BasePlugin
+import com.android.build.gradle.internal.plugins.LibraryPlugin
+import com.android.build.gradle.internal.plugins.TestPlugin
 import com.archinamon.plugin.ConfigScope
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -18,7 +24,7 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     val extAndroid: BaseExtension
     val isLibraryPlugin: Boolean
-    val plugin: BasePlugin<out BaseExtension2>
+    val plugin: BasePlugin
 
     init {
         when {
@@ -49,7 +55,8 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     @Suppress("UNCHECKED_CAST")
     fun getBootClasspath(): List<File> {
-        return extAndroid.bootClasspath ?: plugin::class.java.getMethod("getRuntimeJarList").invoke(plugin) as List<File>
+        return extAndroid.bootClasspath.takeIf { it.isNotEmpty() }
+            ?: plugin::class.java.getMethod("getRuntimeJarList").invoke(plugin) as List<File>
     }
 
     fun aspectj(): AspectJExtension {

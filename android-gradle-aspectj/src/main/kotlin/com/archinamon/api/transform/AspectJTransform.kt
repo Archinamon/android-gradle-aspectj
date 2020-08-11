@@ -15,7 +15,6 @@ import com.archinamon.utils.DependencyFilter.isExcludeFilterMatched
 import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
-import org.gradle.api.GradleException
 import org.gradle.api.Project
 import java.io.File
 import java.nio.file.Files
@@ -54,12 +53,6 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     private fun <T: BaseVariantData> setupVariant(variantData: T) {
-        if (variantData.scope.instantRunBuildContext.isInInstantRunMode) {
-            if (modeComplex()) {
-                throw GradleException(SLICER_DETECTED_ERROR)
-            }
-        }
-
         val javaTask = getJavaTask(variantData)
         getAjSourceAndExcludeFromJavac(project, variantData)
         aspectJWeaver.encoding = javaTask.options.encoding
@@ -95,7 +88,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
     @Suppress("OverridingDeprecatedMember")
     override fun transform(context: Context, inputs: Collection<TransformInput>, referencedInputs: Collection<TransformInput>, outputProvider: TransformOutputProvider, isIncremental: Boolean) {
-        this.transform(TransformInvocationBuilder(context)
+        transform(TransformInvocationBuilder(context)
             .addInputs(inputs)
             .addReferencedInputs(referencedInputs)
             .addOutputProvider(outputProvider)
@@ -137,7 +130,6 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         includeCompiledAspects(transformInvocation, outputDir)
         val inputs = if (modeComplex()) transformInvocation.inputs else transformInvocation.referencedInputs
 
-        var hasAjRt = false
         inputs.forEach proceedInputs@ { input ->
             if (input.directoryInputs.isEmpty() && input.jarInputs.isEmpty())
                 return@proceedInputs //if no inputs so nothing to proceed
@@ -148,7 +140,6 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             }
             input.jarInputs.forEach { jar ->
                 aspectJWeaver.classPath shl jar.file
-                hasAjRt = hasAjRt || jar.name.contains(AJRUNTIME)
 
                 if (modeComplex()) {
                     val includeAllJars = config.aspectj().includeAllJars
@@ -187,21 +178,16 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
         aspectJWeaver.inPath shl outputDir
 
-        if (hasAjRt) {
-            logWeaverBuildPolicy(policy)
-            aspectJWeaver.doWeave()
+        logWeaverBuildPolicy(policy)
+        aspectJWeaver.doWeave()
 
-            if (modeComplex()) {
-                aspectJMerger.doMerge(this, transformInvocation, outputDir)
-            }
-
-            copyUnprocessedFiles(inputs, outputDir)
-
-            logAugmentationFinish()
-        } else {
-            logEnvInvalid()
-            logNoAugmentation()
+        if (modeComplex()) {
+            aspectJMerger.doMerge(this, transformInvocation, outputDir)
         }
+
+        copyUnprocessedFiles(inputs, outputDir)
+
+        logAugmentationFinish()
     }
 
     private fun copyUnprocessedFiles(inputs: Collection<TransformInput>, outputDir: File) {
@@ -238,7 +224,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     /* Internal */
 
     private fun verifyBypassInTestScope(ctx: Context): Boolean {
-        val variant = (ctx as TransformTask).variantName
+        val variant = ctx.variantName
 
         return when (config.scope) {
             ConfigScope.JUNIT -> variant.contains("androidtest", true)
@@ -247,12 +233,22 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     private fun includeCompiledAspects(transformInvocation: TransformInvocation, outputDir: File) {
-        val compiledAj = project.file("${project.buildDir}/$LANG_AJ/${(transformInvocation.context as TransformTask).variantName}")
+        val compiledAj = project.file("${project.buildDir}/$LANG_AJ/${transformInvocation.context.variantName}")
         if (compiledAj.exists()) {
             aspectJWeaver.aspectPath shl compiledAj
 
             //copy compiled .class files to output directory
             FileUtil.copyDir(compiledAj, outputDir)
+        }
+
+        transformInvocation.inputs.forEach { transformInput ->
+            // Ensure JARs are copied as well:
+            transformInput.jarInputs.forEach {
+                it.file.copyTo(
+                    transformInvocation.outputProvider.getContentLocation(it.name, inputTypes, scopes, Format.JAR),
+                    overwrite = true
+                )
+            }
         }
     }
 

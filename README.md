@@ -1,5 +1,5 @@
 # GradleAspectJ-Android
-[![AspectJ](https://img.shields.io/badge/AspectJ-1.9.4-brightgreen.svg)](http://www.eclipse.org/aspectj/) [![Kotlin](https://img.shields.io/badge/Kotlin-1.3.20-blue.svg)](http://kotlinlang.org) [ ![Download](https://api.bintray.com/packages/archinamon/maven/android-gradle-aspectj/images/download.svg) ](https://bintray.com/archinamon/maven/android-gradle-aspectj/_latestVersion)<br />
+[![AspectJ](https://img.shields.io/badge/AspectJ-4.1.0-brightgreen.svg)](http://www.eclipse.org/aspectj/) [![Kotlin](https://img.shields.io/badge/Kotlin-1.3.72-blue.svg)](http://kotlinlang.org) [ ![Download](https://api.bintray.com/packages/archinamon/maven/android-gradle-aspectj/images/download.svg) ](https://bintray.com/archinamon/maven/android-gradle-aspectj/_latestVersion)<br />
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-AspectJ%20Gradle-brightgreen.svg?style=flat)](http://android-arsenal.com/details/1/4578) ![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg) [![](https://jitpack.io/v/Archinamon/GradleAspectJ-Android.svg)](https://jitpack.io/#Archinamon/GradleAspectJ-Android) [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
 
 A Gradle plugin which enables AspectJ for Android builds.
@@ -7,7 +7,7 @@ Supports writing code with AspectJ-lang in `.aj` files and in java-annotation st
 Full support of Android product flavors and build types.
 Support Kotlin, Groovy, Scala and any other languages that compiles into java bytecode.
 
-Actual version: `com.archinamon:android-gradle-aspectj:3.3.12`.
+Actual version supporting of AGP 4.0.+: `com.archinamon:android-gradle-aspectj:4.2.0`.<br />
 <br />
 Friendly with <a href="https://zeroturnaround.com/software/jrebel-for-android/" target="_blank">jRebel for Android</a>!
 
@@ -51,14 +51,14 @@ Add the plugin to your `buildscript`'s `dependencies` section:
 <details open><summary>Kotlin</summary>
 
 ```kotlin
-classpath("com.archinamon:android-gradle-aspectj:3.3.12")
+classpath("com.archinamon:android-gradle-aspectj:4.2.0")
 ```
 
 </details>
 <details><summary>Groovy</summary>
 
 ```groovy
-classpath 'com.archinamon:android-gradle-aspectj:3.3.12'
+classpath 'com.archinamon:android-gradle-aspectj:4.2.0'
 ```
 
 </details>
@@ -120,7 +120,6 @@ Tune extension
 
 ```kotlin
 aspectj {
-    dryRun = false // default value
     compileTests = true // default value
 
     ajc = "1.9.4" // default value
@@ -196,7 +195,6 @@ Note that you may not include all these options!
 All the extension parameters are have default values (all of them are described above, except of includeJar/Aspects/ajcArgs options).
 So no need to define them manually.
 
-- `dryRun` Disables aj-compiler and aj-transform if set to `true`
 - `compileTests` Workaround to disable `compileDebugUnitTestAspectJ` for unitTest variant
 
 - `ajc` Allows to define the aspectj runtime jar version manually (1.8.12 current)
@@ -286,6 +284,32 @@ You ain't limited to describe as much provider-modules as you need and then incl
 
 With <a href="https://github.com/Archinamon/AspectJExampleAndroid" target="_blank">example project</a> you could learn how to write such provider-module.
 
+DryRun plugin config
+-----------------
+<details open><summary>Kotlin</summary>
+
+```kotlin
+plugins {
+    id("com.android.application")
+    id("com.archinamon.aspectj-dryRun")
+}
+```
+
+</details>
+<details><summary>Groovy</summary>
+
+```groovy
+plugins {
+    id 'com.android.application'
+    id 'com.archinamon.aspectj-dryRun'
+}
+```
+
+</details>
+
+<br />
+Disables aspectj-compiler and transformation task for the hole project.
+
 Working tests
 -------
 <details open><summary>Kotlin</summary>
@@ -337,6 +361,39 @@ So concrete rule is:
 
 Changelog
 ---------
+#### 4.2.1 -- Improve jar archives
+* better api for AGP 4.0.+;
+* fix java.lang.NoClassDefFoundError: Failed resolution of: Landroidx/appcompat/R$drawable;
+
+#### 4.2.0 -- Support AGP 4.0.+
+* this release supports agp 4.0.+ but earlier versions not;
+
+#### 4.1.0 -- Support AGP 3.6.+
+* this release supports agp 3.6.+ but earlier versions not;
+
+#### 4.0.1 -- Fix synchronous run
+* fixed async running of ajc (which is not supporting async compiling);
+
+#### 4.0.0 -- Support AGP 3.5.+
+* this release supports agp 3.5.+ but earlier versions not;
+
+#### 3.4.5 -- Fix for Gradle 6.0
+* create task explicitly instead of `project.task()`;
+
+#### 3.4.3 -- Once more fix :(
+* hotfixed provides plugin mode — transformation should not starts;
+
+#### 3.4.2 -- Hotfix provides
+* hotfixed provides plugin mode — transformation should not starts;
+
+#### 3.4.1 -- Fix provides
+* fixed aspectj-provides plugin mode — do not cleanup destination dir;
+
+#### 3.4.0 -- Better DryRun mode
+* fixed support of 3.5.0 Android Gradle Plugin — thanks to @superafroman;
+* remove aj runtime check;
+* standalone DryRun plugin mode to avoid transformation and compilation steps;
+
 #### 3.3.12 -- Fix 'Dependencies resolution fail'
 * fixed rare bug — 'failed to attach configuration after dependencies has been resolved';
 * better properties extraction within kts script; 

@@ -13,6 +13,10 @@ import javax.inject.Inject
 
 sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
 
+    class DryRun @Inject constructor(): AspectJWrapper(ConfigScope.STANDARD) {
+        override fun getTransformer(project: Project): AspectJTransform = StandardTransformer(project)
+    }
+
     class Standard @Inject constructor(): AspectJWrapper(ConfigScope.STANDARD) {
         override fun getTransformer(project: Project): AspectJTransform = StandardTransformer(project)
     }
@@ -29,9 +33,16 @@ sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
         override fun getTransformer(project: Project): AspectJTransform = TestsTransformer(project)
     }
 
+    private val noTransformsScopes = arrayOf(
+            ConfigScope.PROVIDE,
+            ConfigScope.JUNIT
+    )
+
     override fun apply(project: Project) {
         val config = AndroidConfig(project, scope)
-        val settings = project.extensions.create(LANG_AJ, AspectJExtension::class.java)
+        val settings = project.extensions.create(LANG_AJ, AspectJExtension::class.java).apply {
+            dryRun = this@AspectJWrapper is DryRun
+        }
 
         configProject(project, config, settings)
 
@@ -45,11 +56,11 @@ sealed class AspectJWrapper(private val scope: ConfigScope): Plugin<Project> {
             module = project.extensions.getByType(AppExtension::class.java)
         }
 
-        if (settings.dryRun) {
+        if (this is DryRun) {
             return
         }
 
-        if (scope == ConfigScope.JUNIT) {
+        if (scope in noTransformsScopes) {
             return
         }
 

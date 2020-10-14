@@ -50,7 +50,7 @@ private fun prepareVariant(config: AndroidConfig) {
 
     // applies srcSet 'aspectj' for each build variant
     getVariantDataList(config.plugin).forEach { variant ->
-        val props = variant.publicVariantPropertiesApi
+        val props = variant.second
         props.productFlavors.forEach { applier(it.second) }
         applier(props.buildType ?: props.flavorName)
     }
@@ -58,7 +58,7 @@ private fun prepareVariant(config: AndroidConfig) {
 
 private fun configureCompiler(project: Project, config: AndroidConfig) {
     getVariantDataList(config.plugin).forEach variantScanner@ { variant ->
-        val variantName = variant.name.capitalize()
+        val variantName = variant.second.name.capitalize()
 
         // do not configure compiler task for non-test variants in ConfigScope.JUNIT
         if (config.scope == ConfigScope.JUNIT && variantName.contains("androidtest", true))
@@ -68,21 +68,21 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
         val ajc = AspectJCompileTask.Builder(project)
                 .plugin(project.plugins.getPlugin(config))
                 .config(project.extensions.getByType(AspectJExtension::class.java))
-                .compiler(getJavaTask(variant))
-                .variant(variant.name)
+                .compiler(getJavaTask(variant.first))
+                .variant(variant.second.name)
                 .name(taskName)
 
-        val variantTypeClass: Class<*> = variant.type::class.java
+        val variantTypeClass: Class<*> = variant.second.variantType::class.java
         val variantAnalyticsType: Any? = when {
             variantTypeClass.fields.any { it.name == "mAnalyticsVariantType" } ->
-                variantTypeClass.getField("mAnalyticsVariantType").get(variant.type)
+                variantTypeClass.getField("mAnalyticsVariantType").get(variant.second.variantType)
             variantTypeClass.fields.any { it.name == "analyticsVariantType" } ->
-                variantTypeClass.getField("analyticsVariantType").get(variant.type)
+                variantTypeClass.getField("analyticsVariantType").get(variant.second.variantType)
             variantTypeClass.enumConstants?.isNotEmpty() == true ->
                 variantTypeClass.enumConstants[5] // suspect to find UNIT_TEST
                         ?.javaClass
                         ?.getMethod("getAnalyticsVariantType")
-                        ?.invoke(variant.type)
+                        ?.invoke(variant.second.variantType)
             else -> null
         }
 
@@ -121,5 +121,7 @@ private inline fun <reified T> PluginContainer.getPlugin(config: AndroidConfig):
 }
 
 private inline fun <reified T> Project.whenEvaluated(noinline fn: Project.() -> T) {
-    if (state.executed) fn() else afterEvaluate(fn::invoke)
+    if (state.executed) fn() else afterEvaluate {
+        fn.invoke(this)
+    }
 }

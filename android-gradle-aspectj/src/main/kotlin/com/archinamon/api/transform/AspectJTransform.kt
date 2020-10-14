@@ -1,9 +1,9 @@
 package com.archinamon.api.transform
 
 import com.android.build.api.transform.*
+import com.android.build.api.variant.impl.VariantPropertiesImpl
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
-import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
@@ -52,8 +52,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         return this
     }
 
-    private fun <T: BaseVariantData> setupVariant(variantData: T) {
-        val javaTask = getJavaTask(variantData)
+    private fun <T: BaseVariantData> setupVariant(variantData: Pair<T, VariantPropertiesImpl>) {
+        val javaTask = getJavaTask(variantData.first)
         getAjSourceAndExcludeFromJavac(project, variantData)
         aspectJWeaver.encoding = javaTask.options.encoding
         aspectJWeaver.sourceCompatibility = config.aspectj().java.toString()
@@ -169,8 +169,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             }
         }
 
-        val classpathFiles = aspectJWeaver.classPath.filter { it.isDirectory && it.list().isNotEmpty() }
-        val inpathFiles = aspectJWeaver.inPath.filter { it.isDirectory && it.list().isNotEmpty() }
+        val classpathFiles = aspectJWeaver.classPath.filter { it.isDirectory && !it.list().isNullOrEmpty() }
+        val inpathFiles = aspectJWeaver.inPath.filter { it.isDirectory && !it.list().isNullOrEmpty() }
         if (inpathFiles.isEmpty() || classpathFiles.isEmpty()) {
             logNoAugmentation()
             return

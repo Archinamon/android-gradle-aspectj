@@ -24,7 +24,7 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     val extAndroid: BaseExtension
     val isLibraryPlugin: Boolean
-    val plugin: BasePlugin
+    val plugin: BasePlugin<*, *>
 
     init {
         when {
@@ -55,8 +55,7 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     @Suppress("UNCHECKED_CAST")
     fun getBootClasspath(): List<File> {
-        return extAndroid.bootClasspath.takeIf { it.isNotEmpty() }
-            ?: plugin::class.java.getMethod("getRuntimeJarList").invoke(plugin) as List<File>
+        return extAndroid.bootClasspath
     }
 
     fun aspectj(): AspectJExtension {

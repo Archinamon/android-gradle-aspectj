@@ -36,6 +36,44 @@ const val SIMPLE_PLUGIN_IMPLYING = """
     }
 """
 
+const val COMPLEX_PLUGIN_IMPLYING = """
+    apply plugin: 'com.android.application'
+    apply plugin: 'com.archinamon.aspectj-ext'
+
+    android {
+        compileSdkVersion 27
+
+        defaultConfig {
+            applicationId 'com.example.test'
+            minSdkVersion 21
+            targetSdkVersion 27
+            versionCode 1
+            versionName "1.0"
+
+            multiDexEnabled true
+        }
+        
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+    }
+
+    aspectj {
+        includeJar 'flexbox'
+    }
+
+    repositories {
+        google()
+        jcenter()
+        mavenCentral()
+    }
+    
+    dependencies {
+        implementation 'com.google.android:flexbox:1.1.0'
+    }
+"""
+
 const val DEPENDENCIES_WITH_TESTS = """
     dependencies {
         testCompile("junit:junit:4.12")

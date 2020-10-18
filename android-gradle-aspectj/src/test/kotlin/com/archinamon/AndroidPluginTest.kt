@@ -79,6 +79,75 @@ class AndroidPluginTest {
     }
 
     @Test
+    fun applyingAspectJPluginWithIncludeJar() {
+        val aspectjVersion = AspectJExtension().ajc
+        val jarFile = File("build/libs/").listFiles { file ->
+            "javadoc" !in file.name && "sources" !in file.name
+        }.firstOrNull() ?: throw Error()
+
+        buildFile.writeText("""
+            buildscript {
+                $REPOSITORIES
+
+                dependencies {
+                    // hack to avoid local pom-generation
+                    classpath 'org.aspectj:aspectjrt:$aspectjVersion'
+                    classpath 'org.aspectj:aspectjtools:$aspectjVersion'
+
+                    // main dependencies
+                    classpath 'com.android.tools.build:gradle:4.0.0'
+                    classpath files('${jarFile.absolutePath}')
+                }
+            }
+
+            $COMPLEX_PLUGIN_IMPLYING
+        """.trimIndent())
+
+        val result = GradleRunner.create()
+                .withDebug(true)
+                .withProjectDir(testProjectDir.root)
+                .withArguments("bundle",  "--info", "--stacktrace")
+                .build()
+
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":bundle")!!.outcome)
+    }
+
+    @Test
+    fun applyingAspectJPluginCausingNoClassDef() {
+        val aspectjVersion = AspectJExtension().ajc
+        val jarFile = File("build/libs/").listFiles { file ->
+            "javadoc" !in file.name && "sources" !in file.name
+        }.firstOrNull() ?: throw Error()
+
+        buildFile.writeText("""
+            buildscript {
+                $REPOSITORIES
+
+                dependencies {
+                    // hack to avoid local pom-generation
+                    classpath 'org.aspectj:aspectjrt:$aspectjVersion'
+                    classpath 'org.aspectj:aspectjtools:$aspectjVersion'
+
+                    // main dependencies
+                    classpath 'com.android.tools.build:gradle:4.0.0'
+                    classpath files('${jarFile.absolutePath}')
+                    classpath 'com.squareup.leakcanary:leakcanary-android:2.2'
+                }
+            }
+
+            $SIMPLE_PLUGIN_IMPLYING
+        """.trimIndent())
+
+        val result = GradleRunner.create()
+                .withDebug(true)
+                .withProjectDir(testProjectDir.root)
+                .withArguments("bundle",  "--info", "--stacktrace")
+                .build()
+
+        Assertions.assertEquals(TaskOutcome.SUCCESS, result.task(":bundle")!!.outcome)
+    }
+
+    @Test
     fun runningTestsWithAjAugmenting() {
         val aspectjVersion = AspectJExtension().ajc
         val jarFile = File("build/libs/").listFiles { file ->

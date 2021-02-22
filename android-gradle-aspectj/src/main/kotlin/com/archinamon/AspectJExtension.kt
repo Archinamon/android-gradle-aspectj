@@ -1,8 +1,11 @@
 package com.archinamon
 
+import org.gradle.api.JavaVersion
+
 open class AspectJExtension {
 
-    open var ajc = "1.8.10"
+    open var ajc = "1.9.4"
+    open var java = JavaVersion.VERSION_1_7
 
     open var includeAllJars = false
     open var includeJar = mutableSetOf<String>()
@@ -11,6 +14,9 @@ open class AspectJExtension {
 
     open var includeAspectsFromJar = mutableSetOf<String>()
     open var ajcArgs = mutableSetOf<String>()
+
+    internal open var dryRun = false
+    open var compileTests = true
 
     open var weaveInfo = true
     open var debugInfo = false

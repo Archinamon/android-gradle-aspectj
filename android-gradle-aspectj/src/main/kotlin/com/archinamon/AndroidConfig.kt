@@ -1,23 +1,30 @@
 package com.archinamon
 
-import com.android.build.gradle.*
+import com.android.build.gradle.AppExtension
+import com.android.build.gradle.BaseExtension
+import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.TestExtension
+import com.android.build.gradle.internal.plugins.AppPlugin
+import com.android.build.gradle.internal.plugins.BasePlugin
+import com.android.build.gradle.internal.plugins.LibraryPlugin
+import com.android.build.gradle.internal.plugins.TestPlugin
 import com.archinamon.plugin.ConfigScope
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import java.io.File
 
-const private val ASPECTJ_PLUGIN = "com.archinamon.aspectj"
+private const val ASPECTJ_PLUGIN = "com.archinamon.aspectj"
 const val RETROLAMBDA = "me.tatarka.retrolambda"
 const val MISDEFINITION = "Illegal definition: $ASPECTJ_PLUGIN should be defined after $RETROLAMBDA plugin"
 
-const private val TAG = "AJC:"
-const private val PLUGIN_EXCEPTION = "$TAG You must apply the Android plugin or the Android library plugin"
+private const val TAG = "AJC:"
+private const val PLUGIN_EXCEPTION = "$TAG You must apply the Android plugin or the Android library plugin"
 
 internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     val extAndroid: BaseExtension
     val isLibraryPlugin: Boolean
-    val plugin: BasePlugin
+    val plugin: BasePlugin<*, *>
 
     init {
         when {
@@ -48,7 +55,7 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     @Suppress("UNCHECKED_CAST")
     fun getBootClasspath(): List<File> {
-        return extAndroid.bootClasspath ?: plugin::class.java.getMethod("getRuntimeJarList").invoke(plugin) as List<File>
+        return extAndroid.bootClasspath
     }
 
     fun aspectj(): AspectJExtension {

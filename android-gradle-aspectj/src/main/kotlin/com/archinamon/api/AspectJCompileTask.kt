@@ -2,17 +2,20 @@ package com.archinamon.api
 
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
-import com.archinamon.lang.kotlin.closureOf
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
-import org.gradle.api.internal.file.collections.SimpleFileCollection
+import org.gradle.api.internal.file.AbstractFileCollection
+import org.gradle.api.internal.tasks.TaskDependencyInternal
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskDependency
 import org.gradle.api.tasks.compile.AbstractCompile
 import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.kotlin.dsl.closureOf
+import org.gradle.kotlin.dsl.create
 import java.io.File
 import java.util.*
 
@@ -25,6 +28,7 @@ internal open class AspectJCompileTask : AbstractCompile() {
         private lateinit var javaCompiler: JavaCompile
         private lateinit var variantName: String
         private lateinit var taskName: String
+        private var overwrite: Boolean = false
 
         fun plugin(plugin: Plugin<Project>): Builder {
             this.plugin = plugin
@@ -51,9 +55,14 @@ internal open class AspectJCompileTask : AbstractCompile() {
             return this
         }
 
+        fun overwriteJavac(overwrite: Boolean): Builder {
+            this.overwrite = overwrite
+            return this
+        }
+
         fun buildAndAttach(android: AndroidConfig) {
             val options = mutableMapOf(
-                    "overwrite" to true,
+                    "name" to taskName,
                     "dependsOn" to javaCompiler.name,
                     "group" to "build",
                     "description" to "Compile .aj source files into java .class with meta instructions",
@@ -61,21 +70,24 @@ internal open class AspectJCompileTask : AbstractCompile() {
             )
 
             val sources = findAjSourcesForVariant(project, variantName)
-            val task = project.task(options, taskName, closureOf<AspectJCompileTask> task@ {
+            val task = project.tasks.create(options, closureOf<AspectJCompileTask> task@ {
+                compileMode = android.scope
                 destinationDir = obtainBuildDirectory(android)
                 aspectJWeaver = AspectJWeaver(project)
 
+                classpath = classpath(withJavaCp = true)
+                doFirst { classpath += javaCompiler.classpath }
+
+                findCompiledAspectsInClasspath(this@task, config.includeAspectsFromJar)
                 source(sources)
-                classpath = classpath()
-                findCompiledAspectsInClasspath(this, config.includeAspectsFromJar)
 
                 aspectJWeaver.apply {
                     ajSources = sources
-                    inPath shl this@task.destinationDir shl javaCompiler.destinationDir
+                    inPath shl this@task.destinationDir
 
-                    targetCompatibility = JavaVersion.VERSION_1_7.toString()
-                    sourceCompatibility = JavaVersion.VERSION_1_7.toString()
-                    destinationDir = this@task.destinationDir.absolutePath
+                    targetCompatibility = config.java.toString()
+                    sourceCompatibility = config.java.toString()
+                    destinationDir = resolveDestinationDir(this@task)
                     bootClasspath = android.getBootClasspath().joinToString(separator = File.pathSeparator)
                     encoding = javaCompiler.options.encoding
 
@@ -91,10 +103,15 @@ internal open class AspectJCompileTask : AbstractCompile() {
                 }
             }) as AspectJCompileTask
 
-            // uPhyca's fix
+            if (overwrite) {
+                javaCompiler.enabled = false
+                task.aspectJWeaver.ajSources
+                        .addAll(findJavaSourcesForVariant(project, variantName))
+            }
+
             // javaCompile.classpath does not contain exploded-aar/**/jars/*.jars till first run
             javaCompiler.doLast {
-                task.classpath = classpath()
+                task.classpath = classpath(withJavaCp = true)
                 findCompiledAspectsInClasspath(task, config.includeAspectsFromJar)
             }
 
@@ -102,17 +119,22 @@ internal open class AspectJCompileTask : AbstractCompile() {
             javaCompiler.finalizedBy(task)
         }
 
+        private fun resolveDestinationDir(task: AspectJCompileTask) =
+                (if (overwrite) javaCompiler.destinationDir else task.destinationDir)
+                        .absolutePath
+
         private fun obtainBuildDirectory(android: AndroidConfig): File? {
             return if (android.scope == ConfigScope.PROVIDE) {
                 javaCompiler.destinationDir
             } else {
-                project.file("${project.buildDir}/aspectj/$variantName")
+                project.file("${project.buildDir}/$LANG_AJ/$variantName")
             }
         }
 
-        private fun classpath(): FileCollection {
-            return SimpleFileCollection(javaCompiler.classpath.files + javaCompiler.destinationDir)
-        }
+        private fun classpath(withJavaCp: Boolean): FileCollection =
+                ClasspathFileCollection(setOf(javaCompiler.destinationDir)).apply {
+                    if (withJavaCp) plus(javaCompiler.classpath)
+                }
 
         private fun findCompiledAspectsInClasspath(task: AspectJCompileTask, aspectsFromJar: Collection<String>) {
             val classpath: FileCollection = task.classpath
@@ -129,13 +151,16 @@ internal open class AspectJCompileTask : AbstractCompile() {
         }
     }
 
-    lateinit var aspectJWeaver: AspectJWeaver
+    @Internal lateinit var compileMode: ConfigScope
+    @Internal lateinit var aspectJWeaver: AspectJWeaver
 
     @TaskAction
-    override fun compile() {
+    fun compile() {
         logCompilationStart()
 
-        destinationDir.deleteRecursively()
+        if (compileMode != ConfigScope.PROVIDE) {
+            destinationDir.deleteRecursively()
+        }
 
         aspectJWeaver.classPath = LinkedHashSet(classpath.files)
         aspectJWeaver.doWeave()

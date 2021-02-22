@@ -1,13 +1,13 @@
 package com.archinamon.api.transform
 
 import com.android.build.api.transform.*
+import com.android.build.api.variant.impl.VariantPropertiesImpl
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
-import com.android.build.gradle.internal.pipeline.TransformTask
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
-import com.archinamon.api.AspectJMergeJars
+import com.archinamon.api.jars.AspectJMergeJars
 import com.archinamon.api.AspectJWeaver
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
@@ -15,10 +15,10 @@ import com.archinamon.utils.DependencyFilter.isExcludeFilterMatched
 import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
 import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
-import org.gradle.api.GradleException
-import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
 internal abstract class AspectJTransform(val project: Project, private val policy: BuildPolicy): Transform() {
 
@@ -34,7 +34,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
     open fun prepareProject(): AspectJTransform {
         project.afterEvaluate {
-            getVariantDataList(config.plugin).forEach(this::setupVariant)
+            getVariantDataList(config.plugin).forEach(::setupVariant)
 
             with(config.aspectj()) {
                 aspectJWeaver.weaveInfo = weaveInfo
@@ -52,18 +52,12 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         return this
     }
 
-    private fun <T: BaseVariantData> setupVariant(variantData: T) {
-        if (variantData.scope.instantRunBuildContext.isInInstantRunMode) {
-            if (modeComplex()) {
-                throw GradleException(SLICER_DETECTED_ERROR)
-            }
-        }
-
-        val javaTask = getJavaTask(variantData)
+    private fun <T: BaseVariantData> setupVariant(variantData: Pair<T, VariantPropertiesImpl>) {
+        val javaTask = getJavaTask(variantData.first)
         getAjSourceAndExcludeFromJavac(project, variantData)
-        aspectJWeaver.encoding = javaTask!!.options.encoding
-        aspectJWeaver.sourceCompatibility = JavaVersion.VERSION_1_7.toString()
-        aspectJWeaver.targetCompatibility = JavaVersion.VERSION_1_7.toString()
+        aspectJWeaver.encoding = javaTask.options.encoding
+        aspectJWeaver.sourceCompatibility = config.aspectj().java.toString()
+        aspectJWeaver.targetCompatibility = config.aspectj().java.toString()
     }
 
     /* External API */
@@ -94,7 +88,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
     @Suppress("OverridingDeprecatedMember")
     override fun transform(context: Context, inputs: Collection<TransformInput>, referencedInputs: Collection<TransformInput>, outputProvider: TransformOutputProvider, isIncremental: Boolean) {
-        this.transform(TransformInvocationBuilder(context)
+        transform(TransformInvocationBuilder(context)
             .addInputs(inputs)
             .addReferencedInputs(referencedInputs)
             .addOutputProvider(outputProvider)
@@ -102,7 +96,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     override fun transform(transformInvocation: TransformInvocation) {
-        // bypassing transformer for non-test variant data in ConfigScope.TEST
+        // bypassing transformer for non-test variant data in ConfigScope.JUNIT
         if (!verifyBypassInTestScope(transformInvocation.context)) {
             logBypassTransformation()
             return
@@ -149,8 +143,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
                 if (modeComplex()) {
                     val includeAllJars = config.aspectj().includeAllJars
-                    val includeFilterMatched = includeJars.isNotEmpty() && isIncludeFilterMatched(jar.file, includeJars)
-                    val excludeFilterMatched = excludeJars.isNotEmpty() && isExcludeFilterMatched(jar.file, excludeJars)
+                    val includeFilterMatched = includeJars.isNotEmpty() && isIncludeFilterMatched(jar, includeJars)
+                    val excludeFilterMatched = excludeJars.isNotEmpty() && isExcludeFilterMatched(jar, excludeJars)
 
                     if (excludeFilterMatched) {
                         logJarInpathRemoved(jar)
@@ -163,10 +157,11 @@ internal abstract class AspectJTransform(val project: Project, private val polic
                         copyJar(outputProvider, jar)
                     }
                 } else {
-                    if (includeJars.isNotEmpty() || excludeJars.isNotEmpty()) logIgnoreInpathJars()
+                    if (includeJars.isNotEmpty() || excludeJars.isNotEmpty())
+                        logIgnoreInpathJars()
                 }
 
-                val includeAspectsFilterMatched = includeAspects.isNotEmpty() && isIncludeFilterMatched(jar.file, includeAspects)
+                val includeAspectsFilterMatched = includeAspects.isNotEmpty() && isIncludeFilterMatched(jar, includeAspects)
                 if (includeAspectsFilterMatched) {
                     logJarAspectAdded(jar)
                     aspectJWeaver.aspectPath shl jar.file
@@ -174,20 +169,51 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             }
         }
 
-        val hasAjRt = aspectJWeaver.classPath.any { it.name.contains(AJRUNTIME); }
-
-        if (hasAjRt) {
-            logWeaverBuildPolicy(policy)
-            aspectJWeaver.doWeave()
-
-            if (modeComplex()) {
-                aspectJMerger.doMerge(this, transformInvocation, outputDir)
-            }
-
-            logAugmentationFinish()
-        } else {
-            logEnvInvalid()
+        val classpathFiles = aspectJWeaver.classPath.filter { it.isDirectory && !it.list().isNullOrEmpty() }
+        val inpathFiles = aspectJWeaver.inPath.filter { it.isDirectory && !it.list().isNullOrEmpty() }
+        if (inpathFiles.isEmpty() || classpathFiles.isEmpty()) {
             logNoAugmentation()
+            return
+        }
+
+        aspectJWeaver.inPath shl outputDir
+
+        logWeaverBuildPolicy(policy)
+        aspectJWeaver.doWeave()
+
+        if (modeComplex()) {
+            aspectJMerger.doMerge(this, transformInvocation, outputDir)
+        }
+
+        copyUnprocessedFiles(inputs, outputDir)
+
+        logAugmentationFinish()
+    }
+
+    private fun copyUnprocessedFiles(inputs: Collection<TransformInput>, outputDir: File) {
+        inputs.forEach { input ->
+            input.directoryInputs.forEach { dir ->
+                copyUnprocessedFiles(dir.file.toPath(), outputDir.toPath())
+            }
+        }
+    }
+
+    private fun copyUnprocessedFiles(inDir: Path, outDir: Path) {
+        if (modeComplex()) {
+            return
+        }
+
+        Files.walk(inDir).forEach traverse@ { inFile ->
+            val outFile = outDir.resolve(inDir.relativize(inFile))
+
+            if (Files.exists(outFile))
+                return@traverse
+
+            if (Files.isDirectory(outFile)) {
+                Files.createDirectory(outFile)
+            } else {
+                Files.copy(inFile, outFile)
+            }
         }
     }
 
@@ -198,16 +224,16 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     /* Internal */
 
     private fun verifyBypassInTestScope(ctx: Context): Boolean {
-        val variant = (ctx as TransformTask).variantName
+        val variant = ctx.variantName
 
         return when (config.scope) {
-            ConfigScope.TEST -> variant.contains("androidtest", true)
+            ConfigScope.JUNIT -> variant.contains("androidtest", true)
             else -> true
         }
     }
 
     private fun includeCompiledAspects(transformInvocation: TransformInvocation, outputDir: File) {
-        val compiledAj = project.file("${project.buildDir}/aspectj/${(transformInvocation.context as TransformTask).variantName}")
+        val compiledAj = project.file("${project.buildDir}/$LANG_AJ/${transformInvocation.context.variantName}")
         if (compiledAj.exists()) {
             aspectJWeaver.aspectPath shl compiledAj
 

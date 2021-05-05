@@ -1,10 +1,9 @@
 package com.archinamon.api.transform
 
 import com.android.build.api.transform.*
-import com.android.build.api.variant.impl.VariantPropertiesImpl
+import com.android.build.api.variant.impl.VariantImpl
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
-import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
 import com.archinamon.api.jars.AspectJMergeJars
@@ -52,9 +51,9 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         return this
     }
 
-    private fun <T: BaseVariantData> setupVariant(variantData: Pair<T, VariantPropertiesImpl>) {
-        val javaTask = getJavaTask(variantData.first)
-        getAjSourceAndExcludeFromJavac(project, variantData)
+    private fun setupVariant(variant: VariantImpl) {
+        val javaTask = getJavaTask(variant.variantData)
+        getAjSourceAndExcludeFromJavac(project, variant)
         aspectJWeaver.encoding = javaTask.options.encoding
         aspectJWeaver.sourceCompatibility = config.aspectj().java.toString()
         aspectJWeaver.targetCompatibility = config.aspectj().java.toString()

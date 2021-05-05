@@ -1,6 +1,6 @@
 package com.archinamon.utils
 
-import com.android.build.api.variant.impl.VariantPropertiesImpl
+import com.android.build.api.variant.impl.VariantImpl
 import com.android.build.gradle.internal.plugins.BasePlugin
 import com.android.build.gradle.internal.scope.TaskContainer
 import com.android.build.gradle.internal.variant.BaseVariantData
@@ -50,12 +50,11 @@ fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile {
     return baseVariantData.taskContainer.javacTask.get()
 }
 
-fun getAjSourceAndExcludeFromJavac(project: Project, variantData: Pair<BaseVariantData, VariantPropertiesImpl>): FileCollection {
-    val javaTask = getJavaTask(variantData.first)
-    val props = variantData.second
+fun getAjSourceAndExcludeFromJavac(project: Project, variant: VariantImpl): FileCollection {
+    val javaTask = getJavaTask(variant.variantData)
 
-    val flavors: List<String>? = props.productFlavors.map { flavor -> flavor.second }
-    val srcSet = mutableListOf("main", props.buildType ?: props.flavorName)
+    val flavors: List<String>? = variant.productFlavors.map { flavor -> flavor.second }
+    val srcSet = mutableListOf("main", variant.buildType ?: variant.flavorName)
     flavors?.let { srcSet.addAll(it) }
 
     val srcDirs = srcSet.map { "src/$it/aspectj" }
@@ -97,9 +96,9 @@ fun findSourcesForVariant(project: Project, variantName: String, language: Strin
     return LinkedHashSet(possibleDirs)
 }
 
-fun getVariantDataList(plugin: BasePlugin<*, *>): List<Pair<BaseVariantData, VariantPropertiesImpl>> {
+fun getVariantDataList(plugin: BasePlugin<*, *, *>): List<VariantImpl> {
     return plugin.variantManager.mainComponents.map {
-        it.properties.variantData to it.properties
+        it.variant
     }
 }
 

@@ -24,7 +24,7 @@ internal class AndroidConfig(val project: Project, val scope: ConfigScope) {
 
     val extAndroid: BaseExtension
     val isLibraryPlugin: Boolean
-    val plugin: BasePlugin<*, *>
+    val plugin: BasePlugin<*, *, *>
 
     init {
         when {

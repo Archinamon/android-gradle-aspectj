@@ -1,6 +1,6 @@
 package com.archinamon.utils
 
-import com.android.build.api.variant.impl.VariantPropertiesImpl
+import com.android.build.api.variant.impl.VariantImpl
 import com.android.build.gradle.internal.plugins.BasePlugin
 import com.android.build.gradle.internal.scope.TaskContainer
 import com.android.build.gradle.internal.variant.BaseVariantData
@@ -50,7 +50,7 @@ fun getJavaTask(baseVariantData: BaseVariantData): JavaCompile {
     return baseVariantData.taskContainer.javacTask.get()
 }
 
-fun getAjSourceAndExcludeFromJavac(project: Project, variantData: Pair<BaseVariantData, VariantPropertiesImpl>): FileCollection {
+fun getAjSourceAndExcludeFromJavac(project: Project, variantData: Pair<BaseVariantData, VariantImpl>): FileCollection {
     val javaTask = getJavaTask(variantData.first)
     val props = variantData.second
 
@@ -97,9 +97,9 @@ fun findSourcesForVariant(project: Project, variantName: String, language: Strin
     return LinkedHashSet(possibleDirs)
 }
 
-fun getVariantDataList(plugin: BasePlugin<*, *>): List<Pair<BaseVariantData, VariantPropertiesImpl>> {
+fun getVariantDataList(plugin: BasePlugin<*, *, *>): List<Pair<BaseVariantData, VariantImpl>> {
     return plugin.variantManager.mainComponents.map {
-        it.properties.variantData to it.properties
+        it.variant.variantData to it.variant
     }
 }
 

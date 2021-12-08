@@ -3,6 +3,8 @@ package com.archinamon.plugin
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.internal.core.VariantDslInfoImpl
+import com.android.builder.core.VariantType
+import com.android.builder.core.VariantTypeImpl
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.MISDEFINITION
@@ -12,7 +14,6 @@ import com.archinamon.api.BuildTimeListener
 import com.archinamon.utils.LANG_AJ
 import com.archinamon.utils.getJavaTask
 import com.archinamon.utils.getVariantDataList
-import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -53,7 +54,7 @@ private fun prepareVariant(config: AndroidConfig) {
     getVariantDataList(config.plugin).forEach { variant ->
         val props = variant.second
         props.productFlavors.forEach { applier(it.second) }
-        applier(props.buildType ?: props.flavorName)
+        applier(props.buildType ?: props.flavorName ?: props.name)
     }
 }
 
@@ -87,8 +88,9 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
             else -> null
         }
 
-        if (variantAnalyticsType is GradleBuildVariant.VariantType
-                && variantAnalyticsType == GradleBuildVariant.VariantType.UNIT_TEST) {
+        if (variantAnalyticsType is VariantType
+                && variantAnalyticsType == VariantTypeImpl.UNIT_TEST
+        ) {
             if (config.aspectj().compileTests) {
                 ajc.overwriteJavac(true)
                         .buildAndAttach(config)

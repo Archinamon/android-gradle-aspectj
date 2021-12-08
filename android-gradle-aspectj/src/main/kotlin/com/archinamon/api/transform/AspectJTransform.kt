@@ -1,11 +1,10 @@
 package com.archinamon.api.transform
 
 import com.android.build.api.transform.*
-import com.android.build.api.variant.impl.VariantPropertiesImpl
+import com.android.build.api.variant.impl.VariantImpl
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.variant.BaseVariantData
-import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
 import com.archinamon.api.jars.AspectJMergeJars
 import com.archinamon.api.AspectJWeaver
@@ -13,7 +12,6 @@ import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
 import com.archinamon.utils.DependencyFilter.isExcludeFilterMatched
 import com.archinamon.utils.DependencyFilter.isIncludeFilterMatched
-import com.google.common.collect.Sets
 import org.aspectj.util.FileUtil
 import org.gradle.api.Project
 import java.io.File
@@ -52,7 +50,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         return this
     }
 
-    private fun <T: BaseVariantData> setupVariant(variantData: Pair<T, VariantPropertiesImpl>) {
+    private fun <T: BaseVariantData> setupVariant(variantData: Pair<T, VariantImpl>) {
         val javaTask = getJavaTask(variantData.first)
         getAjSourceAndExcludeFromJavac(project, variantData)
         aspectJWeaver.encoding = javaTask.options.encoding
@@ -67,7 +65,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     override fun getInputTypes(): Set<QualifiedContent.ContentType> {
-        return Sets.immutableEnumSet(QualifiedContent.DefaultContentType.CLASSES)
+        return setOf(QualifiedContent.DefaultContentType.CLASSES)
     }
 
     override fun getOutputTypes(): Set<QualifiedContent.ContentType> {
@@ -75,7 +73,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     override fun getScopes(): MutableSet<in QualifiedContent.Scope> {
-        return if (modeComplex()) TransformManager.SCOPE_FULL_PROJECT else Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT)
+        return if (modeComplex()) TransformManager.SCOPE_FULL_PROJECT else mutableSetOf(QualifiedContent.Scope.PROJECT)
     }
 
     override fun getReferencedScopes(): MutableSet<in QualifiedContent.Scope> {
@@ -112,8 +110,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         }
 
         val outputDir = outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY)
-        if (outputDir.isDirectory) FileUtils.deleteDirectoryContents(outputDir)
-        FileUtils.mkdirs(outputDir)
+        if (outputDir.isDirectory) outputDir.delete()
+        Files.createDirectory(outputDir.toPath())
 
         aspectJWeaver.destinationDir = outputDir.absolutePath
         aspectJWeaver.bootClasspath = config.getBootClasspath().joinToString(separator = File.pathSeparator)

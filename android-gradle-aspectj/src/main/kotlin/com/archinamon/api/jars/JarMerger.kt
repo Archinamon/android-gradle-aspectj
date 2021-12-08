@@ -1,8 +1,6 @@
 package com.archinamon.api.jars
 
-import com.android.SdkConstants
-import com.android.utils.PathUtils
-import com.google.common.collect.ImmutableSortedMap
+import org.gradle.internal.impldep.com.google.common.collect.ImmutableSortedMap
 import java.io.*
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -42,7 +40,7 @@ class JarMerger @Throws(IOException::class) @JvmOverloads constructor(
                 directory,
                 object : SimpleFileVisitor<Path>() {
                     override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-                        var entryPath = PathUtils.toSystemIndependentPath(directory.relativize(file))
+                        var entryPath = toSystemIndependentPath(directory.relativize(file))
                         if (filterOverride != null && !filterOverride.test(entryPath)) {
                             return FileVisitResult.CONTINUE
                         }
@@ -134,8 +132,9 @@ class JarMerger @Throws(IOException::class) @JvmOverloads constructor(
         val manifest = Manifest()
         val global = manifest.mainAttributes
         global[Attributes.Name.MANIFEST_VERSION] = "1.0.0"
-        properties.forEach(
-                { attributeName, attributeValue -> global[Attributes.Name(attributeName)] = attributeValue })
+        properties.forEach { (attributeName, attributeValue) ->
+            global[Attributes.Name(attributeName)] = attributeValue
+        }
         val manifestEntry = JarEntry(JarFile.MANIFEST_NAME)
         setEntryAttributes(manifestEntry)
         jarOutputStream.putNextEntry(manifestEntry)
@@ -167,6 +166,14 @@ class JarMerger @Throws(IOException::class) @JvmOverloads constructor(
         entry.creationTime = fileTime
     }
 
+    private fun toSystemIndependentPath(path: Path): String {
+        return if (File.separatorChar != '/') {
+            path.toString().replace(File.separatorChar, '/')
+        } else {
+            path.toString()
+        }
+    }
+
     interface Transformer {
         /**
          * Transforms the given file.
@@ -185,8 +192,8 @@ class JarMerger @Throws(IOException::class) @JvmOverloads constructor(
 
     companion object {
 
-        val CLASSES_ONLY = { archivePath: String -> archivePath.endsWith(SdkConstants.DOT_CLASS) }
-        val EXCLUDE_CLASSES = { archivePath: String -> !archivePath.endsWith(SdkConstants.DOT_CLASS) }
+        val CLASSES_ONLY = { archivePath: String -> archivePath.endsWith(".class") }
+        val EXCLUDE_CLASSES = { archivePath: String -> !archivePath.endsWith(".class") }
 
         val fileTime: FileTime = FileTime.fromMillis(0)
     }

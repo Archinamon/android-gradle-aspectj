@@ -1,8 +1,11 @@
 package com.archinamon.utils
 
+import org.gradle.internal.impldep.jakarta.xml.bind.JAXBContext
+import org.gradle.internal.impldep.jakarta.xml.bind.annotation.XmlAccessType
+import org.gradle.internal.impldep.jakarta.xml.bind.annotation.XmlAccessorType
+import org.gradle.internal.impldep.jakarta.xml.bind.annotation.XmlAttribute
+import org.gradle.internal.impldep.jakarta.xml.bind.annotation.XmlRootElement
 import java.io.File
-import javax.xml.bind.JAXBContext
-import javax.xml.bind.annotation.*
 
 internal fun findPackageNameIfAar(input: File): String {
     if (!input.absolutePath.contains("build-cache")) return input.absolutePath
@@ -12,9 +15,9 @@ internal fun findPackageNameIfAar(input: File): String {
 
     do {
         f = f?.parentFile
-    } while (f?.isDirectory!! && !f.listFiles().any(::findManifest))
+    } while (f?.isDirectory!! && f.listFiles()?.any(::findManifest) == false)
 
-    val manifest = f.listFiles().find(::findManifest)
+    val manifest = f.listFiles()?.find(::findManifest)
     if (manifest != null) {
         val xml = readXml(manifest, Manifest::class.java)
         return xml.libPackage

@@ -1,13 +1,10 @@
 package com.archinamon.api.transform
 
 import com.android.build.api.transform.*
-import com.android.build.api.variant.impl.VariantPropertiesImpl
 import com.android.build.gradle.internal.pipeline.TransformInvocationBuilder
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.android.build.gradle.internal.variant.BaseVariantData
-import com.android.utils.FileUtils
 import com.archinamon.AndroidConfig
-import com.archinamon.api.jars.AspectJMergeJars
 import com.archinamon.api.AspectJWeaver
 import com.archinamon.plugin.ConfigScope
 import com.archinamon.utils.*
@@ -20,12 +17,12 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 
-internal abstract class AspectJTransform(val project: Project, private val policy: BuildPolicy): Transform() {
+internal abstract class AspectJTransform(val project: Project, private val policy: BuildPolicy) :
+    Transform() {
 
     private lateinit var config: AndroidConfig
 
     private val aspectJWeaver: AspectJWeaver = AspectJWeaver(project)
-    private val aspectJMerger: AspectJMergeJars = AspectJMergeJars()
 
     fun withConfig(config: AndroidConfig): AspectJTransform {
         this.config = config
@@ -52,8 +49,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
         return this
     }
 
-    private fun <T: BaseVariantData> setupVariant(variantData: Pair<T, VariantPropertiesImpl>) {
-        val javaTask = getJavaTask(variantData.first)
+    private fun setupVariant(variantData: BaseVariantData) {
+        val javaTask = getJavaTask(variantData)
         getAjSourceAndExcludeFromJavac(project, variantData)
         aspectJWeaver.encoding = javaTask.options.encoding
         aspectJWeaver.sourceCompatibility = config.aspectj().java.toString()
@@ -75,7 +72,9 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     override fun getScopes(): MutableSet<in QualifiedContent.Scope> {
-        return if (modeComplex()) TransformManager.SCOPE_FULL_PROJECT else Sets.immutableEnumSet(QualifiedContent.Scope.PROJECT)
+        return if (modeComplex()) TransformManager.SCOPE_FULL_PROJECT else Sets.immutableEnumSet(
+            QualifiedContent.Scope.PROJECT
+        )
     }
 
     override fun getReferencedScopes(): MutableSet<in QualifiedContent.Scope> {
@@ -87,12 +86,20 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     @Suppress("OverridingDeprecatedMember")
-    override fun transform(context: Context, inputs: Collection<TransformInput>, referencedInputs: Collection<TransformInput>, outputProvider: TransformOutputProvider, isIncremental: Boolean) {
-        transform(TransformInvocationBuilder(context)
-            .addInputs(inputs)
-            .addReferencedInputs(referencedInputs)
-            .addOutputProvider(outputProvider)
-            .setIncrementalMode(isIncremental).build())
+    override fun transform(
+        context: Context,
+        inputs: Collection<TransformInput>,
+        referencedInputs: Collection<TransformInput>,
+        outputProvider: TransformOutputProvider,
+        isIncremental: Boolean
+    ) {
+        transform(
+            TransformInvocationBuilder(context)
+                .addInputs(inputs)
+                .addReferencedInputs(referencedInputs)
+                .addOutputProvider(outputProvider)
+                .setIncrementalMode(isIncremental).build()
+        )
     }
 
     override fun transform(transformInvocation: TransformInvocation) {
@@ -111,12 +118,14 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             outputProvider.deleteAll()
         }
 
-        val outputDir = outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY)
-        if (outputDir.isDirectory) FileUtils.deleteDirectoryContents(outputDir)
-        FileUtils.mkdirs(outputDir)
+        val outputDir =
+            outputProvider.getContentLocation(TRANSFORM_NAME, outputTypes, scopes, Format.DIRECTORY)
+        Files.deleteIfExists(outputDir.toPath())
+        Files.createDirectories(outputDir.toPath())
 
         aspectJWeaver.destinationDir = outputDir.absolutePath
-        aspectJWeaver.bootClasspath = config.getBootClasspath().joinToString(separator = File.pathSeparator)
+        aspectJWeaver.bootClasspath =
+            config.getBootClasspath().joinToString(separator = File.pathSeparator)
 
         // clear weaver input, so each transformation can have its own configuration
         // (e.g. different build types / variants)
@@ -128,9 +137,10 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
         // attaching source classes compiled by compile${variantName}AspectJ task
         includeCompiledAspects(transformInvocation, outputDir)
-        val inputs = if (modeComplex()) transformInvocation.inputs else transformInvocation.referencedInputs
+        val inputs =
+            if (modeComplex()) transformInvocation.inputs else transformInvocation.referencedInputs
 
-        inputs.forEach proceedInputs@ { input ->
+        inputs.forEach proceedInputs@{ input ->
             if (input.directoryInputs.isEmpty() && input.jarInputs.isEmpty())
                 return@proceedInputs //if no inputs so nothing to proceed
 
@@ -143,8 +153,10 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
                 if (modeComplex()) {
                     val includeAllJars = config.aspectj().includeAllJars
-                    val includeFilterMatched = includeJars.isNotEmpty() && isIncludeFilterMatched(jar, includeJars)
-                    val excludeFilterMatched = excludeJars.isNotEmpty() && isExcludeFilterMatched(jar, excludeJars)
+                    val includeFilterMatched =
+                        includeJars.isNotEmpty() && isIncludeFilterMatched(jar, includeJars)
+                    val excludeFilterMatched =
+                        excludeJars.isNotEmpty() && isExcludeFilterMatched(jar, excludeJars)
 
                     if (excludeFilterMatched) {
                         logJarInpathRemoved(jar)
@@ -161,7 +173,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
                         logIgnoreInpathJars()
                 }
 
-                val includeAspectsFilterMatched = includeAspects.isNotEmpty() && isIncludeFilterMatched(jar, includeAspects)
+                val includeAspectsFilterMatched =
+                    includeAspects.isNotEmpty() && isIncludeFilterMatched(jar, includeAspects)
                 if (includeAspectsFilterMatched) {
                     logJarAspectAdded(jar)
                     aspectJWeaver.aspectPath shl jar.file
@@ -169,8 +182,10 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             }
         }
 
-        val classpathFiles = aspectJWeaver.classPath.filter { it.isDirectory && !it.list().isNullOrEmpty() }
-        val inpathFiles = aspectJWeaver.inPath.filter { it.isDirectory && !it.list().isNullOrEmpty() }
+        val classpathFiles =
+            aspectJWeaver.classPath.filter { it.isDirectory && it.list()?.isNotEmpty() == true }
+        val inpathFiles =
+            aspectJWeaver.inPath.filter { it.isDirectory && it.list()?.isNotEmpty() == true }
         if (inpathFiles.isEmpty() || classpathFiles.isEmpty()) {
             logNoAugmentation()
             return
@@ -180,10 +195,6 @@ internal abstract class AspectJTransform(val project: Project, private val polic
 
         logWeaverBuildPolicy(policy)
         aspectJWeaver.doWeave()
-
-        if (modeComplex()) {
-            aspectJMerger.doMerge(this, transformInvocation, outputDir)
-        }
 
         copyUnprocessedFiles(inputs, outputDir)
 
@@ -203,7 +214,7 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             return
         }
 
-        Files.walk(inDir).forEach traverse@ { inFile ->
+        Files.walk(inDir).forEach traverse@{ inFile ->
             val outFile = outDir.resolve(inDir.relativize(inFile))
 
             if (Files.exists(outFile))
@@ -233,7 +244,8 @@ internal abstract class AspectJTransform(val project: Project, private val polic
     }
 
     private fun includeCompiledAspects(transformInvocation: TransformInvocation, outputDir: File) {
-        val compiledAj = project.file("${project.buildDir}/$LANG_AJ/${transformInvocation.context.variantName}")
+        val compiledAj =
+            project.file("${project.buildDir}/$LANG_AJ/${transformInvocation.context.variantName}")
         if (compiledAj.exists()) {
             aspectJWeaver.aspectPath shl compiledAj
 
@@ -252,7 +264,12 @@ internal abstract class AspectJTransform(val project: Project, private val polic
             jarName = jarName.substring(0, jarName.length - 4)
         }
 
-        val dest: File = outputProvider.getContentLocation(jarName, jarInput.contentTypes, jarInput.scopes, Format.JAR)
+        val dest: File = outputProvider.getContentLocation(
+            jarName,
+            jarInput.contentTypes,
+            jarInput.scopes,
+            Format.JAR
+        )
 
         FileUtil.copyFile(jarInput.file, dest)
 

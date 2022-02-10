@@ -80,6 +80,8 @@ dependencies {
     compileOnly("com.android.tools.build:gradle:$androidGradleVersion")
     implementation("org.aspectj:aspectjrt:$aspectjVersion")
     implementation("org.aspectj:aspectjtools:$aspectjVersion")
+    implementation("com.google.guava:guava:31.0.1-android")
+    implementation("jakarta.xml.bind:jakarta.xml.bind-api:2.3.3")
 
     testImplementation(gradleTestKit())
     testImplementation("junit:junit:4.12")

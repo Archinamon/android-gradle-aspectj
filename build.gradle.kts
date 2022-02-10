@@ -16,7 +16,7 @@ allprojects {
         google()
         jcenter()
         mavenCentral()
-        maven { url = uri("http://repository.jetbrains.com/utils") }
+        maven { url = uri("https://repository.jetbrains.com/utils") }
         maven { url = uri("https://dl.bintray.com/archinamon/maven") }
     }
 }

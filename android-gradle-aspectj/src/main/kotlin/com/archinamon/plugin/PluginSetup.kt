@@ -1,18 +1,19 @@
 package com.archinamon.plugin
 
+import com.android.build.api.component.impl.ComponentIdentityImpl
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.LibraryPlugin
-import com.android.build.gradle.internal.core.VariantDslInfoImpl
+import com.android.build.gradle.internal.dependency.VariantDependencies
+import com.android.builder.core.VariantType
+import com.android.builder.core.VariantTypeImpl
 import com.archinamon.AndroidConfig
 import com.archinamon.AspectJExtension
 import com.archinamon.MISDEFINITION
 import com.archinamon.RETROLAMBDA
 import com.archinamon.api.AspectJCompileTask
 import com.archinamon.api.BuildTimeListener
-import com.archinamon.utils.LANG_AJ
-import com.archinamon.utils.getJavaTask
-import com.archinamon.utils.getVariantDataList
-import com.google.wireless.android.sdk.stats.GradleBuildVariant
+import com.archinamon.utils.*
+//import com.google.wireless.android.sdk.stats.GradleBuildVariant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -50,16 +51,17 @@ private fun prepareVariant(config: AndroidConfig) {
     }
 
     // applies srcSet 'aspectj' for each build variant
-    getVariantDataList(config.plugin).forEach { variant ->
-        val props = variant.second
-        props.productFlavors.forEach { applier(it.second) }
-        applier(props.buildType ?: props.flavorName)
+    getVariantDataList(config.plugin).forEach { variantData ->
+        val componentIdentity = getComponentIdentity(variantData)
+        componentIdentity.productFlavors.forEach { applier(it.second) }
+        applier(componentIdentity.buildType!!)
     }
 }
 
 private fun configureCompiler(project: Project, config: AndroidConfig) {
-    getVariantDataList(config.plugin).forEach variantScanner@ { variant ->
-        val variantName = variant.second.name.capitalize()
+    getVariantDataList(config.plugin).forEach variantScanner@{ variantData ->
+        val componentIdentity = getComponentIdentity(variantData)
+        val variantName = componentIdentity.name.capitalize()
 
         // do not configure compiler task for non-test variants in ConfigScope.JUNIT
         if (config.scope == ConfigScope.JUNIT && variantName.contains("androidtest", true))
@@ -67,31 +69,32 @@ private fun configureCompiler(project: Project, config: AndroidConfig) {
 
         val taskName = "compile$variantName${LANG_AJ.capitalize()}"
         val ajc = AspectJCompileTask.Builder(project)
-                .plugin(project.plugins.getPlugin(config))
-                .config(project.extensions.getByType(AspectJExtension::class.java))
-                .compiler(getJavaTask(variant.first))
-                .variant(variant.second.name)
-                .name(taskName)
+            .plugin(project.plugins.getPlugin(config))
+            .config(project.extensions.getByType(AspectJExtension::class.java))
+            .compiler(getJavaTask(variantData))
+            .variant(componentIdentity.name)
+            .name(taskName)
 
-        val variantTypeClass: Class<*> = variant.second.variantType::class.java
+        val variantType = getVariantSources(variantData).variantType
+
+        val variantTypeClass: Class<*> = variantType::class.java
         val variantAnalyticsType: Any? = when {
             variantTypeClass.fields.any { it.name == "mAnalyticsVariantType" } ->
-                variantTypeClass.getField("mAnalyticsVariantType").get(variant.second.variantType)
+                variantTypeClass.getField("mAnalyticsVariantType").get(variantType)
             variantTypeClass.fields.any { it.name == "analyticsVariantType" } ->
-                variantTypeClass.getField("analyticsVariantType").get(variant.second.variantType)
+                variantTypeClass.getField("analyticsVariantType").get(variantType)
             variantTypeClass.enumConstants?.isNotEmpty() == true ->
-                variantTypeClass.enumConstants[5] // suspect to find UNIT_TEST
-                        ?.javaClass
-                        ?.getMethod("getAnalyticsVariantType")
-                        ?.invoke(variant.second.variantType)
+                variantTypeClass.enumConstants[5] // .first()?
+                    ?.javaClass
+                    ?.getMethod("getAnalyticsVariantType")
+                    ?.invoke(variantType)
             else -> null
         }
 
-        if (variantAnalyticsType is GradleBuildVariant.VariantType
-                && variantAnalyticsType == GradleBuildVariant.VariantType.UNIT_TEST) {
+        if ((variantAnalyticsType as Enum<*>).name == "UNIT_TEST") {
             if (config.aspectj().compileTests) {
                 ajc.overwriteJavac(true)
-                        .buildAndAttach(config)
+                    .buildAndAttach(config)
             }
         } else {
             ajc.buildAndAttach(config)
@@ -117,12 +120,11 @@ private fun checkIfPluginAppliedAfterRetrolambda(project: Project) {
 
 private inline fun <reified T> PluginContainer.getPlugin(config: AndroidConfig): T where T : Plugin<Project> {
     @Suppress("UNCHECKED_CAST")
-    val plugin: Class<out T> = (if (config.isLibraryPlugin) LibraryPlugin::class.java else AppPlugin::class.java) as Class<T>
+    val plugin: Class<out T> =
+        (if (config.isLibraryPlugin) LibraryPlugin::class.java else AppPlugin::class.java) as Class<T>
     return getPlugin(plugin)
 }
 
 private inline fun <reified T> Project.whenEvaluated(noinline fn: Project.() -> T) {
-    if (state.executed) fn() else afterEvaluate {
-        fn.invoke(this)
-    }
+    if (state.executed) fn() else afterEvaluate { fn() }
 }

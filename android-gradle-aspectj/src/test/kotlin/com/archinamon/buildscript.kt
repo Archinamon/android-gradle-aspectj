@@ -76,7 +76,7 @@ const val COMPLEX_PLUGIN_IMPLYING = """
 
 const val DEPENDENCIES_WITH_TESTS = """
     dependencies {
-        testCompile("junit:junit:4.12")
+        testImplementation("junit:junit:4.12")
     }
 """
 

@@ -16,7 +16,13 @@ allprojects {
         google()
         jcenter()
         mavenCentral()
-        maven { url = uri("http://repository.jetbrains.com/utils") }
-        maven { url = uri("https://dl.bintray.com/archinamon/maven") }
+        maven {
+            url = uri("http://repository.jetbrains.com/utils")
+            isAllowInsecureProtocol = true
+        }
+        maven {
+            url = uri("https://dl.bintray.com/archinamon/maven")
+            isAllowInsecureProtocol = true
+        }
     }
 }
